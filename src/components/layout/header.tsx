@@ -1,22 +1,60 @@
+"use client";
+
+import Link from "next/link";
 import { ThemeToggle } from "~/components/theme-toggle";
 import { UserMenu } from "./user-menu";
+import { useSession } from "next-auth/react";
+import { Role } from "@prisma/client";
+import { BookText, Settings } from "lucide-react";
 
 export function Header() {
+  const { data: session } = useSession();
+  const isAdmin = session?.user?.role === Role.ADMIN;
+  const isModerator = session?.user?.role === Role.MODERATOR;
+  const canAccessAdmin = isAdmin;
+
   return (
-    <header className="sticky flex justify-center top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-14 items-center">
-        <div className="mr-4 flex">
-          <a className="mr-6 flex items-center space-x-2" href="/">
-            <span className="font-bold">ModernWiki</span>
-          </a>
+    <header className="bg-background/95 sticky top-0 z-50 w-full border-b backdrop-blur">
+      <div className="container mx-auto flex h-14 items-center justify-between px-4">
+        {/* Logo */}
+        <div className="flex items-center">
+          <Link href="/" className="font-bold">
+            WikiClone
+          </Link>
         </div>
-        <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
-          <nav className="flex items-center space-x-2">
-            <ThemeToggle />
-            <UserMenu />
-          </nav>
+
+        {/* Main navigation */}
+        <nav className="hidden md:block">
+          <ul className="flex gap-6">
+            <li>
+              <Link
+                href="/wiki"
+                className="hover:text-foreground flex items-center gap-2 text-sm"
+              >
+                <BookText className="h-4 w-4" />
+                Articles
+              </Link>
+            </li>
+            {canAccessAdmin && (
+              <li>
+                <Link
+                  href="/admin"
+                  className="hover:text-foreground flex items-center gap-2 text-sm"
+                >
+                  <Settings className="h-4 w-4" />
+                  Admin
+                </Link>
+              </li>
+            )}
+          </ul>
+        </nav>
+
+        {/* Right side controls */}
+        <div className="flex items-center gap-3">
+          <ThemeToggle />
+          <UserMenu />
         </div>
       </div>
     </header>
   );
-} 
+}

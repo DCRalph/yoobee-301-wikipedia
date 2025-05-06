@@ -30,6 +30,8 @@ model Account {
   session_state            String?
   refresh_token_expires_in Int?
 
+  password                 String?
+
   user                     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])

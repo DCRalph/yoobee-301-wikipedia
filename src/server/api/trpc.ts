@@ -13,6 +13,7 @@ import { ZodError } from "zod";
 
 import { auth } from "~/server/auth";
 import { db } from "~/server/db";
+import { Role } from "@prisma/client";
 
 /**
  * 1. CONTEXT
@@ -131,3 +132,21 @@ export const protectedProcedure = t.procedure
       },
     });
   });
+
+/**
+ * Admin procedure
+ *
+ * This procedure ensures that the user is not only authenticated
+ * but also has an ADMIN role. Use this for admin-only functionality.
+ */
+export const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
+  if (ctx.session.user.role !== Role.ADMIN) {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "You need admin privileges to access this resource",
+    });
+  }
+  return next({
+    ctx,
+  });
+});

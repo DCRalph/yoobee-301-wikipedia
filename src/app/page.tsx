@@ -1,76 +1,57 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
-import { Input } from "~/components/ui/input";
+import Link from "next/link";
+import { Button } from "~/components/ui/button";
+import { RecentArticles } from "~/components/wiki/recent-articles";
+import { BookText, Edit, Search } from "lucide-react";
 
 export default function Home() {
   return (
-    <main className="container mx-auto px-4 py-8">
-      <div className="mb-8 flex flex-col items-center space-y-4">
-        <h1 className="text-4xl font-bold">Welcome to ModernWiki</h1>
-        <p className="text-center text-muted-foreground">
-          The free encyclopedia that anyone can edit
+    <div className="container mx-auto py-8">
+      <section className="mb-16 py-16 text-center">
+        <h1 className="mb-4 text-4xl font-bold tracking-tight md:text-5xl">
+          Modern Wikipedia Clone
+        </h1>
+        <p className="text-muted-foreground mx-auto mb-8 max-w-2xl text-xl">
+          A community-driven knowledge base with articles on various topics.
         </p>
-        <div className="w-full max-w-2xl">
-          <Input
-            type="search"
-            placeholder="Search ModernWiki"
-            className="h-12 text-lg"
-          />
+        <div className="flex flex-wrap items-center justify-center gap-4">
+          <Button size="lg" asChild>
+            <Link href="/wiki">
+              <BookText className="mr-2 h-5 w-5" />
+              Browse Articles
+            </Link>
+          </Button>
+          <Button size="lg" variant="outline" asChild>
+            <Link href="/admin/articles/new">
+              <Edit className="mr-2 h-5 w-5" />
+              Create Article
+            </Link>
+          </Button>
         </div>
-      </div>
+      </section>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Featured Articles</CardTitle>
-            <CardDescription>Selected articles of exceptional quality</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-2">
-              <li>
-                <a href="#" className="text-blue-600 hover:underline dark:text-blue-400">
-                  Quantum Computing
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-blue-600 hover:underline dark:text-blue-400">
-                  Artificial Intelligence
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-blue-600 hover:underline dark:text-blue-400">
-                  Climate Change
-                </a>
-              </li>
-            </ul>
-          </CardContent>
-        </Card>
+      <section className="mb-16">
+        <div className="mb-8 flex items-center justify-between">
+          <h2 className="text-3xl font-bold tracking-tight">Recent Articles</h2>
+          <Button variant="outline" asChild>
+            <Link href="/wiki">
+              <Search className="mr-2 h-4 w-4" />
+              View All
+            </Link>
+          </Button>
+        </div>
+        <RecentArticles />
+      </section>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Did You Know?</CardTitle>
-            <CardDescription>Facts that you might not know</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-2">
-              <li>
-                <a href="#" className="text-blue-600 hover:underline dark:text-blue-400">
-                  The first computer mouse was made of wood
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-blue-600 hover:underline dark:text-blue-400">
-                  The Internet was invented in 1969
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-blue-600 hover:underline dark:text-blue-400">
-                  The first website is still online
-                </a>
-              </li>
-            </ul>
-          </CardContent>
-        </Card>
-      </div>
-    </main>
+      <section className="bg-muted/50 mb-16 rounded-lg border p-8 text-center">
+        <h2 className="mb-4 text-2xl font-bold">Contribute to Our Wiki</h2>
+        <p className="text-muted-foreground mx-auto mb-6 max-w-2xl">
+          Join our community and share your knowledge by creating or editing
+          articles.
+        </p>
+        <Button asChild>
+          <Link href="/api/auth/signin">Sign Up / Login</Link>
+        </Button>
+      </section>
+    </div>
   );
 }
