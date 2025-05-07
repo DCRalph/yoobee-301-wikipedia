@@ -1,5 +1,3 @@
-import { Suspense } from "react";
-import { Skeleton } from "~/components/ui/skeleton";
 import { ArticleManagementContent } from "./article-management-content";
 import { auth } from "~/server/auth";
 import { redirect } from "next/navigation";

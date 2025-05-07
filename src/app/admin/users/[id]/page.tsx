@@ -1,4 +1,4 @@
-import { notFound, redirect } from "next/navigation";
+import { redirect } from "next/navigation";
 import { api } from "~/trpc/server";
 import { UserDetailsView } from "./user-details-view";
 import { auth } from "~/server/auth";
@@ -38,6 +38,4 @@ export default async function UserDetailsPage({
   const user = await api.users.getById({ id });
 
   return <UserDetailsView user={user} />
-
-
 }

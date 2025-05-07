@@ -72,7 +72,7 @@ export function RevisionContent({ revision }: RevisionContentProps) {
             <AlertTriangle className="h-5 w-5 text-yellow-400 mr-3" />
             <div>
               <p className="text-sm text-yellow-700">
-                You're viewing an unpublished revision.
+                {"You're viewing an unpublished revision."}
               </p>
             </div>
           </div>

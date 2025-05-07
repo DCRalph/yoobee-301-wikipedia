@@ -22,7 +22,7 @@ import { formatDateTime } from "~/lib/date-utils";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { generateTextDiff } from "~/lib/diff-utils";
-
+import { useTheme } from "next-themes";
 interface Revision {
   id: string;
   content: string;
@@ -48,6 +48,7 @@ interface CompareContentProps {
 }
 
 export function CompareContent({ comparison }: CompareContentProps) {
+  const { theme } = useTheme();
   const { currentRevision, oldRevision, article } = comparison;
   const [activeTab, setActiveTab] = useState("unified");
 
@@ -92,7 +93,7 @@ export function CompareContent({ comparison }: CompareContentProps) {
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   <Clock className="h-4 w-4 text-muted-foreground" />
-                  <span>{formatDateTime(new Date(oldRevision.createdAt))}</span>
+                  <span suppressHydrationWarning>{formatDateTime(new Date(oldRevision.createdAt))}</span>
                 </div>
                 {oldRevision.summary && (
                   <div className="text-sm mt-2">
@@ -166,71 +167,74 @@ export function CompareContent({ comparison }: CompareContentProps) {
           </div>
         </CardHeader>
         <CardContent>
-          <TabsContent value="unified" className="mt-0">
-            <div className="border rounded-lg p-4 overflow-x-auto">
-              <pre className="text-sm font-mono">
-                {diffResult.changes.map((change, index) => (
-                  <div
-                    key={index}
-                    // className={
-                    //   change.added
-                    //     ? "bg-green-50 text-green-800"
-                    //     : change.removed
-                    //       ? "bg-red-50 text-red-800"
-                    //       : "text-gray-700"
-                    // }
-                  >
-                    {/* {change.value.split('\n').map((line: string, lineIndex: number) => (
-                      <div key={`${index}-${lineIndex}`} className="whitespace-pre-wrap">
-                        {change.added && <span className="text-green-600 mr-2">+</span>}
-                        {change.removed && <span className="text-red-600 mr-2">-</span>}
-                        {!change.added && !change.removed && <span className="text-gray-400 mr-2">&nbsp;</span>}
-                        {line}
-                      </div>
-                    ))} */}
-                  </div>
-                ))}
-              </pre>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="sideBySide" className="mt-0">
-            <div className="grid grid-cols-2 gap-4">
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsContent value="unified" className="mt-0">
               <div className="border rounded-lg p-4 overflow-x-auto">
-                <h3 className="text-sm font-semibold mb-2">Old Version</h3>
-                <pre className="text-sm font-mono whitespace-pre-wrap">
-                  {oldRevision.content}
+                <pre className="text-sm font-mono">
+                  {diffResult.changes.map((change, index) => (
+                    <div
+                      key={index}
+                      className={
+                        change.added
+                          ? "bg-green-50 text-green-800"
+                          : change.removed
+                            ? "bg-red-50 text-red-800"
+                            : "text-gray-700"
+                      }
+                    >
+                      {change.value.split('\n').map((line: string, lineIndex: number) => (
+                        <div key={`${index}-${lineIndex}`} className="whitespace-pre-wrap">
+                          {change.added && <span className="text-green-600 mr-2">+</span>}
+                          {change.removed && <span className="text-red-600 mr-2">-</span>}
+                          {!change.added && !change.removed && <span className="text-gray-400 mr-2">&nbsp;</span>}
+                          {line}
+                        </div>
+                      ))}
+                    </div>
+                  ))}
                 </pre>
               </div>
-              <div className="border rounded-lg p-4 overflow-x-auto">
-                <h3 className="text-sm font-semibold mb-2">Current Version</h3>
-                <pre className="text-sm font-mono whitespace-pre-wrap">
-                  {currentRevision.content}
-                </pre>
-              </div>
-            </div>
-          </TabsContent>
+            </TabsContent>
 
-          <TabsContent value="rendered" className="mt-0">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="border rounded-lg p-4">
-                <h3 className="text-sm font-semibold mb-2">Old Version (Rendered)</h3>
-                <div className="prose prose-sm max-w-none">
-                  <Markdown remarkPlugins={[remarkGfm]}>
+            <TabsContent value="sideBySide" className="mt-0">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="border rounded-lg p-4 overflow-x-auto">
+                  <h3 className="text-sm font-semibold mb-2">Old Version</h3>
+                  <pre className="text-sm font-mono whitespace-pre-wrap">
                     {oldRevision.content}
-                  </Markdown>
+                  </pre>
                 </div>
-              </div>
-              <div className="border rounded-lg p-4">
-                <h3 className="text-sm font-semibold mb-2">Current Version (Rendered)</h3>
-                <div className="prose prose-sm max-w-none">
-                  <Markdown remarkPlugins={[remarkGfm]}>
+                <div className="border rounded-lg p-4 overflow-x-auto">
+                  <h3 className="text-sm font-semibold mb-2">Current Version</h3>
+                  <pre className="text-sm font-mono whitespace-pre-wrap">
                     {currentRevision.content}
-                  </Markdown>
+                  </pre>
                 </div>
               </div>
-            </div>
-          </TabsContent>
+            </TabsContent>
+
+            <TabsContent value="rendered" className="mt-0">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="border rounded-lg p-4">
+                  <h3 className="text-sm font-semibold mb-2">Old Version (Rendered)</h3>
+                  <div  className={`prose prose-zinc dark:prose-invert max-w-none ${theme == "pink" ? "pink" : ""}`}>
+                    
+                    <Markdown remarkPlugins={[remarkGfm]}>
+                      {oldRevision.content}
+                    </Markdown>
+                  </div>
+                </div>
+                <div className="border rounded-lg p-4">
+                  <h3 className="text-sm font-semibold mb-2">Current Version (Rendered)</h3>
+                  <div  className={`prose prose-zinc dark:prose-invert max-w-none ${theme == "pink" ? "pink" : ""}`}>
+                    <Markdown remarkPlugins={[remarkGfm]}>
+                      {currentRevision.content}
+                    </Markdown>
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
         </CardContent>
         <CardFooter>
           <div className="flex space-x-4">

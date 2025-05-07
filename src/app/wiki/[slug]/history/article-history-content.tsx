@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { Role } from "@prisma/client";
@@ -19,7 +18,6 @@ import {
   CardHeader,
   CardTitle,
   CardDescription,
-  CardFooter,
 } from "~/components/ui/card";
 import { User, Clock, ArrowLeft, Eye, Diff, CalendarDays, History, Edit } from "lucide-react";
 import { formatDate, formatDateTime } from "~/lib/date-utils";

@@ -1,7 +1,7 @@
-// import { diffWordsWithSpace, type Change } from "diff";
+import { diffLines, type Change } from "diff";
 
 export interface DiffResult {
-  changes: string[];
+  changes: Change[];
   stats: {
     additions: number;
     deletions: number;
@@ -10,7 +10,7 @@ export interface DiffResult {
 }
 
 export function generateTextDiff(oldText: string, newText: string): DiffResult {
-  // const changes = diffLines(oldText, newText);
+  const changes = diffLines(oldText, newText);
 
   // Calculate stats
   const stats = {
@@ -19,17 +19,15 @@ export function generateTextDiff(oldText: string, newText: string): DiffResult {
     unchanged: 0,
   };
 
-  // changes.forEach((change) => {
-  //   if (change.added) {
-  //     stats.additions += change.count ?? 0;
-  //   } else if (change.removed) {
-  //     stats.deletions += change.count ?? 0;
-  //   } else {
-  //     stats.unchanged += change.count ?? 0;
-  //   }
-  // });
-
-  const changes: string[] = [];
+  changes.forEach((change: Change) => {
+    if (change.added) {
+      stats.additions += change.count ?? 0;
+    } else if (change.removed) {
+      stats.deletions += change.count ?? 0;
+    } else {
+      stats.unchanged += change.count ?? 0;
+    }
+  });
 
   return { changes, stats };
 } 

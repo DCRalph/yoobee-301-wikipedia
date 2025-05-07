@@ -282,7 +282,7 @@ export const articlesRouter = createTRPCRouter({
   getRevisionById: publicProcedure
     .input(z.object({ revisionId: z.string() }))
     .query(async ({ ctx, input }) => {
-      const revision = await ctx.db.articleRevision.findUnique({
+      const revision = await ctx.db.revision.findUnique({
         where: { id: input.revisionId },
         include: {
           article: {
@@ -321,7 +321,7 @@ export const articlesRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       // Fetch both revisions
       const [currentRevision, oldRevision] = await Promise.all([
-        ctx.db.articleRevision.findUnique({
+        ctx.db.revision.findUnique({
           where: { id: input.currentRevisionId },
           include: {
             article: {
@@ -340,7 +340,7 @@ export const articlesRouter = createTRPCRouter({
             },
           },
         }),
-        ctx.db.articleRevision.findUnique({
+        ctx.db.revision.findUnique({
           where: { id: input.oldRevisionId },
           include: {
             editor: {
