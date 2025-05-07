@@ -111,6 +111,12 @@ export function SettingsForm() {
   return (
     <form onSubmit={handleSubmit}>
       <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            <h2 className="text-2xl font-bold tracking-tight">Site Settings</h2>
+          </div>
+        </div>
+
         {error && (
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />

@@ -6,8 +6,8 @@ import NextTopLoader from "nextjs-toploader";
 import { TRPCReactProvider } from "~/trpc/react";
 import { ThemeProvider } from "~/components/providers/theme-provider";
 import { SessionProvider } from "~/components/providers/session-provider";
-import { RootLayout } from "~/components/layout/root-layout";
 import { ToastProvider } from "~/components/providers/toast-provider";
+import { Header } from "~/components/layout/header";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -37,7 +37,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <TRPCReactProvider>
               <NextTopLoader />
 
-              <RootLayout>{children}</RootLayout>
+              <div className="flex min-h-screen flex-col">
+                <Header />
+                <main className="relative w-full">{children}</main>
+              </div>
+
               <ToastProvider />
             </TRPCReactProvider>
           </SessionProvider>

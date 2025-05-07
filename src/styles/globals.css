@@ -167,3 +167,7 @@
     @apply bg-background text-foreground;
   }
 }
+
+.hello {
+  background-color: red;
+}

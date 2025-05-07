@@ -6,11 +6,13 @@ import { api } from "~/trpc/react";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { formatDistanceToNow } from "~/lib/date-utils";
-import { Search, BookText, User, Clock } from "lucide-react";
+import { Search, BookText, User, Clock, FilePlus, BookOpen } from "lucide-react";
+import { useSession } from "next-auth/react";
 
 export function WikiArticleList() {
   const [mounted, setMounted] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const { data: session } = useSession();
 
   // Get published articles only
   const { data, isLoading } = api.articles.getAll.useQuery(
@@ -32,19 +34,44 @@ export function WikiArticleList() {
   });
 
   if (isLoading) {
-    return <div>Loading articles...</div>;
+    return (
+      <div className="max-w-5xl mx-auto p-8 ">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-4">
+            <h2 className="text-2xl font-bold tracking-tight">Wiki Articles</h2>
+          </div>
+        </div>
+        <div className="flex items-center justify-center py-12">Loading articles...</div>
+      </div>
+    );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="relative w-full max-w-md">
-        <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
-        <Input
-          placeholder="Search articles..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="pl-8"
-        />
+    <div className="max-w-5xl mx-auto p-8 bg-cyan-500">
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-4">
+          <h2 className="text-2xl font-bold tracking-tight">Wiki Articles</h2>
+        </div>
+        {session?.user && (
+          <Button asChild>
+            <Link href="/wiki/create">
+              <FilePlus className="mr-2 h-4 w-4" />
+              Create Article
+            </Link>
+          </Button>
+        )}
+      </div>
+
+      <div className="flex items-center justify-between mb-6 ]">
+        <div className="relative w-full max-w-md">
+          <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
+          <Input
+            placeholder="Search articles..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-8"
+          />
+        </div>
       </div>
 
       {filteredArticles && filteredArticles.length > 0 ? (
@@ -74,7 +101,7 @@ export function WikiArticleList() {
               <div className="mt-4">
                 <Button variant="outline" size="sm" asChild>
                   <Link href={`/wiki/${article.slug}`}>
-                    <BookText className="mr-2 h-4 w-4" />
+                    <BookOpen className="mr-2 h-4 w-4" />
                     Read Article
                   </Link>
                 </Button>

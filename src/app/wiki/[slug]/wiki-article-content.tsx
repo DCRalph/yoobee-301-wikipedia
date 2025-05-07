@@ -48,46 +48,55 @@ export function WikiArticleContent({ article }: WikiArticleContentProps) {
   const canEdit = isAdmin || isModerator;
 
   return (
-    <div className="mx-auto max-w-5xl p-8">
-      <div className="mb-8 space-y-2">
+    <div className="max-w-5xl mx-auto p-8">
+      <div className="flex items-center justify-between mb-4">
         <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
           {article.title}
         </h1>
-        <div className="text-muted-foreground flex flex-wrap items-center gap-3 text-sm">
-          <div className="flex items-center gap-1">
-            <User className="h-4 w-4" />
-            <span>{article.author.name ?? "Anonymous"}</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <Calendar className="h-4 w-4" />
-            <span>Created {formatDate(new Date(article.createdAt))}</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <Clock className="h-4 w-4" />
-            <span>
-              Last updated {formatDistanceToNow(new Date(article.updatedAt))}
-            </span>
-          </div>
-        </div>
-
         <div className="flex items-center gap-2">
-          {session?.user && (
-            <Button variant="outline" size="sm" asChild>
-              <Link href="/wiki/create">
-                <Plus className="mr-2 h-4 w-4" />
-                Create Article
-              </Link>
-            </Button>
-          )}
-          {canEdit && (
-            <Button variant="outline" size="sm" asChild>
-              <Link href={`/admin/articles/${article.id}`}>
-                <Edit className="mr-2 h-4 w-4" />
-                Edit Article
-              </Link>
-            </Button>
-          )}
+          <Button variant="outline" size="sm" asChild>
+            <Link href={`/wiki/${article.slug}/history`}>
+              <History className="mr-2 h-4 w-4" />
+              History
+            </Link>
+          </Button>
         </div>
+      </div>
+
+      <div className="text-muted-foreground flex flex-wrap items-center gap-3 text-sm mb-6">
+        <div className="flex items-center gap-1">
+          <User className="h-4 w-4" />
+          <span>{article.author.name ?? "Anonymous"}</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <Calendar className="h-4 w-4" />
+          <span>Created {formatDate(new Date(article.createdAt))}</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <Clock className="h-4 w-4" />
+          <span>
+            Last updated {formatDistanceToNow(new Date(article.updatedAt))}
+          </span>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-2 mb-8">
+        {session?.user && (
+          <Button variant="outline" size="sm" asChild>
+            <Link href="/wiki/create">
+              <Plus className="mr-2 h-4 w-4" />
+              Create Article
+            </Link>
+          </Button>
+        )}
+        {canEdit && (
+          <Button variant="outline" size="sm" asChild>
+            <Link href={`/admin/articles/${article.id}`}>
+              <Edit className="mr-2 h-4 w-4" />
+              Edit Article
+            </Link>
+          </Button>
+        )}
       </div>
 
       <div

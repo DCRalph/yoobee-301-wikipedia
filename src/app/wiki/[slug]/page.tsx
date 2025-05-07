@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { api } from "~/trpc/server";
-import { WikiArticleContent } from "~/components/wiki/wiki-article-content";
+import { WikiArticleContent } from "./wiki-article-content";
 import { use } from "react";
 
 export async function generateMetadata({

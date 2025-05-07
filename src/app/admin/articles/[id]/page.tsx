@@ -1,6 +1,8 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { api } from "~/trpc/server";
-import { ArticleForm } from "~/components/admin/article-form";
+import { ArticleForm } from "./article-form";
+import { auth } from "~/server/auth";
+import { Role } from "@prisma/client";
 
 interface ArticlePageProps {
   params: Promise<{ id: string }>;
@@ -30,5 +32,13 @@ export async function generateMetadata({ params }: ArticlePageProps) {
 export default async function ArticlePage({ params }: ArticlePageProps) {
   // Handle new article creation
   const { id } = await params;
+  const session = await auth();
+
+  if (!session || session.user.role !== Role.ADMIN) {
+    redirect("/");
+  }
+
+
+
   return <ArticleForm id={id} />;
 }

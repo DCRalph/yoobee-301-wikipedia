@@ -115,7 +115,17 @@ export function ArticleManagementContent() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6 max-w-5xl mx-auto p-8">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center">
+          <h2 className="text-2xl font-bold tracking-tight">Article Management</h2>
+        </div>
+        <Button onClick={() => router.push("/admin/articles/new")}>
+          <Plus className="mr-2 h-4 w-4" />
+          New Article
+        </Button>
+      </div>
+
       <div className="flex items-center justify-between">
         <div className="relative w-64">
           <Search className="text-muted-foreground absolute top-2.5 left-2 h-4 w-4" />
@@ -126,10 +136,31 @@ export function ArticleManagementContent() {
             className="pl-8"
           />
         </div>
-        <Button onClick={() => router.push("/admin/articles/new")}>
-          <Plus className="mr-2 h-4 w-4" />
-          New Article
-        </Button>
+        <div className="flex space-x-2">
+          <Button
+            variant={status === "published" ? "default" : "outline"}
+            size="sm"
+            onClick={() => router.push("/admin/articles?status=published")}
+          >
+            <Check className="mr-2 h-4 w-4 text-green-500" />
+            Published
+          </Button>
+          <Button
+            variant={status === "draft" ? "default" : "outline"}
+            size="sm"
+            onClick={() => router.push("/admin/articles?status=draft")}
+          >
+            <Clock className="mr-2 h-4 w-4 text-amber-500" />
+            Drafts
+          </Button>
+          <Button
+            variant={!status ? "default" : "outline"}
+            size="sm"
+            onClick={() => router.push("/admin/articles")}
+          >
+            All
+          </Button>
+        </div>
       </div>
 
       <div className="rounded-md border">

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   Table,
   TableBody,
@@ -25,12 +25,18 @@ import {
   Search,
   MoreHorizontal,
   UserCog,
-  MailCheck,
   Shield,
+  UserPlus,
+  Users,
+  User,
 } from "lucide-react";
 import Image from "next/image";
+
 export function UserManagementContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const roleFilter = searchParams.get("role");
+
   const [mounted, setMounted] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -51,13 +57,19 @@ export function UserManagementContent() {
     setMounted(true);
   }, []);
 
-  // Filter users based on search term
+  // Filter users based on search term and role
   const filteredUsers = data?.users.filter((user) => {
     const searchLower = searchTerm.toLowerCase();
-    return (
-      user.name?.toLowerCase().includes(searchLower) ??
-      user.email?.toLowerCase().includes(searchLower)
-    );
+    const matchesSearch =
+      (user.name?.toLowerCase().includes(searchLower) ?? false) ||
+      (user.email?.toLowerCase().includes(searchLower) ?? false);
+
+    // If role filter is active, check if user has that role
+    if (roleFilter) {
+      return matchesSearch && user.role === roleFilter;
+    }
+
+    return matchesSearch;
   });
 
   // Handle role change
@@ -73,12 +85,22 @@ export function UserManagementContent() {
         return <UserCog className="h-4 w-4 text-orange-500" />;
       case "USER":
       default:
-        return <MailCheck className="h-4 w-4 text-green-500" />;
+        return <User className="h-4 w-4 text-green-500" />;
     }
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6 max-w-5xl mx-auto p-8">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center">
+          <h2 className="text-2xl font-bold tracking-tight">User Management</h2>
+        </div>
+        <Button onClick={() => router.push("/admin/users/new")}>
+          <UserPlus className="mr-2 h-4 w-4" />
+          New User
+        </Button>
+      </div>
+
       <div className="flex items-center justify-between">
         <div className="relative w-64">
           <Search className="text-muted-foreground absolute top-2.5 left-2 h-4 w-4" />
@@ -88,6 +110,40 @@ export function UserManagementContent() {
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-8"
           />
+        </div>
+        <div className="flex space-x-2">
+          <Button
+            variant={!roleFilter ? "default" : "outline"}
+            size="sm"
+            onClick={() => router.push("/admin/users")}
+          >
+            <Users className="mr-2 h-4 w-4" />
+            All Users
+          </Button>
+          <Button
+            variant={roleFilter === "ADMIN" ? "default" : "outline"}
+            size="sm"
+            onClick={() => router.push("/admin/users?role=ADMIN")}
+          >
+            <Shield className="mr-2 h-4 w-4 text-red-500" />
+            Admins
+          </Button>
+          <Button
+            variant={roleFilter === "MODERATOR" ? "default" : "outline"}
+            size="sm"
+            onClick={() => router.push("/admin/users?role=MODERATOR")}
+          >
+            <UserCog className="mr-2 h-4 w-4 text-orange-500" />
+            Moderators
+          </Button>
+          <Button
+            variant={roleFilter === "USER" ? "default" : "outline"}
+            size="sm"
+            onClick={() => router.push("/admin/users?role=USER")}
+          >
+            <User className="mr-2 h-4 w-4 text-green-500" />
+            Regular Users
+          </Button>
         </div>
       </div>
 

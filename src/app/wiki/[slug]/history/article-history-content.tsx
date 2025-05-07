@@ -21,7 +21,7 @@ import {
   CardDescription,
   CardFooter,
 } from "~/components/ui/card";
-import { User, Clock, ArrowLeft, Eye, Diff, CalendarDays } from "lucide-react";
+import { User, Clock, ArrowLeft, Eye, Diff, CalendarDays, History, Edit } from "lucide-react";
 import { formatDate, formatDateTime } from "~/lib/date-utils";
 
 interface ArticleHistoryContentProps {
@@ -63,18 +63,29 @@ export function ArticleHistoryContent({ article }: ArticleHistoryContentProps) {
   );
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between">
-        <Button variant="outline" size="sm" asChild>
-          <Link href={`/wiki/${article.slug}`}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Article
-          </Link>
-        </Button>
+    <div className="space-y-6 max-w-5xl mx-auto p-8">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Button
+            variant="outline"
+            size="sm"
+            className="mr-2"
+            asChild
+          >
+            <Link href={`/wiki/${article.slug}`}>
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Article
+            </Link>
+          </Button>
+          <h2 className="text-2xl font-bold tracking-tight">Revision History: {article.title}</h2>
+        </div>
 
         {canEdit && (
           <Button variant="outline" size="sm" asChild>
-            <Link href={`/admin/articles/${article.id}`}>Edit Article</Link>
+            <Link href={`/admin/articles/${article.id}`}>
+              <Edit className="mr-2 h-4 w-4" />
+              Edit Article
+            </Link>
           </Button>
         )}
       </div>
@@ -123,7 +134,10 @@ export function ArticleHistoryContent({ article }: ArticleHistoryContentProps) {
 
       <Card>
         <CardHeader>
-          <CardTitle>Complete Revision History</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <History className="h-5 w-5" />
+            Complete Revision History
+          </CardTitle>
           <CardDescription>
             All revisions ordered by date (newest first)
           </CardDescription>

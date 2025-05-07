@@ -1,9 +1,9 @@
 import { z } from "zod";
-import { createTRPCRouter, protectedProcedure, adminProcedure } from "../trpc";
+import { createTRPCRouter, protectedProcedure, adminProcedure, publicProcedure } from "../trpc";
 import { TRPCError } from "@trpc/server";
 
 export const articlesRouter = createTRPCRouter({
-  getAll: protectedProcedure
+  getAll: publicProcedure
     .input(
       z.object({
         limit: z.number().min(1).max(100).default(10),
@@ -47,7 +47,7 @@ export const articlesRouter = createTRPCRouter({
       };
     }),
 
-  getById: protectedProcedure
+  getById: adminProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
       const article = await ctx.db.article.findUnique({
@@ -85,7 +85,7 @@ export const articlesRouter = createTRPCRouter({
       return article;
     }),
 
-  getBySlug: protectedProcedure
+  getBySlug: publicProcedure
     .input(z.object({ slug: z.string() }))
     .query(async ({ ctx, input }) => {
       const article = await ctx.db.article.findUnique({
@@ -277,5 +277,102 @@ export const articlesRouter = createTRPCRouter({
       return ctx.db.article.delete({
         where: { id: input.id },
       });
+    }),
+
+  getRevisionById: publicProcedure
+    .input(z.object({ revisionId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const revision = await ctx.db.articleRevision.findUnique({
+        where: { id: input.revisionId },
+        include: {
+          article: {
+            select: {
+              id: true,
+              title: true,
+              slug: true,
+              published: true,
+            },
+          },
+          editor: {
+            select: {
+              id: true,
+              name: true,
+              image: true,
+            },
+          },
+        },
+      });
+
+      if (!revision) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Revision not found",
+        });
+      }
+
+      return revision;
+    }),
+
+  compareRevisions: publicProcedure
+    .input(z.object({
+      currentRevisionId: z.string(),
+      oldRevisionId: z.string()
+    }))
+    .query(async ({ ctx, input }) => {
+      // Fetch both revisions
+      const [currentRevision, oldRevision] = await Promise.all([
+        ctx.db.articleRevision.findUnique({
+          where: { id: input.currentRevisionId },
+          include: {
+            article: {
+              select: {
+                id: true,
+                title: true,
+                slug: true,
+              },
+            },
+            editor: {
+              select: {
+                id: true,
+                name: true,
+                image: true,
+              },
+            },
+          },
+        }),
+        ctx.db.articleRevision.findUnique({
+          where: { id: input.oldRevisionId },
+          include: {
+            editor: {
+              select: {
+                id: true,
+                name: true,
+                image: true,
+              },
+            },
+          },
+        }),
+      ]);
+
+      if (!currentRevision || !oldRevision) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "One or both revisions not found",
+        });
+      }
+
+      // Make sure both revisions belong to the same article
+      if (currentRevision.articleId !== oldRevision.articleId) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Cannot compare revisions from different articles",
+        });
+      }
+
+      return {
+        currentRevision,
+        oldRevision,
+        article: currentRevision.article,
+      };
     }),
 });

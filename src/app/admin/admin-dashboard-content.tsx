@@ -10,9 +10,10 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
-import { Users, FileText, FileCheck, FilePen, ArrowRight } from "lucide-react";
+import { Users, FileText, FileCheck, FilePen, ArrowRight, LayoutDashboard } from "lucide-react";
 import { api } from "~/trpc/react";
 import Image from "next/image";
+
 export function AdminDashboardContent() {
   const [mounted, setMounted] = useState(false);
 
@@ -68,7 +69,13 @@ export function AdminDashboardContent() {
   ];
 
   return (
-    <div className="mx-auto max-w-5xl space-y-8 p-8">
+    <div className="space-y-6 max-w-5xl mx-auto p-8">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <h2 className="text-2xl font-bold tracking-tight">Admin Dashboard</h2>
+        </div>
+      </div>
+
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat) => (
           <Card key={stat.title}>

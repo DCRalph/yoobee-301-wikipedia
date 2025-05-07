@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { api } from "~/trpc/server";
-import { ArticleHistoryContent } from "~/components/wiki/article-history-content";
+import { ArticleHistoryContent } from "./article-history-content";
 
 interface ArticleHistoryPageProps {
   params: Promise<{ slug: string }>;

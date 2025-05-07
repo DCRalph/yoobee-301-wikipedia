@@ -1,6 +1,8 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { api } from "~/trpc/server";
-import { UserDetailsView } from "~/components/admin/user-details-view";
+import { UserDetailsView } from "./user-details-view";
+import { auth } from "~/server/auth";
+import { Role } from "@prisma/client";
 
 interface UserDetailsPageProps {
   params: Promise<{ id: string }>;
@@ -25,23 +27,17 @@ export async function generateMetadata({ params }: UserDetailsPageProps) {
 export default async function UserDetailsPage({
   params,
 }: UserDetailsPageProps) {
-  try {
-    const { id } = await params;
-    const user = await api.users.getById({ id });
+  const { id } = await params;
 
-    return (
-      <div className="mx-auto max-w-5xl space-y-8 p-8">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">User Details</h1>
-          <p className="text-muted-foreground">
-            View and manage user account information.
-          </p>
-        </div>
+  const session = await auth();
 
-        <UserDetailsView user={user} />
-      </div>
-    );
-  } catch {
-    return notFound();
+  if (!session || session.user.role !== Role.ADMIN) {
+    redirect("/");
   }
+
+  const user = await api.users.getById({ id });
+
+  return <UserDetailsView user={user} />
+
+
 }

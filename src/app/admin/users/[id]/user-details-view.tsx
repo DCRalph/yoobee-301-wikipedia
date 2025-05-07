@@ -40,6 +40,8 @@ import {
   CheckCircle,
   AlertCircle,
   ExternalLink,
+  ArrowLeft,
+  UserCog,
 } from "lucide-react";
 
 import type { inferRouterOutputs } from "@trpc/server";
@@ -95,7 +97,7 @@ export function UserDetailsView({ user }: UserDetailsViewProps) {
       case Role.MODERATOR:
         return (
           <span className="inline-flex items-center gap-1 rounded-full bg-orange-100 px-2.5 py-0.5 text-xs font-medium text-orange-800 dark:bg-orange-900 dark:text-orange-200">
-            <Shield className="h-3 w-3" />
+            <UserCog className="h-3 w-3" />
             Moderator
           </span>
         );
@@ -112,15 +114,35 @@ export function UserDetailsView({ user }: UserDetailsViewProps) {
 
   if (user == null) {
     return (
-      <div className="text-muted-foreground flex flex-col items-center justify-center py-8 text-center">
-        <FileText className="text-muted-foreground/60 mb-2 h-10 w-10" />
-        <p className="mb-1">No user found</p>
+      <div className="max-w-5xl mx-auto p-8">
+        <div className="text-muted-foreground flex flex-col items-center justify-center py-8 text-center">
+          <FileText className="text-muted-foreground/60 mb-2 h-10 w-10" />
+          <p className="mb-1">No user found</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-5xl mx-auto p-8">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Button
+            variant="outline"
+            size="sm"
+            className="mr-4"
+            onClick={() => router.push("/admin/users")}
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Users
+          </Button>
+          <h2 className="text-2xl font-bold tracking-tight">User Details</h2>
+        </div>
+        <div className="flex items-center">
+          {getRoleBadge(user.role)}
+        </div>
+      </div>
+
       {success && (
         <Alert className="border-green-200 bg-green-50 text-green-800">
           <CheckCircle className="h-4 w-4" />
