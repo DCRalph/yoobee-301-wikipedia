@@ -39,7 +39,6 @@ export default function NotesPage() {
 
   const {
     data: notesData,
-    isLoading,
     error,
     refetch
   } = api.articles.getNotes.useQuery(
@@ -53,8 +52,8 @@ export default function NotesPage() {
   );
 
   const deleteNote = api.articles.deleteNote.useMutation({
-    onSuccess: () => {
-      refetch();
+    onSuccess: async () => {
+      await refetch();
       toast.success("Note deleted successfully");
     },
     onError: (error) => {
@@ -129,7 +128,7 @@ export default function NotesPage() {
               <Brain className="h-5 w-5" />
               My Notes
             </CardTitle>
-            <CardDescription>You don't have any saved notes or AI summaries yet</CardDescription>
+            <CardDescription>{"You don't have any saved notes or AI summaries yet"}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex flex-col items-center justify-center py-10 text-center">

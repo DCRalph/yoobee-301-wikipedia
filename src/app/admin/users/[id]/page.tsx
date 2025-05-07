@@ -16,7 +16,7 @@ export async function generateMetadata({ params }: UserDetailsPageProps) {
       title: `${user?.name ?? "User"} | Admin Dashboard`,
       description: `Manage user details for ${user?.name ?? "User"}`,
     };
-  } catch (error) {
+  } catch {
     return {
       title: "User Details | Admin Dashboard",
       description: "View and manage user details",

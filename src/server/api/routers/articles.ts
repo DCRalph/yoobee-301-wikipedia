@@ -11,7 +11,7 @@ function generateSummary(content: string, level: "novice" | "intermediate" | "ad
   const paragraphs = content.split("\n\n");
 
   // Extract first paragraph as intro
-  const intro = paragraphs[0] || "";
+  const intro = paragraphs[0] ?? "";
 
   // Adjust summary based on level
   let keyPoints: string[] = [];

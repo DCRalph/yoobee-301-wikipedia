@@ -10,7 +10,7 @@ import { BookText, Settings, StickyNote } from "lucide-react";
 export function Header() {
   const { data: session } = useSession();
   const isAdmin = session?.user?.role === Role.ADMIN;
-  const isModerator = session?.user?.role === Role.MODERATOR;
+  // const isModerator = session?.user?.role === Role.MODERATOR;
   const canAccessAdmin = isAdmin;
   const isAuthenticated = !!session?.user;
 

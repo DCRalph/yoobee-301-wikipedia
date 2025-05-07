@@ -1,8 +1,6 @@
 import { notFound } from "next/navigation";
 import { api } from "~/trpc/server";
 import { RevisionContent } from "./revision-content";
-import { useSession } from "next-auth/react";
-import React from "react";
 
 interface PageProps {
   slug: string;
@@ -22,7 +20,7 @@ export default async function RevisionPage({ params }: { params: Promise<PagePro
     }
 
     return <RevisionContent revision={revision} />;
-  } catch (error) {
+  } catch {
     return notFound();
   }
 } 

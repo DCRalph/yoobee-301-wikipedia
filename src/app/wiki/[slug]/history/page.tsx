@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: ArticleHistoryPageProps) {
       title: `${article.title} - Revision History | WikiClone`,
       description: `View the complete revision history for ${article.title}.`,
     };
-  } catch (error) {
+  } catch {
     return {
       title: "Article History | WikiClone",
       description: "Article revision history not found.",
@@ -52,7 +52,7 @@ export default async function ArticleHistoryPage({
         </div>
       </div>
     );
-  } catch (error) {
+  } catch {
     return notFound();
   }
 }

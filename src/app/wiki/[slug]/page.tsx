@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
 import { api } from "~/trpc/server";
 import { WikiArticleContent } from "./wiki-article-content";
-import { use } from "react";
 
 export async function generateMetadata({
   params,
@@ -15,7 +14,7 @@ export async function generateMetadata({
       title: `${article.title} | Modern Wikipedia Clone`,
       description: article.content.slice(0, 160),
     };
-  } catch (error) {
+  } catch {
     return {
       title: "Article Not Found | Modern Wikipedia Clone",
       description: "The requested article could not be found.",
@@ -39,7 +38,7 @@ export default async function WikiArticlePage({
     }
 
     return <WikiArticleContent article={article} />;
-  } catch (error) {
+  } catch {
     return notFound();
   }
 }

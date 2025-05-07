@@ -2,7 +2,6 @@
 
 import { useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { type Article } from "@prisma/client";
 import { z } from "zod";
 import { api } from "~/trpc/react";
 import { Button } from "~/components/ui/button";
@@ -13,7 +12,6 @@ import { Checkbox } from "~/components/ui/checkbox";
 import {
   Card,
   CardContent,
-  CardFooter,
   CardHeader,
   CardTitle,
   CardDescription,
@@ -38,21 +36,6 @@ const articleSchema = z.object({
   summary: z.string().optional(),
   published: z.boolean().default(false),
 });
-
-type ArticleWithAuthorAndRevisions = Article & {
-  author: { name: string | null; image: string | null };
-  revisions: Array<{
-    id: string;
-    content: string;
-    summary: string | null;
-    createdAt: Date;
-    editor: {
-      id: string;
-      name: string | null;
-      image: string | null;
-    };
-  }>;
-};
 
 interface ArticleFormProps {
   id: string;

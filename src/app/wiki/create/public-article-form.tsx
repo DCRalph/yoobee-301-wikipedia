@@ -21,7 +21,7 @@ import {
 } from "~/components/ui/card";
 import { Alert, AlertTitle, AlertDescription } from "~/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
-import { AlertCircle, Save, Eye, ArrowLeft, FileText, Plus } from "lucide-react";
+import { AlertCircle, ArrowLeft, FileText, Plus } from "lucide-react";
 import { useTheme } from "next-themes";
 import Link from "next/link";
 
@@ -116,10 +116,6 @@ export function PublicArticleForm() {
     }
   };
 
-  // Preview the article
-  const handlePreview = () => {
-    setActiveTab("preview");
-  };
 
   if (!session?.user) {
     return (

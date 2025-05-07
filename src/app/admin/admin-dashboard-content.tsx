@@ -10,7 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
-import { Users, FileText, FileCheck, FilePen, ArrowRight, LayoutDashboard } from "lucide-react";
+import { Users, FileText, FileCheck, FilePen, ArrowRight } from "lucide-react";
 import { api } from "~/trpc/react";
 import Image from "next/image";
 

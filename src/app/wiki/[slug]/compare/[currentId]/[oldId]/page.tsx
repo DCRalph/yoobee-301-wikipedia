@@ -22,7 +22,7 @@ export default async function ComparePage({ params }: { params: Promise<PageProp
     }
 
     return <CompareContent comparison={comparison} />;
-  } catch (error) {
+  } catch {
     return notFound();
   }
 } 

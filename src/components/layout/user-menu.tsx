@@ -31,7 +31,7 @@ export function UserMenu() {
 
   // User roles
   const isAdmin = session.user?.role === Role.ADMIN;
-  const isModerator = session.user?.role === Role.MODERATOR;
+  // const isModerator = session.user?.role === Role.MODERATOR;
   const canAccessAdmin = isAdmin;
 
   // User avatar/image

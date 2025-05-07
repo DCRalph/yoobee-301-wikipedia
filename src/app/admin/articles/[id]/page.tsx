@@ -1,4 +1,4 @@
-import { notFound, redirect } from "next/navigation";
+import { redirect } from "next/navigation";
 import { api } from "~/trpc/server";
 import { ArticleForm } from "./article-form";
 import { auth } from "~/server/auth";

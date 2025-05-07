@@ -41,9 +41,9 @@ interface RevisionContentProps {
 
 export function RevisionContent({ revision }: RevisionContentProps) {
   const { data: session } = useSession();
-  const isAdmin = session?.user?.role === Role.ADMIN;
-  const isModerator = session?.user?.role === Role.MODERATOR;
-  const canEdit = isAdmin || isModerator;
+  // const isAdmin = session?.user?.role === Role.ADMIN;
+  // const isModerator = session?.user?.role === Role.MODERATOR;
+  // const canEdit = isAdmin || isModerator;
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto p-8">

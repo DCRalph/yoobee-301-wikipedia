@@ -6,7 +6,7 @@ import { api } from "~/trpc/react";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { formatDistanceToNow } from "~/lib/date-utils";
-import { Search, BookText, User, Clock, FilePlus, BookOpen } from "lucide-react";
+import { Search, User, Clock, FilePlus, BookOpen } from "lucide-react";
 import { useSession } from "next-auth/react";
 
 export function WikiArticleList() {

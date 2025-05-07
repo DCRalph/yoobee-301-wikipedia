@@ -82,13 +82,13 @@ export function WikiArticleContent({ article }: WikiArticleContentProps) {
   });
 
   const saveSummary = api.articles.saveSummary.useMutation({
-    onSuccess: (data: any) => {
+    onSuccess: () => {
       setIsSavingSummary(false);
-      if (data.message) {
-        toast.success(data.message);
-      } else {
-        toast.success("Summary saved successfully!");
-      }
+      // if (data.message) {
+      //   toast.success(data.message);
+      // } else {
+      toast.success("Summary saved successfully!");
+      // }
     },
     onError: (error) => {
       setIsSavingSummary(false);
@@ -197,7 +197,7 @@ export function WikiArticleContent({ article }: WikiArticleContentProps) {
                       </label>
                       <Select
                         value={level}
-                        onValueChange={(value) => setLevel(value as any)}
+                        onValueChange={(value) => setLevel(value as "novice" | "intermediate" | "advanced")}
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Select level" />
