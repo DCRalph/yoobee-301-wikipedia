@@ -47,7 +47,7 @@ export function WikiArticleList() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto p-8 bg-cyan-500">
+    <div className="max-w-5xl mx-auto p-8">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4">
           <h2 className="text-2xl font-bold tracking-tight">Wiki Articles</h2>
