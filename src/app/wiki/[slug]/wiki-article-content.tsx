@@ -14,9 +14,27 @@ import {
   CardTitle,
   CardDescription,
 } from "~/components/ui/card";
-import { Edit, Clock, User, Calendar, History, Plus } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from "~/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
+import { Edit, Clock, User, Calendar, History, Plus, RefreshCw, Brain } from "lucide-react";
 import { formatDate, formatDistanceToNow } from "~/lib/date-utils";
 import { useTheme } from "next-themes";
+import { useState } from "react";
+import { api } from "~/trpc/react";
+import { toast } from "sonner";
 
 interface WikiArticleContentProps {
   article: {
@@ -46,6 +64,56 @@ export function WikiArticleContent({ article }: WikiArticleContentProps) {
   const isAdmin = session?.user?.role === Role.ADMIN;
   const isModerator = session?.user?.role === Role.MODERATOR;
   const canEdit = isAdmin || isModerator;
+  const [summary, setSummary] = useState<string | null>(null);
+  const [isSummarizing, setIsSummarizing] = useState(false);
+  const [isSavingSummary, setIsSavingSummary] = useState(false);
+  const [level, setLevel] = useState<"novice" | "intermediate" | "advanced">("intermediate");
+
+  const summarizeArticle = api.articles.summarize.useMutation({
+    onSuccess: (data) => {
+      setSummary(data.summary);
+      setIsSummarizing(false);
+      toast.success("Summary generated successfully!");
+    },
+    onError: (error) => {
+      setIsSummarizing(false);
+      toast.error(`Failed to generate summary: ${error.message}`);
+    },
+  });
+
+  const saveSummary = api.articles.saveSummary.useMutation({
+    onSuccess: (data: any) => {
+      setIsSavingSummary(false);
+      if (data.message) {
+        toast.success(data.message);
+      } else {
+        toast.success("Summary saved successfully!");
+      }
+    },
+    onError: (error) => {
+      setIsSavingSummary(false);
+      toast.error(`Failed to save summary: ${error.message}`);
+    },
+  });
+
+  const handleSummarize = () => {
+    setIsSummarizing(true);
+    summarizeArticle.mutate({
+      articleId: article.id,
+      level
+    });
+  };
+
+  const handleSaveSummary = () => {
+    if (!summary) return;
+
+    setIsSavingSummary(true);
+    saveSummary.mutate({
+      articleId: article.id,
+      summary,
+      level
+    });
+  };
 
   return (
     <div className="max-w-5xl mx-auto p-8">
@@ -97,6 +165,85 @@ export function WikiArticleContent({ article }: WikiArticleContentProps) {
             </Link>
           </Button>
         )}
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button variant="outline" size="sm">
+              <Brain className="mr-2 h-4 w-4" />
+              AI Summarize
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>AI Summary</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              {isSummarizing ? (
+                <div className="flex flex-col items-center justify-center py-8">
+                  <RefreshCw className="h-8 w-8 animate-spin mb-4" />
+                  <p className="text-muted-foreground">Generating summary...</p>
+                </div>
+              ) : summary ? (
+                <div className="prose dark:prose-invert max-w-none">
+                  <ReactMarkdown>{summary}</ReactMarkdown>
+                </div>
+              ) : (
+                <div className="space-y-4 py-4">
+                  <p className="text-center">Generate an AI summary of this article</p>
+
+                  <div className="flex flex-col gap-4 items-center">
+                    <div className="w-full max-w-xs">
+                      <label className="block text-sm font-medium mb-2">
+                        Summarization Level
+                      </label>
+                      <Select
+                        value={level}
+                        onValueChange={(value) => setLevel(value as any)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select level" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="novice">Novice</SelectItem>
+                          <SelectItem value="intermediate">Intermediate</SelectItem>
+                          <SelectItem value="advanced">Advanced</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <Button onClick={handleSummarize}>
+                      <Brain className="mr-2 h-4 w-4" />
+                      Generate Summary
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+            <DialogFooter className="flex items-center justify-between">
+              <Button
+                variant="outline"
+                disabled={!summary}
+                onClick={() => setSummary(null)}
+              >
+                Reset
+              </Button>
+              {summary && session?.user && (
+                <Button
+                  disabled={isSavingSummary}
+                  onClick={handleSaveSummary}
+                >
+                  {isSavingSummary ? (
+                    <>
+                      <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>Save Summary</>
+                  )}
+                </Button>
+              )}
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
 
       <div

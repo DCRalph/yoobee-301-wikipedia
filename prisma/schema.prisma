@@ -77,8 +77,9 @@ model User {
   
   accounts      Account[]
   sessions      Session[]
-  articles    Article[]      @relation("authorArticles")
-  revisions   Revision[]     @relation("editorRevisions")
+  articles      Article[]    @relation("authorArticles")
+  revisions     Revision[]   @relation("editorRevisions")
+  notes         Note[]       @relation("userNotes")
 }
 
 /// The Article model represents a Wikipedia-like article.
@@ -97,6 +98,9 @@ model Article {
   
   // Revisions history for the article.
   revisions   Revision[]
+  
+  // Notes related to the article (including AI summaries)
+  notes       Note[]      @relation("articleNotes")
 }
 
 /// The Revision model represents an edit made to an article.
@@ -111,4 +115,19 @@ model Revision {
   article     Article     @relation(fields: [articleId], references: [id])
   // Editor is the user who performed the edit.
   editor      User        @relation("editorRevisions", fields: [editorId], references: [id])
+}
+
+/// The Note model represents additional content related to an article, such as AI summaries.
+model Note {
+  id          String      @id @default(cuid())
+  content     String
+  type        String      // e.g., "AI_SUMMARY", "USER_NOTE", etc.
+  createdAt   DateTime    @default(now())
+  
+  // Relations
+  articleId   String
+  article     Article     @relation("articleNotes", fields: [articleId], references: [id])
+  
+  userId      String
+  user        User        @relation("userNotes", fields: [userId], references: [id])
 }

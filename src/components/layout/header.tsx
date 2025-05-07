@@ -5,13 +5,14 @@ import { ThemeToggle } from "~/components/theme-toggle";
 import { UserMenu } from "./user-menu";
 import { useSession } from "next-auth/react";
 import { Role } from "@prisma/client";
-import { BookText, Settings } from "lucide-react";
+import { BookText, Settings, StickyNote } from "lucide-react";
 
 export function Header() {
   const { data: session } = useSession();
   const isAdmin = session?.user?.role === Role.ADMIN;
   const isModerator = session?.user?.role === Role.MODERATOR;
   const canAccessAdmin = isAdmin;
+  const isAuthenticated = !!session?.user;
 
   return (
     <header className="bg-background/95 sticky top-0 z-50 w-full border-b backdrop-blur">
@@ -35,6 +36,17 @@ export function Header() {
                 Articles
               </Link>
             </li>
+            {isAuthenticated && (
+              <li>
+                <Link
+                  href="/notes"
+                  className="hover:text-foreground flex items-center gap-2 text-sm"
+                >
+                  <StickyNote className="h-4 w-4" />
+                  My Notes
+                </Link>
+              </li>
+            )}
             {canAccessAdmin && (
               <li>
                 <Link
