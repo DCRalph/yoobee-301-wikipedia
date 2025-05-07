@@ -68,7 +68,7 @@ export function AdminDashboardContent() {
   ];
 
   return (
-    <div className="space-y-8">
+    <div className="mx-auto max-w-5xl space-y-8 p-8">
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat) => (
           <Card key={stat.title}>

@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { Role } from "@prisma/client";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { Button } from "~/components/ui/button";
 import {
   Card,
@@ -12,8 +14,9 @@ import {
   CardTitle,
   CardDescription,
 } from "~/components/ui/card";
-import { Edit, Clock, User, Calendar, History } from "lucide-react";
+import { Edit, Clock, User, Calendar, History, Plus } from "lucide-react";
 import { formatDate, formatDistanceToNow } from "~/lib/date-utils";
+import { useTheme } from "next-themes";
 
 interface WikiArticleContentProps {
   article: {
@@ -38,13 +41,14 @@ interface WikiArticleContentProps {
 }
 
 export function WikiArticleContent({ article }: WikiArticleContentProps) {
+  const { theme } = useTheme();
   const { data: session } = useSession();
   const isAdmin = session?.user?.role === Role.ADMIN;
   const isModerator = session?.user?.role === Role.MODERATOR;
   const canEdit = isAdmin || isModerator;
 
   return (
-    <div className="mx-auto max-w-4xl py-8">
+    <div className="mx-auto max-w-5xl p-8">
       <div className="mb-8 space-y-2">
         <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
           {article.title}
@@ -66,20 +70,32 @@ export function WikiArticleContent({ article }: WikiArticleContentProps) {
           </div>
         </div>
 
-        {canEdit && (
-          <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2">
+          {session?.user && (
+            <Button variant="outline" size="sm" asChild>
+              <Link href="/wiki/create">
+                <Plus className="mr-2 h-4 w-4" />
+                Create Article
+              </Link>
+            </Button>
+          )}
+          {canEdit && (
             <Button variant="outline" size="sm" asChild>
               <Link href={`/admin/articles/${article.id}`}>
                 <Edit className="mr-2 h-4 w-4" />
                 Edit Article
               </Link>
             </Button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
-      <div className="prose max-w-none">
-        <div dangerouslySetInnerHTML={{ __html: article.content }} />
+      <div
+        className={`prose prose-zinc dark:prose-invert max-w-none ${theme == "pink" ? "pink" : ""}`}
+      >
+        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+          {article.content}
+        </ReactMarkdown>
       </div>
 
       {article.revisions.length > 0 && (

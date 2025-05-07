@@ -9,7 +9,7 @@ export const metadata = {
 
 export default function ArticlesPage() {
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 mx-auto max-w-5xl p-8">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">
           Article Management

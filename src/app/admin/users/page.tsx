@@ -9,7 +9,7 @@ export const metadata = {
 
 export default function UsersPage() {
   return (
-    <div className="space-y-8">
+    <div className="mx-auto max-w-5xl p-8">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">User Management</h1>
         <p className="text-muted-foreground">View and manage user accounts.</p>

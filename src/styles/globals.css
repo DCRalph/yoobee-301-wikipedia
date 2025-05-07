@@ -1,10 +1,12 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif,
+  --font-sans:
+    var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif,
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
 
@@ -147,6 +149,14 @@
   --sidebar-accent-foreground: oklch(0.25 0.03 350);
   --sidebar-border: oklch(0.9 0.05 350);
   --sidebar-ring: oklch(0.75 0.12 350);
+
+  --tw-prose-body: oklch(0.25 0.03 350);
+  --tw-prose-headings: oklch(0.25 0.03 350);
+  --tw-prose-links: oklch(0.25 0.03 350);
+  --tw-prose-bold: oklch(0.25 0.03 350);
+  --tw-prose-italic: oklch(0.25 0.03 350);
+  --tw-prose-code: oklch(0.25 0.03 350);
+  --tw-prose-bullets: var(--color-pink-600);
 }
 
 @layer base {

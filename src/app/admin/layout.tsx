@@ -1,7 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { auth } from "~/server/auth";
 import { Role } from "@prisma/client";
-import { AdminSidebar } from "~/components/admin/admin-sidebar";
+import { AdminNav } from "~/components/admin/admin-nav";
 
 export const metadata = {
   title: "Admin Dashboard | Modern Wikipedia Clone",
@@ -26,14 +26,14 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="flex min-h-screen">
-      {/* Admin Sidebar (both mobile and desktop versions handled within component) */}
-      <AdminSidebar />
+    <div className="flex min-h-screen flex-col">
+      {/* Admin Navigation */}
+      <AdminNav />
 
       {/* Main content area */}
-      <div className="flex-1 overflow-auto">
-        <div className="container px-4 py-6 md:px-6 md:py-8">{children}</div>
-      </div>
+      <main className="w-full relative">
+        {children}
+      </main>
     </div>
   );
 }

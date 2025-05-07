@@ -1,12 +1,13 @@
 import "~/styles/globals.css";
 
 import { Inter } from "next/font/google";
-import { headers } from "next/headers";
+import NextTopLoader from "nextjs-toploader";
 
 import { TRPCReactProvider } from "~/trpc/react";
 import { ThemeProvider } from "~/components/providers/theme-provider";
 import { SessionProvider } from "~/components/providers/session-provider";
 import { RootLayout } from "~/components/layout/root-layout";
+import { ToastProvider } from "~/components/providers/toast-provider";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -19,11 +20,8 @@ export const metadata = {
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
 
-export default function Layout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function Layout({ children }: { children: React.ReactNode }) {
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`font-sans ${inter.variable}`}>
@@ -37,7 +35,10 @@ export default function Layout({
         >
           <SessionProvider>
             <TRPCReactProvider>
+              <NextTopLoader />
+
               <RootLayout>{children}</RootLayout>
+              <ToastProvider />
             </TRPCReactProvider>
           </SessionProvider>
         </ThemeProvider>

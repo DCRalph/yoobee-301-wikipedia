@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { type Article } from "@prisma/client";
 import { z } from "zod";
@@ -55,23 +55,39 @@ type ArticleWithAuthorAndRevisions = Article & {
 };
 
 interface ArticleFormProps {
-  article?: ArticleWithAuthorAndRevisions;
+  id: string;
 }
 
-export function ArticleForm({ article }: ArticleFormProps) {
+export function ArticleForm({ id }: ArticleFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const isEditing = !!article;
+  const isEditing = id !== "new";
+
+  // Get article data if editing
+  const { data: article, isLoading } = api.articles.getById.useQuery(
+    { id },
+    { enabled: isEditing },
+  );
 
   // Form state
-  const [title, setTitle] = useState(article?.title ?? "");
-  const [slug, setSlug] = useState(article?.slug ?? "");
-  const [content, setContent] = useState(article?.content ?? "");
+  const [title, setTitle] = useState("");
+  const [slug, setSlug] = useState("");
+  const [content, setContent] = useState("");
   const [summary, setSummary] = useState("");
-  const [published, setPublished] = useState(article?.published ?? false);
+  const [published, setPublished] = useState(false);
   const [activeTab, setActiveTab] = useState<string>("editor");
+
+  // Update form state when article data is loaded
+  useEffect(() => {
+    if (article) {
+      setTitle(article.title);
+      setSlug(article.slug);
+      setContent(article.content);
+      setPublished(article.published);
+    }
+  }, [article]);
 
   // Auto-generate slug from title
   const handleTitleChange = (value: string) => {
@@ -160,200 +176,246 @@ export function ArticleForm({ article }: ArticleFormProps) {
     setActiveTab("preview");
   };
 
+  // Show loading state while fetching article data
+  if (isEditing && isLoading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <p>Loading article data...</p>
+      </div>
+    );
+  }
+
+  // Show error state if article not found
+  if (isEditing && !article) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <p>Article not found</p>
+      </div>
+    );
+  }
+
   return (
-    <form onSubmit={handleSubmit}>
-      <div className="space-y-8">
-        {error && (
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Error</AlertTitle>
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
+    <div className="mx-auto max-w-5xl p-8">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">
+          {isEditing ? "Edit Article" : "Create New Article"}
+        </h1>
+        <p className="text-muted-foreground">
+          {isEditing
+            ? "Edit an existing article in your Wikipedia clone."
+            : "Create a new article for your Wikipedia clone."}
+        </p>
+      </div>
 
-        {success && (
-          <Alert className="border-green-200 bg-green-50 text-green-800">
-            <AlertTitle>Success</AlertTitle>
-            <AlertDescription>{success}</AlertDescription>
-          </Alert>
-        )}
+      <div>
+        <form onSubmit={handleSubmit}>
+          <div className="space-y-8">
+            {error && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Error</AlertTitle>
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
 
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="title">Title</Label>
-              <Input
-                id="title"
-                value={title}
-                onChange={(e) => handleTitleChange(e.target.value)}
-                placeholder="Article title"
-                required
-              />
-            </div>
+            {success && (
+              <Alert className="border-green-200 bg-green-50 text-green-800">
+                <AlertTitle>Success</AlertTitle>
+                <AlertDescription>{success}</AlertDescription>
+              </Alert>
+            )}
 
-            <div className="space-y-2">
-              <Label htmlFor="slug">Slug</Label>
-              <Input
-                id="slug"
-                value={slug}
-                onChange={(e) => setSlug(e.target.value)}
-                placeholder="article-slug"
-                required
-              />
-              <p className="text-muted-foreground text-xs">
-                This will be the URL path: /wiki/{slug ?? "article-slug"}
-              </p>
-            </div>
-          </div>
-
-          {isEditing && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Article Info</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <div>
-                  <span className="text-sm font-medium">Created by:</span>
-                  <span className="ml-2 text-sm">
-                    {article.author.name ?? "Anonymous"}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-sm font-medium">Created at:</span>
-                  <span className="ml-2 text-sm">
-                    {formatDateTime(new Date(article.createdAt))}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-sm font-medium">Last updated:</span>
-                  <span className="ml-2 text-sm">
-                    {formatDateTime(new Date(article.updatedAt))}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-sm font-medium">Status:</span>
-                  <span className="ml-2 text-sm">
-                    {article.published ? "Published" : "Draft"}
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </div>
-
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="content">Content</Label>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handlePreview}
-            >
-              <Eye className="mr-2 h-4 w-4" />
-              Preview
-            </Button>
-          </div>
-
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList>
-              <TabsTrigger value="editor">Editor</TabsTrigger>
-              <TabsTrigger value="preview">Preview</TabsTrigger>
-            </TabsList>
-            <TabsContent value="editor" className="space-y-4">
-              <Textarea
-                id="content"
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                placeholder="Article content in Markdown format"
-                className="min-h-[300px] font-mono"
-                required
-              />
-              {isEditing && (
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="summary">Edit Summary</Label>
+                  <Label htmlFor="title">Title</Label>
                   <Input
-                    id="summary"
-                    value={summary}
-                    onChange={(e) => setSummary(e.target.value)}
-                    placeholder="Briefly describe your changes"
+                    id="title"
+                    value={title}
+                    onChange={(e) => handleTitleChange(e.target.value)}
+                    placeholder="Article title"
+                    required
                   />
                 </div>
-              )}
-            </TabsContent>
-            <TabsContent value="preview">
-              <div className="prose min-h-[300px] max-w-none rounded-md border p-4">
-                {content ? (
-                  <div dangerouslySetInnerHTML={{ __html: content }} />
-                ) : (
-                  <p className="text-muted-foreground">
-                    Nothing to preview yet.
+
+                <div className="space-y-2">
+                  <Label htmlFor="slug">Slug</Label>
+                  <Input
+                    id="slug"
+                    value={slug}
+                    onChange={(e) => setSlug(e.target.value)}
+                    placeholder="article-slug"
+                    required
+                  />
+                  <p className="text-muted-foreground text-xs">
+                    This will be the URL path: /wiki/{slug ?? "article-slug"}
                   </p>
-                )}
+                </div>
               </div>
-            </TabsContent>
-          </Tabs>
-        </div>
 
-        {isEditing && article.revisions.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Revision History</CardTitle>
-              <CardDescription>
-                Previous edits made to this article
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {article.revisions.slice(0, 5).map((revision) => (
-                  <div
-                    key={revision.id}
-                    className="border-b pb-4 last:border-0 last:pb-0"
-                  >
-                    <div className="flex items-center gap-2">
-                      <div className="font-medium">
-                        {revision.editor.name ?? "Anonymous"}
-                      </div>
-                      <div className="text-muted-foreground text-sm">
-                        {formatDateTime(new Date(revision.createdAt))}
-                      </div>
+              {isEditing && article && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Article Info</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    {(() => {
+                      if (!article) return null;
+                      return (
+                        <>
+                          <div>
+                            <span className="text-sm font-medium">
+                              Created by:
+                            </span>
+                            <span className="ml-2 text-sm">
+                              {article.author?.name ?? "Anonymous"}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-sm font-medium">
+                              Created at:
+                            </span>
+                            <span className="ml-2 text-sm">
+                              {formatDateTime(new Date(article.createdAt))}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-sm font-medium">
+                              Last updated:
+                            </span>
+                            <span className="ml-2 text-sm">
+                              {formatDateTime(new Date(article.updatedAt))}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-sm font-medium">Status:</span>
+                            <span className="ml-2 text-sm">
+                              {article.published ? "Published" : "Draft"}
+                            </span>
+                          </div>
+                        </>
+                      );
+                    })()}
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="content">Content</Label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handlePreview}
+                >
+                  <Eye className="mr-2 h-4 w-4" />
+                  Preview
+                </Button>
+              </div>
+
+              <Tabs value={activeTab} onValueChange={setActiveTab}>
+                <TabsList>
+                  <TabsTrigger value="editor">Editor</TabsTrigger>
+                  <TabsTrigger value="preview">Preview</TabsTrigger>
+                </TabsList>
+                <TabsContent value="editor" className="space-y-4">
+                  <Textarea
+                    id="content"
+                    value={content}
+                    onChange={(e) => setContent(e.target.value)}
+                    placeholder="Article content in Markdown format"
+                    className="min-h-[300px] font-mono"
+                    required
+                  />
+                  {isEditing && (
+                    <div className="space-y-2">
+                      <Label htmlFor="summary">Edit Summary</Label>
+                      <Input
+                        id="summary"
+                        value={summary}
+                        onChange={(e) => setSummary(e.target.value)}
+                        placeholder="Briefly describe your changes"
+                      />
                     </div>
-                    <div className="mt-1 text-sm">
-                      {revision.summary ?? "No summary provided"}
-                    </div>
+                  )}
+                </TabsContent>
+                <TabsContent value="preview">
+                  <div className="prose min-h-[300px] max-w-none rounded-md border p-4">
+                    {content ? (
+                      <div dangerouslySetInnerHTML={{ __html: content }} />
+                    ) : (
+                      <p className="text-muted-foreground">
+                        Nothing to preview yet.
+                      </p>
+                    )}
                   </div>
-                ))}
+                </TabsContent>
+              </Tabs>
+            </div>
+
+            {isEditing && article && article.revisions.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Revision History</CardTitle>
+                  <CardDescription>
+                    Previous edits made to this article
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {article.revisions.slice(0, 5).map((revision) => (
+                      <div
+                        key={revision.id}
+                        className="border-b pb-4 last:border-0 last:pb-0"
+                      >
+                        <div className="flex items-center gap-2">
+                          <div className="font-medium">
+                            {revision.editor.name ?? "Anonymous"}
+                          </div>
+                          <div className="text-muted-foreground text-sm">
+                            {formatDateTime(new Date(revision.createdAt))}
+                          </div>
+                        </div>
+                        <div className="mt-1 text-sm">
+                          {revision.summary ?? "No summary provided"}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            <div className="flex items-center gap-4">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="published"
+                  checked={published}
+                  onCheckedChange={(checked: boolean) => setPublished(checked)}
+                />
+                <Label htmlFor="published">Published</Label>
               </div>
-            </CardContent>
-          </Card>
-        )}
 
-        <div className="flex items-center gap-4">
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="published"
-              checked={published}
-              onCheckedChange={(checked: boolean) => setPublished(checked)}
-            />
-            <Label htmlFor="published">Published</Label>
+              <div className="ml-auto">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => router.push("/admin/articles")}
+                  className="mr-2"
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={isPending}>
+                  <Save className="mr-2 h-4 w-4" />
+                  {isPending ? "Saving..." : isEditing ? "Update" : "Create"}
+                </Button>
+              </div>
+            </div>
           </div>
-
-          <div className="ml-auto">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => router.push("/admin/articles")}
-              className="mr-2"
-            >
-              Cancel
-            </Button>
-            <Button type="submit" disabled={isPending}>
-              <Save className="mr-2 h-4 w-4" />
-              {isPending ? "Saving..." : isEditing ? "Update" : "Create"}
-            </Button>
-          </div>
-        </div>
+        </form>
       </div>
-    </form>
+    </div>
   );
 }
