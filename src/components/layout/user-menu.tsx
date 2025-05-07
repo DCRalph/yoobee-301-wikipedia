@@ -81,7 +81,7 @@ export function UserMenu() {
         </DropdownMenuItem>
 
         <DropdownMenuItem asChild>
-          <Link href="/admin/articles/new">
+          <Link href="/wiki/create">
             <Plus className="mr-2 h-4 w-4" />
             Create Article
           </Link>

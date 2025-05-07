@@ -2,8 +2,10 @@ import Link from "next/link";
 import { Button } from "~/components/ui/button";
 import { RecentArticles } from "~/components/wiki/recent-articles";
 import { BookText, Edit, Search } from "lucide-react";
+import { auth } from "~/server/auth";
+export default async function Home() {
+  const session = await auth();
 
-export default function Home() {
   return (
     <div className="container mx-auto py-8">
       <section className="mb-16 py-16 text-center">
@@ -49,7 +51,9 @@ export default function Home() {
           articles.
         </p>
         <Button asChild>
-          <Link href="/api/auth/signin">Sign Up / Login</Link>
+          <Link href={session?.user ? "/wiki/create" : "/api/auth/signin"}>
+            {session?.user ? "Create Article" : "Sign Up / Login"}
+          </Link>
         </Button>
       </section>
     </div>

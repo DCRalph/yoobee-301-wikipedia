@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useSession } from "next-auth/react";
-import { Role } from "@prisma/client";
 import { Button } from "~/components/ui/button";
 import {
   Card,
@@ -40,7 +39,7 @@ interface RevisionContentProps {
 }
 
 export function RevisionContent({ revision }: RevisionContentProps) {
-  const { data: session } = useSession();
+  // const { data: session } = useSession();
   // const isAdmin = session?.user?.role === Role.ADMIN;
   // const isModerator = session?.user?.role === Role.MODERATOR;
   // const canEdit = isAdmin || isModerator;
