@@ -94,7 +94,8 @@ export function PublicArticleForm() {
         title,
         slug,
         content,
-        published: true, // Public articles are published by default
+        published: false, // Articles need approval before being published
+        needsApproval: true,
       };
 
       const validatedData = articleSchema.parse(formData);

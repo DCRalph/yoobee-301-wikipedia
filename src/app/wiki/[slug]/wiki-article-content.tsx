@@ -29,7 +29,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { Edit, Clock, User, Calendar, History, Plus, RefreshCw, Brain } from "lucide-react";
+import { Edit, Clock, User, Calendar, History, Plus, RefreshCw, Brain, AlertCircle } from "lucide-react";
 import { formatDate, formatDistanceToNow } from "~/lib/date-utils";
 import { useTheme } from "next-themes";
 import { useState } from "react";
@@ -44,6 +44,9 @@ interface WikiArticleContentProps {
     slug: string;
     createdAt: Date;
     updatedAt: Date;
+    published: boolean;
+    needsApproval: boolean;
+    approved: boolean;
     author: {
       name: string | null;
       image: string | null;
@@ -54,6 +57,7 @@ interface WikiArticleContentProps {
       editor: {
         name: string | null;
       };
+      needsApproval: boolean;
     }>;
   };
 }
@@ -147,6 +151,50 @@ export function WikiArticleContent({ article }: WikiArticleContentProps) {
           </span>
         </div>
       </div>
+
+      {!article.published && (
+        <div className="mb-4 rounded-md bg-yellow-50 p-4 dark:bg-yellow-900/20">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <AlertCircle className="h-5 w-5 text-yellow-400" />
+            </div>
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
+                {article.needsApproval
+                  ? "This article is pending approval"
+                  : !article.approved
+                    ? "This article was rejected"
+                    : "This article is not published"}
+              </h3>
+              <div className="mt-2 text-sm text-yellow-700 dark:text-yellow-300">
+                {article.needsApproval
+                  ? "An admin will review this article before it is published."
+                  : !article.approved
+                    ? "This article was reviewed and rejected by an admin."
+                    : "This article is currently in draft mode."}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {article.revisions.some(rev => rev.needsApproval) && (
+        <div className="mb-4 rounded-md bg-blue-50 p-4 dark:bg-blue-900/20">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <Clock className="h-5 w-5 text-blue-400" />
+            </div>
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                Pending Revisions
+              </h3>
+              <div className="mt-2 text-sm text-blue-700 dark:text-blue-300">
+                This article has pending revisions that are waiting for admin approval.
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="flex items-center gap-2 mb-8">
         {session?.user && (
@@ -249,7 +297,9 @@ export function WikiArticleContent({ article }: WikiArticleContentProps) {
       <div
         className={`prose prose-zinc dark:prose-invert max-w-none ${theme == "pink" ? "pink" : ""}`}
       >
-        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
+        >
           {article.content}
         </ReactMarkdown>
       </div>

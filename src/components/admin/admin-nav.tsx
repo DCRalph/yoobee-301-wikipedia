@@ -10,6 +10,7 @@ import {
   Settings,
   ChevronDown,
   Plus,
+  FileCheck,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -23,9 +24,9 @@ type NavItem = {
   name: string;
   icon: React.ElementType;
 } & (
-  | { href: string; children?: never }
-  | { href?: never; children: NavItem[] }
-);
+    | { href: string; children?: never }
+    | { href?: never; children: NavItem[] }
+  );
 
 export function AdminNav() {
   const pathname = usePathname();
@@ -65,6 +66,11 @@ export function AdminNav() {
           name: "Create New",
           href: "/admin/articles/new",
           icon: Plus,
+        },
+        {
+          name: "Approvals",
+          href: "/admin/approvals",
+          icon: FileCheck,
         },
       ],
     },

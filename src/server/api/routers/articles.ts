@@ -76,10 +76,11 @@ export const articlesRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const { limit, cursor, filterPublished } = input;
 
-      const where =
-        filterPublished !== undefined
-          ? { published: filterPublished }
-          : undefined;
+      const where = {
+        ...(filterPublished !== undefined ? { published: filterPublished } : {}),
+        approved: true,
+        needsApproval: false,
+      };
 
       const articles = await ctx.db.article.findMany({
         take: limit + 1,
@@ -151,7 +152,11 @@ export const articlesRouter = createTRPCRouter({
     .input(z.object({ slug: z.string() }))
     .query(async ({ ctx, input }) => {
       const article = await ctx.db.article.findUnique({
-        where: { slug: input.slug },
+        where: {
+          slug: input.slug,
+          approved: true,
+          needsApproval: false,
+        },
         include: {
           author: {
             select: {
@@ -163,6 +168,10 @@ export const articlesRouter = createTRPCRouter({
           revisions: {
             orderBy: { createdAt: "desc" },
             take: 10,
+            where: {
+              approved: true,
+              needsApproval: false,
+            },
             include: {
               editor: {
                 select: {
@@ -193,6 +202,7 @@ export const articlesRouter = createTRPCRouter({
         slug: z.string().min(1).max(255),
         content: z.string().min(1),
         published: z.boolean().default(false),
+        needsApproval: z.boolean().default(true),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -223,6 +233,7 @@ export const articlesRouter = createTRPCRouter({
           slug: input.slug,
           content: input.content,
           published: input.published,
+          needsApproval: input.needsApproval,
           author: {
             connect: { id: session.user.id },
           },
@@ -230,6 +241,7 @@ export const articlesRouter = createTRPCRouter({
             create: {
               content: input.content,
               summary: "Initial creation",
+              needsApproval: input.needsApproval,
               editor: {
                 connect: { id: session.user.id },
               },
@@ -248,6 +260,7 @@ export const articlesRouter = createTRPCRouter({
         content: z.string().min(1).optional(),
         published: z.boolean().optional(),
         summary: z.string().optional(),
+        needsApproval: z.boolean().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -296,14 +309,14 @@ export const articlesRouter = createTRPCRouter({
         createRevision = true;
       }
 
-      // Update the article
+      // Update the article (excluding content if it's changed)
       const article = await ctx.db.article.update({
         where: { id: input.id },
         data: {
           ...(input.title && { title: input.title }),
           ...(input.slug && { slug: input.slug }),
-          ...(input.content && { content: input.content }),
           ...(input.published !== undefined && { published: input.published }),
+          ...(input.needsApproval !== undefined && { needsApproval: input.needsApproval }),
           updatedAt: new Date(),
         },
       });
@@ -314,6 +327,8 @@ export const articlesRouter = createTRPCRouter({
           data: {
             content: input.content,
             summary: input.summary ?? "Updated content",
+            needsApproval: true,
+            approved: false,
             article: {
               connect: { id: input.id },
             },
@@ -612,5 +627,175 @@ export const articlesRouter = createTRPCRouter({
       });
 
       return { success: true };
+    }),
+
+  getPending: adminProcedure.query(async ({ ctx }) => {
+    return ctx.db.article.findMany({
+      where: {
+        needsApproval: true,
+        approved: false,
+      },
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        createdAt: true,
+        author: {
+          select: {
+            id: true,
+            name: true,
+            image: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+  }),
+
+  getPendingRevisions: adminProcedure.query(async ({ ctx }) => {
+    return ctx.db.revision.findMany({
+      where: {
+        needsApproval: true,
+        approved: false,
+      },
+      include: {
+        article: {
+          select: {
+            id: true,
+            title: true,
+            slug: true,
+          },
+        },
+        editor: {
+          select: {
+            id: true,
+            name: true,
+            image: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+  }),
+
+  approve: adminProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const { session } = ctx;
+
+      if (!session?.user?.id) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "User not authenticated",
+        });
+      }
+
+      return ctx.db.article.update({
+        where: { id: input.id },
+        data: {
+          approved: true,
+          approvedAt: new Date(),
+          approvedBy: session.user.id,
+          needsApproval: false,
+          published: true,
+        },
+      });
+    }),
+
+  reject: adminProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const { session } = ctx;
+
+      if (!session?.user?.id) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "User not authenticated",
+        });
+      }
+
+      return ctx.db.article.update({
+        where: { id: input.id },
+        data: {
+          approved: false,
+          approvedAt: new Date(),
+          approvedBy: session.user.id,
+          needsApproval: false,
+          published: false,
+        },
+      });
+    }),
+
+  approveRevision: adminProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const { session } = ctx;
+
+      if (!session?.user?.id) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "User not authenticated",
+        });
+      }
+
+      // Get the revision
+      const revision = await ctx.db.revision.findUnique({
+        where: { id: input.id },
+        include: { article: true },
+      });
+
+      if (!revision) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Revision not found",
+        });
+      }
+
+      // Update the revision
+      await ctx.db.revision.update({
+        where: { id: input.id },
+        data: {
+          approved: true,
+          approvedAt: new Date(),
+          approvedBy: session.user.id,
+          needsApproval: false,
+        },
+      });
+
+      // Update the article with the new content
+      return ctx.db.article.update({
+        where: { id: revision.articleId },
+        data: {
+          content: revision.content,
+          updatedAt: new Date(),
+        },
+      });
+    }),
+
+  rejectRevision: adminProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const { session } = ctx;
+
+      if (!session?.user?.id) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "User not authenticated",
+        });
+      }
+
+      return ctx.db.revision.update({
+        where: { id: input.id },
+        data: {
+          approved: false,
+          approvedAt: new Date(),
+          approvedBy: session.user.id,
+          needsApproval: false,
+        },
+      });
     }),
 });

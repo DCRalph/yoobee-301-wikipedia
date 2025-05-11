@@ -108,145 +108,148 @@ export function SettingsForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center">
-            <h2 className="text-2xl font-bold tracking-tight">Site Settings</h2>
+    <div className="max-w-5xl mx-auto p-8">
+
+      <form onSubmit={handleSubmit}>
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <h2 className="text-2xl font-bold tracking-tight">Site Settings</h2>
+            </div>
+          </div>
+
+          {error && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+
+          {success && (
+            <Alert className="border-green-200 bg-green-50 text-green-800">
+              <Check className="h-4 w-4" />
+              <AlertTitle>Success</AlertTitle>
+              <AlertDescription>Settings saved successfully</AlertDescription>
+            </Alert>
+          )}
+
+          <Card>
+            <CardHeader>
+              <CardTitle>General Settings</CardTitle>
+              <CardDescription>Basic information about your wiki</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="siteName">Site Name</Label>
+                <Input
+                  id="siteName"
+                  name="siteName"
+                  value={settings.siteName}
+                  onChange={handleChange}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="siteDescription">Site Description</Label>
+                <Textarea
+                  id="siteDescription"
+                  name="siteDescription"
+                  value={settings.siteDescription}
+                  onChange={handleChange}
+                  rows={3}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="footerText">Footer Text</Label>
+                <Input
+                  id="footerText"
+                  name="footerText"
+                  value={settings.footerText ?? ""}
+                  onChange={handleChange}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Content Settings</CardTitle>
+              <CardDescription>
+                Configure how content is displayed
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="featuredArticle">Featured Article</Label>
+                <Select
+                  value={settings.featuredArticleId ?? "null"}
+                  onValueChange={(value) =>
+                    handleSelectChange("featuredArticleId", value)
+                  }
+                >
+                  <SelectTrigger id="featuredArticle">
+                    <SelectValue placeholder="Select featured article" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="null">None</SelectItem>
+                    <SelectItem value="article-1">
+                      Introduction to WikiClone
+                    </SelectItem>
+                    <SelectItem value="article-2">
+                      Getting Started Guide
+                    </SelectItem>
+                    <SelectItem value="article-3">
+                      Community Guidelines
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>User Settings</CardTitle>
+              <CardDescription>
+                Configure user registration and access
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="allowPublicRegistration"
+                  checked={settings.allowPublicRegistration}
+                  onCheckedChange={() =>
+                    handleCheckboxChange("allowPublicRegistration")
+                  }
+                />
+                <Label htmlFor="allowPublicRegistration">
+                  Allow public registration
+                </Label>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="requireApproval"
+                  checked={settings.requireApproval}
+                  onCheckedChange={() => handleCheckboxChange("requireApproval")}
+                />
+                <Label htmlFor="requireApproval">
+                  Require admin approval for new accounts
+                </Label>
+              </div>
+            </CardContent>
+          </Card>
+
+          <div className="flex justify-end">
+            <Button type="submit" disabled={isSaving}>
+              {isSaving ? "Saving..." : "Save Settings"}
+            </Button>
           </div>
         </div>
-
-        {error && (
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Error</AlertTitle>
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
-
-        {success && (
-          <Alert className="border-green-200 bg-green-50 text-green-800">
-            <Check className="h-4 w-4" />
-            <AlertTitle>Success</AlertTitle>
-            <AlertDescription>Settings saved successfully</AlertDescription>
-          </Alert>
-        )}
-
-        <Card>
-          <CardHeader>
-            <CardTitle>General Settings</CardTitle>
-            <CardDescription>Basic information about your wiki</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="siteName">Site Name</Label>
-              <Input
-                id="siteName"
-                name="siteName"
-                value={settings.siteName}
-                onChange={handleChange}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="siteDescription">Site Description</Label>
-              <Textarea
-                id="siteDescription"
-                name="siteDescription"
-                value={settings.siteDescription}
-                onChange={handleChange}
-                rows={3}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="footerText">Footer Text</Label>
-              <Input
-                id="footerText"
-                name="footerText"
-                value={settings.footerText ?? ""}
-                onChange={handleChange}
-              />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Content Settings</CardTitle>
-            <CardDescription>
-              Configure how content is displayed
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="featuredArticle">Featured Article</Label>
-              <Select
-                value={settings.featuredArticleId ?? "null"}
-                onValueChange={(value) =>
-                  handleSelectChange("featuredArticleId", value)
-                }
-              >
-                <SelectTrigger id="featuredArticle">
-                  <SelectValue placeholder="Select featured article" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="null">None</SelectItem>
-                  <SelectItem value="article-1">
-                    Introduction to WikiClone
-                  </SelectItem>
-                  <SelectItem value="article-2">
-                    Getting Started Guide
-                  </SelectItem>
-                  <SelectItem value="article-3">
-                    Community Guidelines
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>User Settings</CardTitle>
-            <CardDescription>
-              Configure user registration and access
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="allowPublicRegistration"
-                checked={settings.allowPublicRegistration}
-                onCheckedChange={() =>
-                  handleCheckboxChange("allowPublicRegistration")
-                }
-              />
-              <Label htmlFor="allowPublicRegistration">
-                Allow public registration
-              </Label>
-            </div>
-
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="requireApproval"
-                checked={settings.requireApproval}
-                onCheckedChange={() => handleCheckboxChange("requireApproval")}
-              />
-              <Label htmlFor="requireApproval">
-                Require admin approval for new accounts
-              </Label>
-            </div>
-          </CardContent>
-        </Card>
-
-        <div className="flex justify-end">
-          <Button type="submit" disabled={isSaving}>
-            {isSaving ? "Saving..." : "Save Settings"}
-          </Button>
-        </div>
-      </div>
-    </form>
+      </form>
+    </div>
   );
 }

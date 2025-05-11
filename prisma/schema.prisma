@@ -80,6 +80,8 @@ model User {
   articles      Article[]    @relation("authorArticles")
   revisions     Revision[]   @relation("editorRevisions")
   notes         Note[]       @relation("userNotes")
+  approvedArticles Article[] @relation("approvedArticles")
+  approvedRevisions Revision[] @relation("approvedRevisions")
 }
 
 /// The Article model represents a Wikipedia-like article.
@@ -91,6 +93,11 @@ model Article {
   published   Boolean     @default(false)
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
+  needsApproval Boolean   @default(true)
+  approved    Boolean     @default(false)
+  approvedAt  DateTime?
+  approvedBy  String?
+  approver    User?       @relation("approvedArticles", fields: [approvedBy], references: [id])
 
   // The user who originally authored/created the article.
   authorId    String
@@ -111,6 +118,11 @@ model Revision {
   content     String      
   summary     String?
   createdAt   DateTime    @default(now())
+  needsApproval Boolean   @default(true)
+  approved    Boolean     @default(false)
+  approvedAt  DateTime?
+  approvedBy  String?
+  approver    User?       @relation("approvedRevisions", fields: [approvedBy], references: [id])
 
   article     Article     @relation(fields: [articleId], references: [id])
   // Editor is the user who performed the edit.
