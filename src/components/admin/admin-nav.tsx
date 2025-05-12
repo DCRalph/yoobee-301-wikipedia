@@ -11,6 +11,7 @@ import {
   ChevronDown,
   Plus,
   FileCheck,
+  History,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -66,6 +67,11 @@ export function AdminNav() {
           name: "Approvals",
           href: "/admin/approvals",
           icon: FileCheck,
+        },
+        {
+          name: "Revisions",
+          href: "/admin/revisions",
+          icon: History,
         },
       ],
     },

@@ -17,6 +17,13 @@ import {
 import { Alert, AlertTitle, AlertDescription } from "~/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "~/components/ui/dialog";
+import {
   AlertCircle,
   ArrowLeft,
   FileText,
@@ -61,13 +68,11 @@ export function EditArticleContent({ article }: EditArticleContentProps) {
   const [error, setError] = useState<string | null>(null);
   const [content, setContent] = useState(article.content);
   const [activeTab, setActiveTab] = useState<string>("editor");
+  const [aiDialog, setAiDialog] = useState(false);
+  const [aiMessage, setAiMessage] = useState<string | null>(null);
 
   // Create revision mutation
   const createRevision = api.user.articles.createRevision.useMutation({
-    onSuccess: () => {
-      router.push(`/wiki/${article.slug}`);
-      router.refresh();
-    },
     onError: (error) => {
       setError(`Failed to submit changes: ${error.message}`);
     },
@@ -78,10 +83,6 @@ export function EditArticleContent({ article }: EditArticleContentProps) {
     e.preventDefault();
     setError(null);
 
-    // if (content.trim().length < 100) {
-    //   setError("Content must be at least 100 characters");
-    //   return;
-    // }
 
     // Don't submit if content hasn't changed
     if (content === article.content) {
@@ -89,7 +90,7 @@ export function EditArticleContent({ article }: EditArticleContentProps) {
       return;
     }
 
-    await handleTRPCMutation(
+    const result = await handleTRPCMutation(
       () =>
         createRevision.mutateAsync({
           articleId: article.id,
@@ -98,10 +99,45 @@ export function EditArticleContent({ article }: EditArticleContentProps) {
       "Your changes have been submitted for review",
       "Failed to submit changes",
     );
+
+    // Check if AI has flagged the content and show dialog if needed
+    if (result.result?.checkedByAi) {
+      setAiMessage(result.result.aiMessage ?? "AI has reviewed your submission and found potential issues.");
+      setAiDialog(true);
+    } else {
+      router.push(`/wiki/${article.slug}`);
+      router.refresh();
+    }
   };
 
   return (
     <div className="mx-auto max-w-5xl p-8">
+      <Dialog open={aiDialog} onOpenChange={setAiDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>AI Content Check</DialogTitle>
+            <DialogDescription>
+              The AI has reviewed your submission and found the following:
+            </DialogDescription>
+          </DialogHeader>
+          <div className="prose dark:prose-invert max-w-none py-4">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>{aiMessage}</ReactMarkdown>
+          </div>
+          <div className="flex justify-end gap-3 pt-2">
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setAiDialog(false);
+                router.push(`/wiki/${article.slug}`);
+                router.refresh();
+              }}
+            >
+              Acknowledge and Continue
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <div className="mb-6 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Button variant="outline" size="sm" asChild>
@@ -185,9 +221,8 @@ export function EditArticleContent({ article }: EditArticleContentProps) {
 
         <TabsContent value="preview" className="mt-0">
           <div
-            className={`prose prose-zinc dark:prose-invert min-h-[500px] max-w-none rounded-md border p-4 ${
-              theme == "pink" ? "pink" : ""
-            }`}
+            className={`prose prose-zinc dark:prose-invert min-h-[500px] max-w-none rounded-md border p-4 ${theme == "pink" ? "pink" : ""
+              }`}
           >
             <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
           </div>

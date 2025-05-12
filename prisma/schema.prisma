@@ -125,7 +125,8 @@ model Revision {
   approvedBy  String?
   approver    User?       @relation("approvedRevisions", fields: [approvedBy], references: [id])
 
-  approvedByAi Boolean @default(false)
+  checkedByAi Boolean @default(false)
+  aiMessage String?
 
   article     Article     @relation(fields: [articleId], references: [id])
   // Editor is the user who performed the edit.
