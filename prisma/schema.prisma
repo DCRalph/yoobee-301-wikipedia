@@ -143,3 +143,12 @@ model Note {
   userId      String
   user        User        @relation("userNotes", fields: [userId], references: [id])
 }
+
+/// The Setting model stores site-wide configuration settings
+model Setting {
+  id               String    @id @default(cuid())
+  allowRegistration Boolean  @default(true)
+  allowArticleCreation Boolean @default(true)
+  enableAIFeatures Boolean @default(false)
+  updatedAt        DateTime  @updatedAt
+}

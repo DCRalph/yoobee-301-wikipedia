@@ -7,7 +7,6 @@ import { TRPCReactProvider } from "~/trpc/react";
 import { ThemeProvider } from "~/components/providers/theme-provider";
 import { SessionProvider } from "~/components/providers/session-provider";
 import { ToastProvider } from "~/components/providers/toast-provider";
-import { Header } from "~/components/layout/header";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -20,8 +19,11 @@ export const metadata = {
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
 
-export default function Layout({ children }: { children: React.ReactNode }) {
-
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`font-sans ${inter.variable}`}>
@@ -36,12 +38,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <SessionProvider>
             <TRPCReactProvider>
               <NextTopLoader />
-
-              <div className="flex min-h-screen flex-col">
-                <Header />
-                <main className="relative w-full">{children}</main>
-              </div>
-
+              {children}
               <ToastProvider />
             </TRPCReactProvider>
           </SessionProvider>

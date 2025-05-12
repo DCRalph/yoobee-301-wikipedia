@@ -18,7 +18,7 @@ export function RecentArticles() {
   const [mounted, setMounted] = useState(false);
 
   // Get published articles only
-  const { data, isLoading } = api.articles.getAll.useQuery(
+  const { data, isLoading } = api.user.articles.getAll.useQuery(
     { filterPublished: true, limit: 6 },
     { enabled: mounted },
   );

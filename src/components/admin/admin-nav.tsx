@@ -24,9 +24,9 @@ type NavItem = {
   name: string;
   icon: React.ElementType;
 } & (
-    | { href: string; children?: never }
-    | { href?: never; children: NavItem[] }
-  );
+  | { href: string; children?: never }
+  | { href?: never; children: NavItem[] }
+);
 
 export function AdminNav() {
   const pathname = usePathname();
@@ -63,11 +63,6 @@ export function AdminNav() {
           icon: FileText,
         },
         {
-          name: "Create New",
-          href: "/admin/articles/new",
-          icon: Plus,
-        },
-        {
           name: "Approvals",
           href: "/admin/approvals",
           icon: FileCheck,
@@ -87,7 +82,12 @@ export function AdminNav() {
       if (item.href === "/admin") {
         return pathname === "/admin";
       }
-      return pathname.startsWith(`${item.href}/`) || pathname === item.href;
+      // Check for exact match first, then for parent routes but only if not a specific subpage
+      return (
+        pathname === item.href ||
+        (pathname.startsWith(`${item.href}/`) &&
+          !/\/(new|edit|[0-9a-f-]+)$/.test(pathname))
+      );
     }
 
     // Check if any child items are active
@@ -96,7 +96,7 @@ export function AdminNav() {
         if (child.href === "/admin") {
           return pathname === "/admin";
         }
-        return pathname.startsWith(`${child.href}/`) || pathname === child.href;
+        return pathname === child.href;
       });
     }
 
@@ -111,23 +111,27 @@ export function AdminNav() {
             <Button
               variant="ghost"
               className={cn(
-                "flex items-center gap-2",
-                isNavItemActive(item) && "bg-muted",
+                "flex h-10 items-center gap-2 px-4 transition-colors",
+                isNavItemActive(item)
+                  ? "bg-primary/10 text-primary"
+                  : "hover:bg-muted/80",
               )}
             >
               <item.icon className="h-4 w-4" />
               <span>{item.name}</span>
-              <ChevronDown className="h-4 w-4" />
+              <ChevronDown className="h-4 w-4 transition-transform duration-200 group-data-[state=open]:rotate-180" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="start">
+          <DropdownMenuContent align="center" className="w-48 p-1">
             {item.children.map((child) => (
-              <DropdownMenuItem key={child.href} asChild>
+              <DropdownMenuItem key={child.href} asChild className="p-0">
                 <Link
                   href={child.href!}
                   className={cn(
-                    "flex items-center gap-2",
-                    isNavItemActive(child) && "bg-muted",
+                    "flex w-full items-center gap-2 rounded-sm px-3 py-2 transition-colors",
+                    isNavItemActive(child)
+                      ? "bg-primary/10 text-primary"
+                      : "hover:bg-muted",
                   )}
                 >
                   <child.icon className="h-4 w-4" />
@@ -146,11 +150,13 @@ export function AdminNav() {
         variant="ghost"
         asChild
         className={cn(
-          "flex items-center gap-2",
-          isNavItemActive(item) && "bg-muted",
+          "h-10 px-4 transition-colors",
+          isNavItemActive(item)
+            ? "bg-primary/10 text-primary"
+            : "hover:bg-muted/80",
         )}
       >
-        <Link href={item.href}>
+        <Link href={item.href} className="flex items-center gap-2">
           <item.icon className="h-4 w-4" />
           <span>{item.name}</span>
         </Link>
@@ -159,9 +165,9 @@ export function AdminNav() {
   };
 
   return (
-    <nav className="bg-card border-b">
-      <div className="container flex h-14 items-center justify-center px-4">
-        <div className="flex items-center space-x-4">
+    <nav className="bg-card sticky top-0 z-10 border-b shadow-sm">
+      <div className="container flex h-16 max-w-screen-xl items-center justify-center px-4">
+        <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4">
           {navItems.map((item) => renderNavItem(item))}
         </div>
       </div>

@@ -40,7 +40,6 @@ export const authConfig = {
     CredentialsProvider({
       name: "Credentials",
 
-
       credentials: {
         email: { label: "email", type: "email", placeholder: "email" },
         password: { label: "Password", type: "password" },
@@ -120,16 +119,23 @@ export const authConfig = {
         // password: undefined,
       },
     }),
-    // set first name and last name to the session
+    // Check if registration is allowed
     async signIn({ user }) {
-      const PUser = await db.user.findUnique({
+      // If user already exists, allow sign in
+      const existingUser = await db.user.findUnique({
         where: {
           id: user.id,
         },
       });
 
-      if (!PUser) {
+      if (existingUser) {
         return true;
+      }
+
+      // For new users, check if registration is allowed
+      const settings = await db.setting.findFirst();
+      if (settings && !settings.allowRegistration) {
+        return false; // Registration is disabled, reject sign in
       }
 
       return true;
