@@ -53,6 +53,7 @@ export function CompareContent({ comparison }: CompareContentProps) {
     oldRevision.content,
     currentRevision.content,
   );
+  console.log(JSON.stringify(diffResult.changes, null, 2));
   const isDarkMode = resolvedTheme === "dark";
 
   return (

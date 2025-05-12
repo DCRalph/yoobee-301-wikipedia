@@ -5,7 +5,8 @@ import { ThemeToggle } from "~/components/theme-toggle";
 import { UserMenu } from "./user-menu";
 import { useSession } from "next-auth/react";
 import { Role } from "@prisma/client";
-import { BookText, Settings, StickyNote } from "lucide-react";
+import { BookText, Settings, StickyNote, Brain } from "lucide-react";
+import { api } from "~/trpc/react";
 
 export function Header() {
   const { data: session } = useSession();
@@ -13,6 +14,10 @@ export function Header() {
   // const isModerator = session?.user?.role === Role.MODERATOR;
   const canAccessAdmin = isAdmin;
   const isAuthenticated = !!session?.user;
+
+  // Fetch public settings to check if AI features are enabled
+  const { data: settings } = api.admin.settings.getPublic.useQuery();
+  const showAIFeatures = settings?.enableAIFeatures;
 
   return (
     <header className="bg-background/95 sticky top-0 z-50 w-full border-b backdrop-blur">
@@ -44,6 +49,17 @@ export function Header() {
                 >
                   <StickyNote className="h-4 w-4" />
                   My Notes
+                </Link>
+              </li>
+            )}
+            {showAIFeatures && (
+              <li>
+                <Link
+                  href="/testing"
+                  className="hover:text-foreground flex items-center gap-2 text-sm"
+                >
+                  <Brain className="h-4 w-4" />
+                  AI Testing
                 </Link>
               </li>
             )}
