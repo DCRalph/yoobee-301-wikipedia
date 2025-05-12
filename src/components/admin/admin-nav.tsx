@@ -24,9 +24,9 @@ type NavItem = {
   name: string;
   icon: React.ElementType;
 } & (
-  | { href: string; children?: never }
-  | { href?: never; children: NavItem[] }
-);
+    | { href: string; children?: never }
+    | { href?: never; children: NavItem[] }
+  );
 
 export function AdminNav() {
   const pathname = usePathname();
@@ -166,7 +166,7 @@ export function AdminNav() {
 
   return (
     <nav className="bg-card sticky top-0 z-10 border-b shadow-sm">
-      <div className="container flex h-16 max-w-screen-xl items-center justify-center px-4">
+      <div className=" flex h-16 items-center justify-center px-4">
         <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4">
           {navItems.map((item) => renderNavItem(item))}
         </div>
