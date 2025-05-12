@@ -7,7 +7,7 @@ import { BookText, Edit, Search } from "lucide-react";
 export default function Home() {
 
   return (
-    <div className="container mx-auto py-8">
+    <div className="container mx-auto py-8 px-8">
       <section className="mb-16 py-16 text-center">
         <h1 className="mb-4 text-4xl font-bold tracking-tight md:text-5xl">
           Modern Wikipedia Clone

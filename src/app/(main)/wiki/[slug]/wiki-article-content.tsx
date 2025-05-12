@@ -146,7 +146,7 @@ export function WikiArticleContent({
         </div>
       )}
 
-      <div className="mb-8 flex items-center gap-2">
+      <div className="mb-8 flex items-center gap-2 overflow-x-auto">
         {session?.user && (
           <>
             <Button variant="outline" size="sm" asChild>

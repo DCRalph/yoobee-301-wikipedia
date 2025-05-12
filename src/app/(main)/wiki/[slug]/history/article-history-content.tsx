@@ -51,6 +51,17 @@ export function ArticleHistoryContent({ article }: ArticleHistoryContentProps) {
 
   return (
     <div className="mx-auto max-w-5xl space-y-6 p-8">
+      <div className="mx-auto max-w-4xl">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold tracking-tight">
+            Revision History
+          </h1>
+          <p className="text-muted-foreground">
+            All changes made to{" "}
+            <span className="font-medium">{article.title}</span>
+          </p>
+        </div>
+      </div>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Button variant="outline" size="sm" className="mr-2" asChild>

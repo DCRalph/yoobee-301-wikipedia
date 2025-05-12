@@ -35,23 +35,7 @@ export default async function ArticleHistoryPage({
       return notFound();
     }
 
-    return (
-      <div className="container mx-auto py-8">
-        <div className="mx-auto max-w-4xl">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold tracking-tight">
-              Revision History
-            </h1>
-            <p className="text-muted-foreground">
-              All changes made to{" "}
-              <span className="font-medium">{article.title}</span>
-            </p>
-          </div>
-
-          <ArticleHistoryContent article={article} />
-        </div>
-      </div>
-    );
+    return <ArticleHistoryContent article={article} />;
   } catch {
     return notFound();
   }
