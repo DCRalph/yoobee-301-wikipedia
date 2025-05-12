@@ -105,8 +105,8 @@ export const userArticlesRouter = createTRPCRouter({
   create: protectedProcedure
     .input(
       z.object({
-        title: z.string().min(5).max(100),
-        content: z.string().min(100),
+        title: z.string().min(1).max(100),
+        content: z.string().min(1),
         slug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
         published: z.boolean().default(false),
       }),
@@ -330,7 +330,7 @@ export const userArticlesRouter = createTRPCRouter({
     .input(
       z.object({
         articleId: z.string(),
-        content: z.string().min(100),
+        content: z.string().min(1),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -368,4 +368,53 @@ export const userArticlesRouter = createTRPCRouter({
 
       return revision;
     }),
+
+  getPendingReview: protectedProcedure.query(async ({ ctx }) => {
+    const articles = await ctx.db.article.findMany({
+      where: {
+        authorId: ctx.session.user.id,
+        needsApproval: true,
+      },
+      orderBy: { updatedAt: "desc" },
+      include: {
+        author: {
+          select: {
+            id: true,
+            name: true,
+            image: true,
+          },
+        },
+      },
+    });
+
+    // Also get any pending revisions by this user
+    const revisions = await ctx.db.revision.findMany({
+      where: {
+        editorId: ctx.session.user.id,
+        needsApproval: true,
+      },
+      orderBy: { createdAt: "desc" },
+      include: {
+        article: {
+          select: {
+            id: true,
+            title: true,
+            slug: true,
+          },
+        },
+        editor: {
+          select: {
+            id: true,
+            name: true,
+            image: true,
+          },
+        },
+      },
+    });
+
+    return {
+      articles,
+      revisions,
+    };
+  }),
 });

@@ -5,7 +5,14 @@ import { api } from "~/trpc/react";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { formatDistanceToNow } from "~/lib/date-utils";
-import { Search, User, Clock, FilePlus, BookOpen } from "lucide-react";
+import {
+  Search,
+  User,
+  Clock,
+  FilePlus,
+  BookOpen,
+  ClipboardList,
+} from "lucide-react";
 import { useSession } from "next-auth/react";
 import { type RouterOutputs } from "~/trpc/react";
 
@@ -59,12 +66,20 @@ export function WikiArticleList() {
           <h2 className="text-2xl font-bold tracking-tight">Wiki Articles</h2>
         </div>
         {session?.user && (
-          <Button asChild>
-            <Link href="/wiki/create">
-              <FilePlus className="mr-2 h-4 w-4" />
-              Create Article
-            </Link>
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" asChild>
+              <Link href="/wiki/pending">
+                <ClipboardList className="mr-2 h-4 w-4" />
+                Your Pending Items
+              </Link>
+            </Button>
+            <Button asChild>
+              <Link href="/wiki/create">
+                <FilePlus className="mr-2 h-4 w-4" />
+                Create Article
+              </Link>
+            </Button>
+          </div>
         )}
       </div>
 

@@ -70,9 +70,9 @@ export function PublicArticleForm() {
   // Create mutation
   const createMutation = api.user.articles.create.useMutation({
     onSuccess: () => {
-      setSuccess("Article created successfully");
+      setSuccess("Article submitted for review successfully");
       setTimeout(() => {
-        router.push("/wiki");
+        router.push("/wiki/pending");
       }, 2000);
     },
     onError: (error) => {
@@ -138,7 +138,7 @@ export function PublicArticleForm() {
               </Link>
             </Button>
             <h2 className="text-2xl font-bold tracking-tight">
-              Create Article
+              Submit Article
             </h2>
           </div>
         </div>
@@ -177,7 +177,7 @@ export function PublicArticleForm() {
               </Link>
             </Button>
             <h2 className="text-2xl font-bold tracking-tight">
-              Create Article
+              Submit Article
             </h2>
           </div>
         </div>
@@ -215,7 +215,7 @@ export function PublicArticleForm() {
             </Link>
           </Button>
           <h2 className="text-2xl font-bold tracking-tight">
-            Create New Article
+            Submit Article for Review
           </h2>
         </div>
       </div>
@@ -233,7 +233,17 @@ export function PublicArticleForm() {
           {success && (
             <Alert className="border-green-200 bg-green-50 text-green-800">
               <AlertTitle>Success</AlertTitle>
-              <AlertDescription>{success}</AlertDescription>
+              <AlertDescription className="flex flex-col gap-2">
+                <p>{success}</p>
+                <p className="text-sm">
+                  You will be redirected to your pending contributions in a
+                  moment. Or you can{" "}
+                  <Link href="/wiki/pending" className="font-medium underline">
+                    view your pending articles now
+                  </Link>
+                  .
+                </p>
+              </AlertDescription>
             </Alert>
           )}
 
@@ -340,7 +350,7 @@ export function PublicArticleForm() {
             <CardFooter className="flex justify-end">
               <Button type="submit" disabled={isPending}>
                 <Plus className="mr-2 h-4 w-4" />
-                {isPending ? "Creating..." : "Create Article"}
+                {isPending ? "Submitting..." : "Submit for Review"}
               </Button>
             </CardFooter>
           </Card>

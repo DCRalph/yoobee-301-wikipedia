@@ -78,10 +78,10 @@ export function EditArticleContent({ article }: EditArticleContentProps) {
     e.preventDefault();
     setError(null);
 
-    if (content.trim().length < 100) {
-      setError("Content must be at least 100 characters");
-      return;
-    }
+    // if (content.trim().length < 100) {
+    //   setError("Content must be at least 100 characters");
+    //   return;
+    // }
 
     // Don't submit if content hasn't changed
     if (content === article.content) {
