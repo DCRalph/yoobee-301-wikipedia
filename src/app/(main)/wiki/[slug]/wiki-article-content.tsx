@@ -31,9 +31,13 @@ import type { RouterOutputs } from "~/trpc/react";
 
 interface WikiArticleContentProps {
   article: RouterOutputs["user"]["articles"]["getBySlug"];
+  UseAi: boolean;
 }
 
-export function WikiArticleContent({ article }: WikiArticleContentProps) {
+export function WikiArticleContent({
+  article,
+  UseAi,
+}: WikiArticleContentProps) {
   const { resolvedTheme } = useTheme();
   const { data: session } = useSession();
   const isAdmin = session?.user?.role === Role.ADMIN;
@@ -47,6 +51,25 @@ export function WikiArticleContent({ article }: WikiArticleContentProps) {
 
   return (
     <div className="mx-auto max-w-5xl p-8">
+      {!UseAi && (
+        <div className="mb-4 rounded-md bg-purple-50 p-4 dark:bg-purple-900/20">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <AlertCircle className="h-5 w-5 text-purple-400" />
+            </div>
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-purple-800 dark:text-purple-200">
+                AI Features Disabled
+              </h3>
+              <div className="mt-2 text-sm text-purple-700 dark:text-purple-300">
+                AI features are currently disabled because I&apos;m balling like
+                that.
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="mb-4 flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
           {article.title}

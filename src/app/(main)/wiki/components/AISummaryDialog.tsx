@@ -25,6 +25,7 @@ import {
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+import { ScrollArea } from "~/components/ui/scroll-area";
 
 interface AISummaryDialogProps {
   articleId: string;
@@ -147,11 +148,13 @@ export function AISummaryDialog({
             <div className="space-y-6">
               <Card className="border-primary/20">
                 <CardContent className="pt-6">
-                  <div
-                    className={`prose prose-zinc dark:prose-invert max-w-none ${isPinkTheme ? "pink" : ""}`}
-                  >
-                    <ReactMarkdown>{summary}</ReactMarkdown>
-                  </div>
+                  <ScrollArea className="max-h-[50vh] overflow-y-auto">
+                    <div
+                      className={`prose prose-zinc  dark:prose-invert max-w-none ${isPinkTheme ? "pink" : ""}`}
+                    >
+                      <ReactMarkdown>{summary}</ReactMarkdown>
+                    </div>
+                  </ScrollArea>
                 </CardContent>
               </Card>
 

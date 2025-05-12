@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { api } from "~/trpc/server";
 import { WikiArticleContent } from "./wiki-article-content";
+import { db } from "~/server/db";
 
 export async function generateMetadata({
   params,
@@ -32,12 +33,19 @@ export default async function WikiArticlePage({
     // Try to fetch the article by slug
     const article = await api.user.articles.getBySlug({ slug });
 
+    let UseAi = false;
+    const setting = await db.setting.findFirst();
+
+    if (setting?.enableAIFeatures) {
+      UseAi = true;
+    }
+
     // If the article is not published and the user is not authenticated, show 404
     if (!article.published) {
       return notFound();
     }
 
-    return <WikiArticleContent article={article} />;
+    return <WikiArticleContent article={article} UseAi={UseAi} />;
   } catch {
     return notFound();
   }
