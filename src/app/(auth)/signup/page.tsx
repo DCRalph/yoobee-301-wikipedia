@@ -7,7 +7,6 @@ import { MdEmail, MdPerson, MdPhone } from "react-icons/md";
 import { RiLockPasswordLine } from "react-icons/ri";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
-import Image from "next/image";
 import { z } from "zod";
 
 const signupRequestSchema = z.object({

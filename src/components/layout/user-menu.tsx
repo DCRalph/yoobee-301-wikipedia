@@ -3,7 +3,15 @@
 import Link from "next/link";
 import { signIn, signOut, useSession } from "next-auth/react";
 import { Role } from "@prisma/client";
-import { User, LogOut, Settings, BookText, Plus, LogIn } from "lucide-react";
+import {
+  User,
+  LogOut,
+  Settings,
+  BookText,
+  Plus,
+  LogIn,
+  UserCog,
+} from "lucide-react";
 
 import { Button } from "~/components/ui/button";
 import {
@@ -72,6 +80,13 @@ export function UserMenu() {
         </DropdownMenuLabel>
 
         <DropdownMenuSeparator />
+
+        <DropdownMenuItem asChild>
+          <Link href="/account">
+            <UserCog className="mr-2 h-4 w-4" />
+            Your Account
+          </Link>
+        </DropdownMenuItem>
 
         <DropdownMenuItem asChild>
           <Link href="/wiki">

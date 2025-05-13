@@ -102,7 +102,7 @@ export function EditArticleContent({ article }: EditArticleContentProps) {
     // Check if AI has flagged the content and show dialog if needed
     if (result.result?.checkedByAi) {
       if (result.result.aiMessage) {
-        setAiMessage(result.result.aiMessage as string);
+        setAiMessage(result.result.aiMessage);
       } else {
         setAiMessage(
           "AI has reviewed your submission and found potential issues.",

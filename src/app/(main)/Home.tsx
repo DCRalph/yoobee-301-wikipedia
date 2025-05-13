@@ -3,11 +3,15 @@
 import Link from "next/link";
 import { Button } from "~/components/ui/button";
 import { RecentArticles } from "~/components/wiki/recent-articles";
-import { BookText, Edit, Search } from "lucide-react";
+import { BookText, Edit, Search, UserCog } from "lucide-react";
+import { useSession } from "next-auth/react";
+
 export default function Home() {
+  const { data: session } = useSession();
+  const isAuthenticated = !!session?.user;
 
   return (
-    <div className="container mx-auto py-8 px-8">
+    <div className="container mx-auto px-8 py-8">
       <section className="mb-16 py-16 text-center">
         <h1 className="mb-4 text-4xl font-bold tracking-tight md:text-5xl">
           Modern Wikipedia Clone
@@ -28,6 +32,14 @@ export default function Home() {
               Create Article
             </Link>
           </Button>
+          {isAuthenticated && (
+            <Button size="lg" variant="outline" asChild>
+              <Link href="/account">
+                <UserCog className="mr-2 h-5 w-5" />
+                Manage Account
+              </Link>
+            </Button>
+          )}
         </div>
       </section>
 

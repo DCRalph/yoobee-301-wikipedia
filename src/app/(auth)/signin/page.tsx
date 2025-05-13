@@ -8,7 +8,6 @@ import { Input } from "~/components/ui/input";
 import { MdEmail } from "react-icons/md";
 import { RiLockPasswordLine } from "react-icons/ri";
 import { redirect, useSearchParams, useRouter } from "next/navigation";
-import Image from "next/image";
 
 function SignInContent() {
   const [isLoading, setIsLoading] = useState(false);
