@@ -168,6 +168,12 @@
   }
 }
 
+@custom-variant pink {
+  &:where(.pink *) {
+    @slot;
+  }
+}
+
 .hello {
   background-color: red;
 }
