@@ -28,9 +28,9 @@ declare module "next-auth" {
  */
 export const authConfig = {
   trustHost: true,
-  // pages: {
-  //   signIn: "/signin",
-  // },
+  pages: {
+    signIn: "/signin",
+  },
   providers: [
     GoogleProvider({
       clientId: env.GOOGLE_CLIENT_ID,

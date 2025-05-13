@@ -83,7 +83,6 @@ export function EditArticleContent({ article }: EditArticleContentProps) {
     e.preventDefault();
     setError(null);
 
-
     // Don't submit if content hasn't changed
     if (content === article.content) {
       toast.info("No changes detected");
@@ -102,7 +101,13 @@ export function EditArticleContent({ article }: EditArticleContentProps) {
 
     // Check if AI has flagged the content and show dialog if needed
     if (result.result?.checkedByAi) {
-      setAiMessage(result.result.aiMessage ?? "AI has reviewed your submission and found potential issues.");
+      if (result.result.aiMessage) {
+        setAiMessage(result.result.aiMessage as string);
+      } else {
+        setAiMessage(
+          "AI has reviewed your submission and found potential issues.",
+        );
+      }
       setAiDialog(true);
     } else {
       router.push(`/wiki/${article.slug}`);
@@ -121,7 +126,9 @@ export function EditArticleContent({ article }: EditArticleContentProps) {
             </DialogDescription>
           </DialogHeader>
           <div className="prose dark:prose-invert max-w-none py-4">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>{aiMessage}</ReactMarkdown>
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              {aiMessage}
+            </ReactMarkdown>
           </div>
           <div className="flex justify-end gap-3 pt-2">
             <Button
@@ -221,8 +228,9 @@ export function EditArticleContent({ article }: EditArticleContentProps) {
 
         <TabsContent value="preview" className="mt-0">
           <div
-            className={`prose prose-zinc dark:prose-invert min-h-[500px] max-w-none rounded-md border p-4 ${theme == "pink" ? "pink" : ""
-              }`}
+            className={`prose prose-zinc dark:prose-invert min-h-[500px] max-w-none rounded-md border p-4 ${
+              theme == "pink" ? "pink" : ""
+            }`}
           >
             <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
           </div>
