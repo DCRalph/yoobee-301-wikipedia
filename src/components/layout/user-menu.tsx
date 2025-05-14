@@ -67,7 +67,7 @@ export function UserMenu() {
         </Button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent align="end" className="bg-[#2E1503]/80 backdrop-blur-lg">
         <DropdownMenuLabel>
           <div className="flex flex-col">
             <span>{session.user?.name ?? "User"}</span>

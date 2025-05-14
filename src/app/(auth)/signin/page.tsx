@@ -8,7 +8,6 @@ import { Input } from "~/components/ui/input";
 import { MdEmail } from "react-icons/md";
 import { RiLockPasswordLine } from "react-icons/ri";
 import { useRouter } from "next/navigation";
-import { ThemeToggle } from "~/components/theme-toggle";
 
 function getErrorMessage(error: string | null, code: string | null) {
   if (!error) return null;
@@ -183,10 +182,6 @@ export default function SignInPage({
               Redirecting to {redirectUrl}
             </p>
           )}
-
-          <div className="absolute top-6 right-6 flex justify-center">
-            <ThemeToggle />
-          </div>
         </div>
       </div>
     </div>

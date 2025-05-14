@@ -8,7 +8,6 @@ import { RiLockPasswordLine } from "react-icons/ri";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { z } from "zod";
-import { ThemeToggle } from "~/components/theme-toggle";
 
 const signupRequestSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }),
@@ -224,10 +223,6 @@ export default function SignUpPage({
               Sign in
             </a>
           </p>
-
-          <div className="absolute top-6 right-6 flex justify-center">
-            <ThemeToggle />
-          </div>
         </div>
       </div>
     </div>

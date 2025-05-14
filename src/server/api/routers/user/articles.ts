@@ -510,4 +510,45 @@ export const userArticlesRouter = createTRPCRouter({
         nextCursor,
       };
     }),
+
+  searchArticles: publicProcedure
+    .input(
+      z.object({
+        searchTerm: z.string().min(1),
+        limit: z.number().min(1).max(20).default(10),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const { searchTerm, limit } = input;
+
+      const articles = await ctx.db.article.findMany({
+        take: limit,
+        where: {
+          AND: [
+            {
+              OR: [
+                { title: { contains: searchTerm, mode: 'insensitive' } },
+                { content: { contains: searchTerm, mode: 'insensitive' } },
+                { slug: { contains: searchTerm, mode: 'insensitive' } },
+              ],
+            },
+            { published: true },
+            { approved: true },
+            { needsApproval: false },
+          ],
+        },
+        orderBy: { updatedAt: "desc" },
+        include: {
+          author: {
+            select: {
+              id: true,
+              name: true,
+              image: true,
+            },
+          },
+        },
+      });
+
+      return { articles };
+    }),
 });
