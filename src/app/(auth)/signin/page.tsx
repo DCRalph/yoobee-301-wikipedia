@@ -8,6 +8,8 @@ import { Input } from "~/components/ui/input";
 import { MdEmail } from "react-icons/md";
 import { RiLockPasswordLine } from "react-icons/ri";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
+import { FaDiscord } from "react-icons/fa";
 
 function getErrorMessage(error: string | null, code: string | null) {
   if (!error) return null;
@@ -91,11 +93,20 @@ export default function SignInPage({
     >
       <div className="w-full max-w-md space-y-8 rounded-xl border bg-white/90 p-10 shadow-xl backdrop-blur-sm dark:bg-zinc-900/90">
         <div className="text-center">
+          <div className="mb-4 flex justify-center">
+            <Image
+              src="/wikipedia-logo.svg"
+              alt="Wikipedia Logo"
+              width={80}
+              height={80}
+              className="mx-auto"
+            />
+          </div>
           <h1 className="mb-2 text-3xl font-bold dark:text-gray-100">
-            Admin Panel
+            Wiki Editor
           </h1>
           <p className="mb-8 text-gray-600 dark:text-gray-300">
-            Sign in to access the admin portal
+            Sign in to contribute to Wikipedia
           </p>
         </div>
 
@@ -151,28 +162,40 @@ export default function SignInPage({
             <span className="w-full border-t"></span>
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="pink:text-pink-500 bg-white px-2 dark:bg-zinc-900">
+            <span className="bg-white px-2 text-gray-500 dark:bg-zinc-900 dark:text-gray-400">
               Or continue with
             </span>
           </div>
         </div>
 
-        <Button
-          onClick={() => handleOAuthSignIn("google")}
-          disabled={isLoading}
-          className="flex w-full items-center justify-center space-x-2 border border-blue-100 bg-white text-base font-medium shadow-md hover:bg-gray-50"
-          variant="outline"
-        >
-          <FcGoogle className="h-5 w-5" />
-          <span>Sign in with Google</span>
-        </Button>
+        <div className="space-y-3">
+          <Button
+            onClick={() => handleOAuthSignIn("google")}
+            disabled={isLoading}
+            className="flex w-full items-center justify-center space-x-2 bg-white text-base font-medium shadow-md hover:bg-gray-50"
+            variant="outline"
+          >
+            <FcGoogle className="h-5 w-5" />
+            <span>Sign in with Google</span>
+          </Button>
+
+          <Button
+            onClick={() => handleOAuthSignIn("discord")}
+            disabled={isLoading}
+            className="flex w-full items-center justify-center space-x-2 bg-white text-base font-medium shadow-md hover:bg-gray-50"
+            variant="outline"
+          >
+            <FaDiscord className="h-5 w-5 text-[#5865F2]" />
+            <span>Sign in with Discord</span>
+          </Button>
+        </div>
 
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-600 dark:text-gray-300">
             {"Don't have an account? "}
             <a
               href={`/signup?redirect_url=${encodeURIComponent(redirectUrl)}`}
-              className="font-medium text-blue-600 hover:underline dark:text-blue-400"
+              className="font-medium hover:underline"
             >
               Sign up
             </a>

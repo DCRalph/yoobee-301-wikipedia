@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSession } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import Link from "next/link";
 import { api } from "~/trpc/react";
 import { Button } from "~/components/ui/button";
@@ -40,6 +40,7 @@ import {
 } from "lucide-react";
 
 import { FcGoogle } from "react-icons/fc";
+import { FaDiscord } from "react-icons/fa";
 
 export function AccountPage() {
   const { data: session, update } = useSession();
@@ -412,6 +413,45 @@ export function AccountPage() {
                           <Link href="/api/auth/signin?provider=google&callbackUrl=/account">
                             Connect
                           </Link>
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Discord Account */}
+                  <div className="flex items-center justify-between rounded-lg border p-4">
+                    <div className="flex items-center gap-3">
+                      <FaDiscord className="h-8 w-8 text-[#5865F2]" />
+                      <div>
+                        <h3 className="font-medium">Discord</h3>
+                        <p className="text-muted-foreground text-sm">
+                          Login with your Discord account
+                        </p>
+                      </div>
+                    </div>
+                    <div>
+                      {profileData.accounts.some(
+                        (account) => account.provider === "discord",
+                      ) ? (
+                        <Button variant="outline" size="sm" className="gap-1">
+                          <CheckCircle className="h-4 w-4 text-green-500" />
+                          Connected
+                        </Button>
+                      ) : (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={async () => {
+                            await signIn("discord", {
+                              redirect: false,
+                              callbackUrl: "/account",
+                            });
+                          }}
+                        >
+                          {/* <Link href="/api/auth/signin?provider=discord&callbackUrl=/account">
+                            Connect
+                            </Link> */}
+                          Connect
                         </Button>
                       )}
                     </div>

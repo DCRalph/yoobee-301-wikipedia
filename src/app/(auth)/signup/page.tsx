@@ -8,6 +8,7 @@ import { RiLockPasswordLine } from "react-icons/ri";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { z } from "zod";
+import Image from "next/image";
 
 const signupRequestSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }),
@@ -139,11 +140,20 @@ export default function SignUpPage({
     <div className="relative flex min-h-screen flex-col items-center justify-center p-8 transition-colors duration-300">
       <div className="w-full max-w-md space-y-8 rounded-xl border bg-white/90 p-10 shadow-xl backdrop-blur-sm dark:bg-zinc-900/90">
         <div className="text-center">
+          <div className="mb-4 flex justify-center">
+            <Image
+              src="/wikipedia-logo.svg"
+              alt="Wikipedia Logo"
+              width={80}
+              height={80}
+              className="mx-auto"
+            />
+          </div>
           <h1 className="mb-2 text-3xl font-bold dark:text-gray-100">
-            Create Account
+            Become a Wiki Editor
           </h1>
           <p className="mb-8 text-gray-600 dark:text-gray-300">
-            Sign up to access the Admin Portal
+            Join the community of knowledge contributors
           </p>
         </div>
 
@@ -218,7 +228,7 @@ export default function SignUpPage({
             {"Already have an account? "}
             <a
               href={`/signin?redirect_url=${encodeURIComponent(redirectUrl)}`}
-              className="font-medium text-blue-600 hover:underline dark:text-blue-400"
+              className="font-medium hover:underline"
             >
               Sign in
             </a>

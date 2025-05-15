@@ -48,62 +48,72 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
-:root {
+* {
   --radius: 0.625rem;
 
   /* Core background/foreground */
-  --background: #F4E9D9;
-  --foreground: #4B2E13;
+  --background: #f4e9d9;
+  --foreground: #4b2e13;
 
   /* Card and popover */
-  --card: #F3E0C4;
-  --card-foreground: #4B2E13;
-  --popover: #F3E0C4;
-  --popover-foreground: #4B2E13;
+  --card: #f3e0c4;
+  --card-foreground: #4b2e13;
+  --popover: #f3e0c4;
+  --popover-foreground: #261708;
 
   /* Primary (buttons, links) */
-  --primary: #4B2E13;
-  --primary-foreground: #F4E9D9;
+  --primary: #4b2e13;
+  --primary-foreground: #f4e9d9;
 
   /* Secondary (inputs, secondary cards) */
-  --secondary: #F3E0C4;
-  --secondary-foreground: #4B2E13;
+  --secondary: #f3e0c4;
+  --secondary-foreground: #4b2e13;
 
   /* Muted (borders, less prominent text) */
-  --muted: #E5D3B3;
-  --muted-foreground: #7C6A58;
+  --muted: #e5d3b3;
+  --muted-foreground: #605244;
 
   /* Accent (for highlights, not much in this design) */
-  --accent: #4B2E13;
-  --accent-foreground: #FFFFFF;
+  --accent: #efd198;
+  --accent-foreground: #4b2e13;
 
   /* Destructive (not used in screenshot, but keep for consistency) */
-  --destructive: #B85C38;
-  --destructive-foreground: #FFFFFF;
+  --destructive: #b85c38;
+  --destructive-foreground: #ffffff;
 
   /* Borders and input backgrounds */
-  --border: #E5D3B3;
-  --input: #F3E0C4;
-  --ring: #BFA77A;
+  --border: #e5d3b3;
+  --input: #a87d3c;
+  --ring: #bfa77a;
 
   /* Chart colors (not visible in screenshot, so keep as is or adjust as needed) */
-  --chart-1: #4B2E13;
-  --chart-2: #BFA77A;
-  --chart-3: #F3E0C4;
-  --chart-4: #7C6A58;
-  --chart-5: #B85C38;
+  --chart-1: #4b2e13;
+  --chart-2: #bfa77a;
+  --chart-3: #f3e0c4;
+  --chart-4: #7c6a58;
+  --chart-5: #b85c38;
 
   /* Sidebar (header) */
-  --sidebar: #4B2E13;
-  --sidebar-foreground: #FFFFFF;
-  --sidebar-primary: #22304A;
-  --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #BFA77A;
-  --sidebar-accent-foreground: #4B2E13;
-  --sidebar-border: #E5D3B3;
-  --sidebar-ring: #BFA77A;
-}
+  --sidebar: #4b2e13;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #bfa77a;
+  --sidebar-primary-foreground: #4b2e13;
+  --sidebar-accent: #f3e0c4;
+  --sidebar-accent-foreground: #4b2e13;
+  --sidebar-border: #6b4d28;
+  --sidebar-ring: #bfa77a;
 
+  --tw-prose-links: #4b2e13;
+  --tw-prose-link-hover: #4b2e13;
+  --tw-prose-link-underline: #4b2e13;
+  --tw-prose-link-underline-hover: #4b2e13;
+  --tw-prose-link-underline-colors: #4b2e13;
+
+  --tw-prose-bullets: #4b2e13;
+  
+  
+  
+}
 
 @layer base {
   * {

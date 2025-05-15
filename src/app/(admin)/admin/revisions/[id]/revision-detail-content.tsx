@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { api } from "~/trpc/react";
 import {
   Card,
@@ -19,8 +19,6 @@ import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
 import { Skeleton } from "~/components/ui/skeleton";
 import { type RouterOutputs } from "~/trpc/react";
-import { useTheme } from "next-themes";
-import { cn } from "~/lib/utils";
 
 // Create a DiffComponent since it's missing
 interface DiffComponentProps {
@@ -28,26 +26,21 @@ interface DiffComponentProps {
   newText: string;
 }
 
-function DiffComponent({ oldText, newText, }: DiffComponentProps) {
-  const { resolvedTheme } = useTheme();
-  const isDark = resolvedTheme === "dark";
-
+function DiffComponent({ oldText, newText }: DiffComponentProps) {
   return (
-    <div className="border rounded-md overflow-hidden">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
-        <div className={cn(
-          "p-4 rounded-md",
-          isDark ? "bg-red-950/30 border border-red-900/30" : "bg-rose-50"
-        )}>
-          <div className="text-sm font-medium mb-2">Previous Version:</div>
-          <pre className="whitespace-pre-wrap text-sm overflow-auto">{oldText}</pre>
+    <div className="overflow-hidden rounded-md border">
+      <div className="grid grid-cols-1 gap-4 p-4 md:grid-cols-2">
+        <div className="rounded-md bg-rose-50 p-4 dark:border dark:border-red-900/30 dark:bg-red-950/30">
+          <div className="mb-2 text-sm font-medium">Previous Version:</div>
+          <pre className="overflow-auto text-sm whitespace-pre-wrap">
+            {oldText}
+          </pre>
         </div>
-        <div className={cn(
-          "p-4 rounded-md",
-          isDark ? "bg-green-950/30 border border-green-900/30" : "bg-green-50"
-        )}>
-          <div className="text-sm font-medium mb-2">New Version:</div>
-          <pre className="whitespace-pre-wrap text-sm overflow-auto">{newText}</pre>
+        <div className="rounded-md bg-green-50 p-4 dark:border dark:border-green-900/30 dark:bg-green-950/30">
+          <div className="mb-2 text-sm font-medium">New Version:</div>
+          <pre className="overflow-auto text-sm whitespace-pre-wrap">
+            {newText}
+          </pre>
         </div>
       </div>
     </div>
@@ -59,30 +52,29 @@ const formatDate = (date: Date | string) => {
   return format(new Date(date), "PPP");
 };
 
-type RevisionWithRelations = RouterOutputs["admin"]["revisions"]["getRevisionById"];
+type RevisionWithRelations =
+  RouterOutputs["admin"]["revisions"]["getRevisionById"];
 
 interface RevisionDetailContentProps {
   revision: RevisionWithRelations;
 }
 
-export function RevisionDetailContent({ revision }: RevisionDetailContentProps) {
+export function RevisionDetailContent({
+  revision,
+}: RevisionDetailContentProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const { resolvedTheme } = useTheme();
-  const isDark = resolvedTheme === "dark";
-  const [isPinkTheme, setIsPinkTheme] = useState(false);
-
-  useEffect(() => {
-    setIsPinkTheme(resolvedTheme === "pink");
-  }, [resolvedTheme]);
 
   // Fetch the current article content to compare with the revision
   const { data: currentArticle, isLoading: isArticleLoading } =
-    api.user.articles.getBySlug.useQuery({
-      slug: revision.article.slug
-    }, {
-      enabled: !!revision.article.slug,
-    });
+    api.user.articles.getBySlug.useQuery(
+      {
+        slug: revision.article.slug,
+      },
+      {
+        enabled: !!revision.article.slug,
+      },
+    );
 
   // Set up mutations for approving and rejecting
   const utils = api.useUtils();
@@ -133,18 +125,33 @@ export function RevisionDetailContent({ revision }: RevisionDetailContentProps) 
 
   const getStatusBadge = (approved: boolean, needsApproval: boolean) => {
     if (needsApproval) {
-      return <Badge variant="outline" className={cn(
-        isDark ? "bg-amber-900/30 text-amber-200 border-amber-800/50" : "bg-amber-100"
-      )}>Pending</Badge>;
+      return (
+        <Badge
+          variant="outline"
+          className="bg-amber-100 dark:border-amber-800/50 dark:bg-amber-900/30 dark:text-amber-200"
+        >
+          Pending
+        </Badge>
+      );
     }
     if (approved) {
-      return <Badge variant="outline" className={cn(
-        isDark ? "bg-green-900/30 text-green-200 border-green-800/50" : "bg-green-100"
-      )}>Approved</Badge>;
+      return (
+        <Badge
+          variant="outline"
+          className="bg-green-100 dark:border-green-800/50 dark:bg-green-900/30 dark:text-green-200"
+        >
+          Approved
+        </Badge>
+      );
     }
-    return <Badge variant="outline" className={cn(
-      isDark ? "bg-red-900/30 text-red-200 border-red-800/50" : "bg-red-100"
-    )}>Rejected</Badge>;
+    return (
+      <Badge
+        variant="outline"
+        className="bg-red-100 dark:border-red-800/50 dark:bg-red-900/30 dark:text-red-200"
+      >
+        Rejected
+      </Badge>
+    );
   };
 
   return (
@@ -157,33 +164,41 @@ export function RevisionDetailContent({ revision }: RevisionDetailContentProps) 
 
       <Card className="mb-6">
         <CardHeader>
-          <div className="flex justify-between items-start">
+          <div className="flex items-start justify-between">
             <div>
               <CardTitle>Revision for {revision.article.title}</CardTitle>
               <CardDescription>
-                Made by {revision.editor.name} on {formatDate(revision.createdAt)}
+                Made by {revision.editor.name} on{" "}
+                {formatDate(revision.createdAt)}
               </CardDescription>
             </div>
-            <div>{getStatusBadge(revision.approved, revision.needsApproval)}</div>
+            <div>
+              {getStatusBadge(revision.approved, revision.needsApproval)}
+            </div>
           </div>
         </CardHeader>
 
         <CardContent>
           <div className="grid gap-6">
             <div>
-              <h3 className="text-lg font-medium mb-2">Revision Details</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <h3 className="mb-2 text-lg font-medium">Revision Details</h3>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                   <strong>Article:</strong>{" "}
                   <Link
                     href={`/admin/articles/${revision.article.id}`}
-                    className="hover:underline text-blue-600 dark:text-blue-400"
+                    className="text-blue-600 hover:underline dark:text-blue-400"
                   >
                     {revision.article.title}
                   </Link>
                 </div>
                 <div>
-                  <strong>Status:</strong> {revision.needsApproval ? "Pending Approval" : (revision.approved ? "Approved" : "Rejected")}
+                  <strong>Status:</strong>{" "}
+                  {revision.needsApproval
+                    ? "Pending Approval"
+                    : revision.approved
+                      ? "Approved"
+                      : "Rejected"}
                 </div>
                 <div>
                   <strong>Editor:</strong> {revision.editor.name}
@@ -196,25 +211,24 @@ export function RevisionDetailContent({ revision }: RevisionDetailContentProps) 
 
             {revision.summary && (
               <div>
-                <h3 className="text-lg font-medium mb-2">Revision Summary</h3>
-                <p className="text-gray-700 dark:text-gray-300">{revision.summary}</p>
+                <h3 className="mb-2 text-lg font-medium">Revision Summary</h3>
+                <p className="text-gray-700 dark:text-gray-300">
+                  {revision.summary}
+                </p>
               </div>
             )}
 
             {revision.aiMessage && (
               <div>
-                <h3 className="text-lg font-medium mb-2">AI Feedback</h3>
-                <div className={cn(
-                  "p-4 rounded-lg",
-                  isDark ? "bg-gray-800/50" : "bg-gray-50"
-                )}>
+                <h3 className="mb-2 text-lg font-medium">AI Feedback</h3>
+                <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-800/50">
                   <ReactMarkdown>{revision.aiMessage}</ReactMarkdown>
                 </div>
               </div>
             )}
 
             <div>
-              <h3 className="text-lg font-medium mb-2">Changes</h3>
+              <h3 className="mb-2 text-lg font-medium">Changes</h3>
               {isArticleLoading ? (
                 <Skeleton className="h-60 w-full" />
               ) : currentArticle ? (
@@ -223,7 +237,9 @@ export function RevisionDetailContent({ revision }: RevisionDetailContentProps) 
                   newText={revision.content}
                 />
               ) : (
-                <div className="text-red-500 dark:text-red-400">Could not load current article content for comparison</div>
+                <div className="text-red-500 dark:text-red-400">
+                  Could not load current article content for comparison
+                </div>
               )}
             </div>
           </div>
@@ -258,13 +274,11 @@ export function RevisionDetailContent({ revision }: RevisionDetailContentProps) 
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className={`prose prose-zinc dark:prose-invert max-w-none ${isPinkTheme ? "pink" : ""
-            }`}
-          >
+          <div className={`prose max-w-none`}>
             <ReactMarkdown>{revision.content}</ReactMarkdown>
           </div>
         </CardContent>
       </Card>
-    </div >
+    </div>
   );
-} 
+}

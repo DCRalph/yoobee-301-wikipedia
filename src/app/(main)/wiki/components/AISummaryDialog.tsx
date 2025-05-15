@@ -29,13 +29,9 @@ import { ScrollArea } from "~/components/ui/scroll-area";
 
 interface AISummaryDialogProps {
   articleId: string;
-  isPinkTheme: boolean;
 }
 
-export function AISummaryDialog({
-  articleId,
-  isPinkTheme,
-}: AISummaryDialogProps) {
+export function AISummaryDialog({ articleId }: AISummaryDialogProps) {
   const [summary, setSummary] = useState<string | null>(null);
   const [isSummarizing, setIsSummarizing] = useState(false);
   const [isSavingSummary, setIsSavingSummary] = useState(false);
@@ -149,9 +145,7 @@ export function AISummaryDialog({
               <Card className="border-primary/20">
                 <CardContent className="pt-6">
                   <ScrollArea className="max-h-[50vh] overflow-y-auto">
-                    <div
-                      className={`prose prose-zinc  dark:prose-invert max-w-none ${isPinkTheme ? "pink" : ""}`}
-                    >
+                    <div className={`prose max-w-none`}>
                       <ReactMarkdown>{summary}</ReactMarkdown>
                     </div>
                   </ScrollArea>

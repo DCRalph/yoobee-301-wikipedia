@@ -17,7 +17,6 @@ import { formatDateTime } from "~/lib/date-utils";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { generateTextDiff } from "~/lib/diff-utils";
-import { useTheme } from "next-themes";
 import { cn } from "~/lib/utils";
 
 interface Revision {
@@ -45,7 +44,6 @@ interface CompareContentProps {
 }
 
 export function CompareContent({ comparison }: CompareContentProps) {
-  const { theme, resolvedTheme } = useTheme();
   const { currentRevision, oldRevision, article } = comparison;
   const [activeTab, setActiveTab] = useState("unified");
 
@@ -54,7 +52,6 @@ export function CompareContent({ comparison }: CompareContentProps) {
     currentRevision.content,
   );
   console.log(JSON.stringify(diffResult.changes, null, 2));
-  const isDarkMode = resolvedTheme === "dark";
 
   return (
     <div className="mx-auto max-w-5xl space-y-6 p-8">
@@ -126,18 +123,8 @@ export function CompareContent({ comparison }: CompareContentProps) {
 
           <div className="mt-4 flex items-center space-x-4">
             <div className="flex items-center gap-2">
-              <div
-                className={cn(
-                  "flex h-4 w-4 items-center justify-center rounded-sm",
-                  isDarkMode ? "bg-red-950" : "bg-red-100",
-                )}
-              >
-                <Minus
-                  className={cn(
-                    "h-3 w-3",
-                    isDarkMode ? "text-red-400" : "text-red-600",
-                  )}
-                />
+              <div className="flex h-4 w-4 items-center justify-center rounded-sm bg-red-100 dark:bg-red-950">
+                <Minus className="h-3 w-3 text-red-600 dark:text-red-400" />
               </div>
               <span className="text-sm">
                 {diffResult.stats.deletions} line
@@ -145,18 +132,8 @@ export function CompareContent({ comparison }: CompareContentProps) {
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <div
-                className={cn(
-                  "flex h-4 w-4 items-center justify-center rounded-sm",
-                  isDarkMode ? "bg-green-950" : "bg-green-100",
-                )}
-              >
-                <Plus
-                  className={cn(
-                    "h-3 w-3",
-                    isDarkMode ? "text-green-400" : "text-green-600",
-                  )}
-                />
+              <div className="flex h-4 w-4 items-center justify-center rounded-sm bg-green-100 dark:bg-green-950">
+                <Plus className="h-3 w-3 text-green-600 dark:text-green-400" />
               </div>
               <span className="text-sm">
                 {diffResult.stats.additions} line
@@ -199,16 +176,10 @@ export function CompareContent({ comparison }: CompareContentProps) {
                       key={index}
                       className={cn(
                         change.added
-                          ? isDarkMode
-                            ? "bg-green-950/50 text-green-300"
-                            : "bg-green-50 text-green-800"
+                          ? "bg-green-50 text-green-800 dark:bg-green-950/50 dark:text-green-300"
                           : change.removed
-                            ? isDarkMode
-                              ? "bg-red-950/50 text-red-300"
-                              : "bg-red-50 text-red-800"
-                            : isDarkMode
-                              ? "text-gray-300"
-                              : "text-gray-700",
+                            ? "bg-red-50 text-red-800 dark:bg-red-950/50 dark:text-red-300"
+                            : "text-gray-700 dark:text-gray-300",
                       )}
                     >
                       {change.value
@@ -219,24 +190,12 @@ export function CompareContent({ comparison }: CompareContentProps) {
                             className="whitespace-pre-wrap"
                           >
                             {change.added && (
-                              <span
-                                className={
-                                  isDarkMode
-                                    ? "mr-2 text-green-400"
-                                    : "mr-2 text-green-600"
-                                }
-                              >
+                              <span className="mr-2 text-green-600 dark:text-green-400">
                                 +
                               </span>
                             )}
                             {change.removed && (
-                              <span
-                                className={
-                                  isDarkMode
-                                    ? "mr-2 text-red-400"
-                                    : "mr-2 text-red-600"
-                                }
-                              >
+                              <span className="mr-2 text-red-600 dark:text-red-400">
                                 -
                               </span>
                             )}
@@ -277,9 +236,7 @@ export function CompareContent({ comparison }: CompareContentProps) {
                   <h3 className="mb-2 text-sm font-semibold">
                     Old Version (Rendered)
                   </h3>
-                  <div
-                    className={`prose prose-zinc dark:prose-invert max-w-none ${theme == "pink" ? "pink" : ""}`}
-                  >
+                  <div className={`prose max-w-none`}>
                     <Markdown remarkPlugins={[remarkGfm]}>
                       {oldRevision.content}
                     </Markdown>
@@ -289,9 +246,7 @@ export function CompareContent({ comparison }: CompareContentProps) {
                   <h3 className="mb-2 text-sm font-semibold">
                     Current Version (Rendered)
                   </h3>
-                  <div
-                    className={`prose prose-zinc dark:prose-invert max-w-none ${theme == "pink" ? "pink" : ""}`}
-                  >
+                  <div className={`prose max-w-none`}>
                     <Markdown remarkPlugins={[remarkGfm]}>
                       {currentRevision.content}
                     </Markdown>

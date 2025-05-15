@@ -30,7 +30,7 @@ export function UserMenu() {
   // If not signed in, show sign in button
   if (!session) {
     return (
-      <Button variant="outline" size="sm" onClick={() => void signIn()}>
+      <Button size="sm" onClick={() => void signIn()}>
         <LogIn className="mr-2 h-4 w-4" />
         Sign In
       </Button>
@@ -67,7 +67,7 @@ export function UserMenu() {
         </Button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent align="end" className="bg-[#2E1503]/80 backdrop-blur-lg">
+      <DropdownMenuContent align="end">
         <DropdownMenuLabel>
           <div className="flex flex-col">
             <span>{session.user?.name ?? "User"}</span>

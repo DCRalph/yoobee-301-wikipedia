@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { api } from "~/trpc/react";
 import { formatDistanceToNow } from "~/lib/date-utils";
 import { User, Clock, ArrowRight } from "lucide-react";
@@ -53,9 +55,11 @@ export function RecentArticles() {
             </CardTitle>
           </CardHeader>
           <CardContent className="flex-1">
-            <p className="text-muted-foreground line-clamp-3">
-              {article.content.replace(/<[^>]*>/g, "").slice(0, 150)}...
-            </p>
+            <div className="prose dark:prose-invert line-clamp-3 max-w-none">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {article.content.slice(0, 150) + "..."}
+              </ReactMarkdown>
+            </div>
             <div className="text-muted-foreground mt-4 flex flex-wrap items-center gap-4 text-xs">
               <div className="flex items-center gap-1">
                 <User className="h-3 w-3" />

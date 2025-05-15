@@ -24,8 +24,6 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { formatDate, formatDistanceToNow } from "~/lib/date-utils";
-import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
 import { AISummaryDialog } from "../components/AISummaryDialog";
 import type { RouterOutputs } from "~/trpc/react";
 
@@ -38,16 +36,10 @@ export function WikiArticleContent({
   article,
   UseAi,
 }: WikiArticleContentProps) {
-  const { resolvedTheme } = useTheme();
   const { data: session } = useSession();
   const isAdmin = session?.user?.role === Role.ADMIN;
   const isModerator = session?.user?.role === Role.MODERATOR;
   const canEdit = isAdmin || isModerator;
-  const [isPinkTheme, setIsPinkTheme] = useState(false);
-
-  useEffect(() => {
-    setIsPinkTheme(resolvedTheme === "pink");
-  }, [resolvedTheme]);
 
   return (
     <div className="mx-auto max-w-5xl p-8">
@@ -171,14 +163,10 @@ export function WikiArticleContent({
             </Link>
           </Button>
         )}
-        <AISummaryDialog articleId={article.id} isPinkTheme={isPinkTheme} />
+        <AISummaryDialog articleId={article.id} />
       </div>
 
-      <div
-        className={`prose prose-zinc dark:prose-invert max-w-none ${
-          isPinkTheme ? "pink" : ""
-        }`}
-      >
+      <div className={`prose max-w-none`}>
         <ReactMarkdown remarkPlugins={[remarkGfm]}>
           {article.content}
         </ReactMarkdown>

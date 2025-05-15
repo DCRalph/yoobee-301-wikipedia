@@ -15,7 +15,6 @@ import {
 } from "~/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { ArrowLeft, CheckCircle2, XCircle, Clock, User } from "lucide-react";
-import { useTheme } from "next-themes";
 import { formatDate } from "~/lib/date-utils";
 import { api } from "~/trpc/react";
 import { handleTRPCMutation } from "~/lib/toast";
@@ -43,7 +42,6 @@ export function RevisionPreviewContent({
   revision,
 }: RevisionPreviewContentProps) {
   const router = useRouter();
-  const { theme } = useTheme();
   const [isActionPending, setIsActionPending] = useState(false);
   const [activeTab, setActiveTab] = useState<string>("revision");
 
@@ -160,9 +158,7 @@ export function RevisionPreviewContent({
 
         <TabsContent value="current" className="mt-0">
           <div
-            className={`prose prose-zinc dark:prose-invert max-w-none overflow-auto rounded-md border p-4 ${
-              theme == "pink" ? "pink" : ""
-            }`}
+            className={`prose max-w-none overflow-auto rounded-md border p-4`}
           >
             <ReactMarkdown remarkPlugins={[remarkGfm]}>
               {revision.article.content}
@@ -172,9 +168,7 @@ export function RevisionPreviewContent({
 
         <TabsContent value="revision" className="mt-0">
           <div
-            className={`prose prose-zinc dark:prose-invert max-w-none overflow-auto rounded-md border p-4 ${
-              theme == "pink" ? "pink" : ""
-            }`}
+            className={`prose max-w-none overflow-auto rounded-md border p-4`}
           >
             <ReactMarkdown remarkPlugins={[remarkGfm]}>
               {revision.content}

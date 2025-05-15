@@ -31,7 +31,6 @@ import {
   Clock,
   Eye,
 } from "lucide-react";
-import { useTheme } from "next-themes";
 import { api } from "~/trpc/react";
 import { toast } from "sonner";
 import { handleTRPCMutation } from "~/lib/toast";
@@ -64,7 +63,6 @@ interface EditArticleContentProps {
 
 export function EditArticleContent({ article }: EditArticleContentProps) {
   const router = useRouter();
-  const { theme } = useTheme();
   const [error, setError] = useState<string | null>(null);
   const [content, setContent] = useState(article.content);
   const [activeTab, setActiveTab] = useState<string>("editor");
@@ -228,9 +226,7 @@ export function EditArticleContent({ article }: EditArticleContentProps) {
 
         <TabsContent value="preview" className="mt-0">
           <div
-            className={`prose prose-zinc dark:prose-invert min-h-[500px] max-w-none rounded-md border p-4 ${
-              theme == "pink" ? "pink" : ""
-            }`}
+            className={`prose min-h-[500px] max-w-none rounded-md border p-4`}
           >
             <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
           </div>
