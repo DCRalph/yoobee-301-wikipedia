@@ -122,14 +122,65 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  .prose h2 {
+    border-bottom: 1px solid #eaecf0;
+    padding-bottom: 0.25rem;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+  }
+
+  .prose h3,
+  .prose h4,
+  .prose h5, 
+  .prose h6 {
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .prose p {
+    margin-bottom: 1rem;
+  }
+
+  .prose a {
+    color: #0645ad;
+    text-decoration: none;
+  }
+
+  .prose a:hover {
+    text-decoration: underline;
+  }
+
+  .prose ul,
+  .prose ol {
+    margin-bottom: 1rem;
+  }
+
+  .prose blockquote {
+    border-left: 3px solid #eaecf0;
+    color: #54595d;
+    padding-left: 1rem;
+    margin-left: 0;
+  }
+
+  .prose table {
+    border-collapse: collapse;
+    margin-bottom: 1rem;
+  }
+
+  .prose table th,
+  .prose table td {
+    border: 1px solid #eaecf0;
+    padding: 0.5rem;
+  }
+
+  .prose table th {
+    background-color: #f8f9fa;
+  }
 }
 
 @custom-variant pink {
   &:where(.pink *) {
     @slot;
   }
-}
-
-.hello {
-  background-color: red;
 }
