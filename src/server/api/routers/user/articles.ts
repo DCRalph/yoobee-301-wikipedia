@@ -112,6 +112,9 @@ export const userArticlesRouter = createTRPCRouter({
         content: z.string().min(1),
         slug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
         published: z.boolean().default(false),
+        quickFacts: z.record(z.string()).optional(),
+        sources: z.string().optional(),
+        talkContent: z.string().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -126,6 +129,9 @@ export const userArticlesRouter = createTRPCRouter({
           authorId: ctx.session.user.id,
           approved: false,
           needsApproval: true,
+          quickFacts: input.quickFacts!,
+          sources: input.sources,
+          talkContent: input.talkContent,
         },
       });
     }),
@@ -198,6 +204,9 @@ export const userArticlesRouter = createTRPCRouter({
               slug: true,
               title: true,
               published: true,
+              quickFacts: true,
+              sources: true,
+              talkContent: true,
             },
           },
           editor: {
@@ -236,6 +245,9 @@ export const userArticlesRouter = createTRPCRouter({
               title: true,
               published: true,
               content: true,
+              quickFacts: true,
+              sources: true,
+              talkContent: true,
             },
           },
           editor: {
@@ -263,6 +275,9 @@ export const userArticlesRouter = createTRPCRouter({
         const oldRevision = {
           id: "current",
           content: article.content,
+          quickFacts: article.quickFacts,
+          sources: article.sources,
+          talkContent: article.talkContent,
           summary: null,
           createdAt: new Date(),
           articleId: article.id,
@@ -296,6 +311,9 @@ export const userArticlesRouter = createTRPCRouter({
               slug: true,
               title: true,
               published: true,
+              quickFacts: true,
+              sources: true,
+              talkContent: true,
             },
           },
           editor: {
@@ -334,13 +352,22 @@ export const userArticlesRouter = createTRPCRouter({
       z.object({
         articleId: z.string(),
         content: z.string().min(1),
+        quickFacts: z.record(z.string()).optional(),
+        sources: z.string().optional(),
+        talkContent: z.string().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
       // Get the article to verify it exists
       const article = await ctx.db.article.findUnique({
         where: { id: input.articleId },
-        select: { id: true, content: true },
+        select: {
+          id: true,
+          content: true,
+          quickFacts: true,
+          sources: true,
+          talkContent: true,
+        },
       });
 
       if (!article) {
@@ -350,8 +377,16 @@ export const userArticlesRouter = createTRPCRouter({
         });
       }
 
-      // Don't create a revision if content hasn't changed
-      if (article.content === input.content) {
+      // Check if any content has changed
+      const contentChanged =
+        article.content !== input.content ||
+        JSON.stringify(article.quickFacts) !==
+          JSON.stringify(input.quickFacts) ||
+        article.sources !== input.sources ||
+        article.talkContent !== input.talkContent;
+
+      // Don't create a revision if nothing has changed
+      if (!contentChanged) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "No changes detected",
@@ -372,14 +407,15 @@ export const userArticlesRouter = createTRPCRouter({
         aiModeration = await moderateContent(input.content, diff);
         checkedByAi = true;
         approvedByAi = aiModeration.isUseful && !aiModeration.error;
-        aiMessage = aiModeration.error ??
+        aiMessage =
+          aiModeration.error ??
           `AI Review Summary:\n` +
-          `${aiModeration.reason}\n\n` +
-          `Factual Accuracy & Relevance: ${aiModeration.factual_accuracy_and_relevance}\n` +
-          `Coherence & Readability: ${aiModeration.coherence_and_readability}\n` +
-          `Substance: ${aiModeration.substance}\n` +
-          `Value of Contribution: ${aiModeration.contribution_value}\n\n` +
-          `Overall Score: ${aiModeration.score}/10`;
+            `${aiModeration.reason}\n\n` +
+            `Factual Accuracy & Relevance: ${aiModeration.factual_accuracy_and_relevance}\n` +
+            `Coherence & Readability: ${aiModeration.coherence_and_readability}\n` +
+            `Substance: ${aiModeration.substance}\n` +
+            `Value of Contribution: ${aiModeration.contribution_value}\n\n` +
+            `Overall Score: ${aiModeration.score}/10`;
       }
 
       // Create a revision with the new content
@@ -388,6 +424,9 @@ export const userArticlesRouter = createTRPCRouter({
           articleId: input.articleId,
           editorId: ctx.session.user.id,
           content: input.content,
+          quickFacts: input.quickFacts!,
+          sources: input.sources,
+          talkContent: input.talkContent,
           approved: approvedByAi,
           needsApproval: !approvedByAi,
           checkedByAi,
@@ -398,7 +437,12 @@ export const userArticlesRouter = createTRPCRouter({
       if (approvedByAi) {
         await ctx.db.article.update({
           where: { id: input.articleId },
-          data: { content: input.content },
+          data: {
+            content: input.content,
+            quickFacts: input.quickFacts!,
+            sources: input.sources,
+            talkContent: input.talkContent,
+          },
         });
       }
 
@@ -459,7 +503,10 @@ export const userArticlesRouter = createTRPCRouter({
       z.object({
         limit: z.number().min(1).max(100).default(10),
         cursor: z.string().nullish(),
-        filter: z.enum(["all", "pending", "approved", "rejected"]).optional().default("all"),
+        filter: z
+          .enum(["all", "pending", "approved", "rejected"])
+          .optional()
+          .default("all"),
         articleId: z.string().optional(),
         editorId: z.string().optional(),
       }),
@@ -471,9 +518,13 @@ export const userArticlesRouter = createTRPCRouter({
       const where = {
         ...(articleId ? { articleId } : {}),
         ...(editorId ? { editorId } : {}),
-        ...(filter === "pending" ? { needsApproval: true } :
-          filter === "approved" ? { approved: true, needsApproval: false } :
-            filter === "rejected" ? { approved: false, needsApproval: false } : {}),
+        ...(filter === "pending"
+          ? { needsApproval: true }
+          : filter === "approved"
+            ? { approved: true, needsApproval: false }
+            : filter === "rejected"
+              ? { approved: false, needsApproval: false }
+              : {}),
       };
 
       const revisions = await ctx.db.revision.findMany({
@@ -511,32 +562,85 @@ export const userArticlesRouter = createTRPCRouter({
       };
     }),
 
+  getArticleRevisions: publicProcedure
+    .input(
+      z.object({
+        slug: z.string(),
+        limit: z.number().min(1).max(100).default(10),
+        cursor: z.string().nullish(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const { slug, limit, cursor } = input;
+
+      // First get the article to make sure it exists and is approved
+      const article = await ctx.db.article.findUnique({
+        where: {
+          slug,
+          approved: true,
+          needsApproval: false,
+        },
+        select: { id: true },
+      });
+
+      if (!article) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Article not found",
+        });
+      }
+
+      const revisions = await ctx.db.revision.findMany({
+        where: {
+          articleId: article.id,
+          approved: true,
+        },
+        take: limit + 1,
+        cursor: cursor ? { id: cursor } : undefined,
+        orderBy: { createdAt: "desc" },
+        include: {
+          editor: {
+            select: {
+              id: true,
+              name: true,
+              image: true,
+            },
+          },
+        },
+      });
+
+      let nextCursor: typeof cursor = undefined;
+      if (revisions.length > limit) {
+        const nextItem = revisions.pop();
+        nextCursor = nextItem?.id;
+      }
+
+      return {
+        revisions,
+        nextCursor,
+      };
+    }),
+
   searchArticles: publicProcedure
     .input(
       z.object({
-        searchTerm: z.string().min(1),
-        limit: z.number().min(1).max(20).default(10),
+        searchTerm: z.string(),
+        limit: z.number().min(1).max(100).default(10),
       }),
     )
     .query(async ({ ctx, input }) => {
       const { searchTerm, limit } = input;
 
       const articles = await ctx.db.article.findMany({
-        take: limit,
         where: {
-          AND: [
-            {
-              OR: [
-                { title: { contains: searchTerm, mode: 'insensitive' } },
-                { content: { contains: searchTerm, mode: 'insensitive' } },
-                { slug: { contains: searchTerm, mode: 'insensitive' } },
-              ],
-            },
-            { published: true },
-            { approved: true },
-            { needsApproval: false },
+          OR: [
+            { title: { contains: searchTerm, mode: "insensitive" } },
+            { content: { contains: searchTerm, mode: "insensitive" } },
           ],
+          approved: true,
+          needsApproval: false,
         },
+        take: limit,
         orderBy: { updatedAt: "desc" },
         include: {
           author: {
@@ -549,6 +653,8 @@ export const userArticlesRouter = createTRPCRouter({
         },
       });
 
-      return { articles };
+      return {
+        articles,
+      };
     }),
 });

@@ -144,6 +144,10 @@ export const adminArticlesRouter = createTRPCRouter({
         published: z.boolean().optional(),
         approved: z.boolean().optional(),
         needsApproval: z.boolean().optional(),
+        // New fields
+        quickFacts: z.any().optional(), // Using any for JSON to maintain flexibility
+        sources: z.string().optional(),
+        talkContent: z.string().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -151,7 +155,13 @@ export const adminArticlesRouter = createTRPCRouter({
 
       const article = await ctx.db.article.findUnique({
         where: { id },
-        select: { id: true },
+        select: {
+          id: true,
+          content: true,
+          quickFacts: true,
+          sources: true,
+          talkContent: true,
+        },
       });
 
       if (!article) {
@@ -161,25 +171,28 @@ export const adminArticlesRouter = createTRPCRouter({
         });
       }
 
-      // If we're changing content, create a revision
-      if (data.content) {
-        const currentArticle = await ctx.db.article.findUnique({
-          where: { id },
-          select: { content: true },
-        });
+      // Check if any content has changed
+      const contentChanged =
+        data.content !== undefined ||
+        data.quickFacts !== undefined ||
+        data.sources !== undefined ||
+        data.talkContent !== undefined;
 
+      // If we're changing content, create a revision
+      if (contentChanged) {
         // Create a revision with the old content
-        if (currentArticle) {
-          await ctx.db.revision.create({
-            data: {
-              articleId: id,
-              editorId: ctx.session.user.id,
-              content: currentArticle.content,
-              approved: true, // Admin edits are auto-approved
-              needsApproval: false,
-            },
-          });
-        }
+        await ctx.db.revision.create({
+          data: {
+            articleId: id,
+            editorId: ctx.session.user.id,
+            content: article.content,
+            quickFacts: article.quickFacts ?? {},
+            sources: article.sources,
+            talkContent: article.talkContent,
+            approved: true, // Admin edits are auto-approved
+            needsApproval: false,
+          },
+        });
       }
 
       // Update the article with the new data
@@ -334,6 +347,12 @@ export const adminArticlesRouter = createTRPCRouter({
         where: { id: revision.articleId },
         data: {
           content: revision.content,
+          // Also update the new fields if they exist in the revision
+          ...(revision.quickFacts ? { quickFacts: revision.quickFacts } : {}),
+          ...(revision.sources ? { sources: revision.sources } : {}),
+          ...(revision.talkContent
+            ? { talkContent: revision.talkContent }
+            : {}),
           updatedAt: new Date(),
         },
       });
@@ -411,6 +430,9 @@ export const adminArticlesRouter = createTRPCRouter({
               title: true,
               slug: true,
               content: true, // Include current article content for comparison
+              quickFacts: true,
+              sources: true,
+              talkContent: true,
             },
           },
           editor: {
@@ -446,6 +468,9 @@ export const adminArticlesRouter = createTRPCRouter({
               title: true,
               slug: true,
               content: true,
+              quickFacts: true,
+              sources: true,
+              talkContent: true,
             },
           },
           editor: {
@@ -471,6 +496,9 @@ export const adminArticlesRouter = createTRPCRouter({
         oldRevision: {
           id: "current",
           content: revision.article.content,
+          quickFacts: revision.article.quickFacts,
+          sources: revision.article.sources,
+          talkContent: revision.article.talkContent,
           summary: null,
           createdAt: new Date(),
           articleId: revision.article.id,

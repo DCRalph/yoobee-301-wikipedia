@@ -99,6 +99,15 @@ model Article {
   approvedBy  String?
   approver    User?       @relation("approvedArticles", fields: [approvedBy], references: [id])
 
+  // New fields for quick facts
+  quickFacts  Json  @default("{}")      // Stores key-value pairs for the quick facts section
+  
+  // New field for sources/references
+  sources     String @default("")     // Markdown content for sources and references
+  
+  // New field for talk/discussion
+  talkContent String @default("")     // Markdown content for talk/discussion
+  
   // The user who originally authored/created the article.
   authorId    String
   author      User        @relation("authorArticles", fields: [authorId], references: [id])
@@ -119,6 +128,11 @@ model Revision {
   summary     String?
   createdAt   DateTime    @default(now())
 
+  // New fields for tracking changes to additional content
+  quickFacts  Json?       // Updated quick facts if changed in this revision
+  sources     String?     // Updated sources if changed in this revision
+  talkContent String?     // Updated talk content if changed in this revision
+  
   needsApproval Boolean   @default(true)
   approved    Boolean     @default(false)
   approvedAt  DateTime?

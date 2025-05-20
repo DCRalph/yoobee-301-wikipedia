@@ -2,7 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { Search, X, BookOpen } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "~/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "~/components/ui/dialog";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 import Link from "next/link";
@@ -10,6 +15,10 @@ import { api } from "~/trpc/react";
 import { useDebounce } from "~/hooks/use-debounce";
 import { formatDistanceToNow } from "~/lib/date-utils";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
+import type { RouterOutputs } from "~/trpc/react";
+
+type SearchArticle =
+  RouterOutputs["user"]["articles"]["searchArticles"]["articles"][number];
 
 export function SearchDialog() {
   const [open, setOpen] = useState(false);
@@ -20,7 +29,7 @@ export function SearchDialog() {
     { searchTerm: debouncedSearchTerm, limit: 10 },
     {
       enabled: debouncedSearchTerm.length > 0,
-    }
+    },
   );
 
   // Focus the input when the dialog opens
@@ -39,26 +48,26 @@ export function SearchDialog() {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Open on Ctrl+K or Command+K
-      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+      if ((e.ctrlKey || e.metaKey) && e.key === "k") {
         e.preventDefault();
         setOpen(true);
       }
 
       // Close on escape
-      if (e.key === 'Escape' && open) {
+      if (e.key === "Escape" && open) {
         setOpen(false);
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [open]);
 
   return (
     <>
       <button
         onClick={() => setOpen(true)}
-        className="flex items-center gap-2 hover:text-foreground text-sm"
+        className="hover:text-foreground flex items-center gap-2 text-sm"
         aria-label="Search articles"
       >
         <Search className="h-6 w-6" />
@@ -71,11 +80,11 @@ export function SearchDialog() {
           </VisuallyHidden>
           <DialogHeader className="px-2">
             <div className="relative flex items-center">
-              <Search className="absolute left-3 h-4 w-4 text-muted-foreground" />
+              <Search className="text-muted-foreground absolute left-3 h-4 w-4" />
               <Input
                 id="search-input"
                 placeholder="Search articles..."
-                className="pl-9 pr-9"
+                className="pr-9 pl-9"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -85,7 +94,7 @@ export function SearchDialog() {
                   className="absolute right-3"
                   aria-label="Clear search"
                 >
-                  <X className="h-4 w-4 text-muted-foreground" />
+                  <X className="text-muted-foreground h-4 w-4" />
                 </button>
               )}
             </div>
@@ -98,17 +107,19 @@ export function SearchDialog() {
               </div>
             )}
 
-            {!isLoading && debouncedSearchTerm.length > 0 && data?.articles.length === 0 && (
-              <div className="flex flex-col items-center justify-center p-4">
-                <p className="text-muted-foreground text-center">
-                  {`No articles found for "${debouncedSearchTerm}"`}
-                </p>
-              </div>
-            )}
+            {!isLoading &&
+              debouncedSearchTerm.length > 0 &&
+              data?.articles.length === 0 && (
+                <div className="flex flex-col items-center justify-center p-4">
+                  <p className="text-muted-foreground text-center">
+                    {`No articles found for "${debouncedSearchTerm}"`}
+                  </p>
+                </div>
+              )}
 
             {!isLoading && data?.articles && data.articles.length > 0 && (
               <div className="space-y-2">
-                {data.articles.map((article) => (
+                {data.articles.map((article: SearchArticle) => (
                   <div
                     key={article.id}
                     className="hover:bg-muted/50 rounded-lg border p-3 transition-colors"
@@ -116,10 +127,13 @@ export function SearchDialog() {
                   >
                     <Link href={`/wiki/${article.slug}`} className="block">
                       <h3 className="font-medium">{article.title}</h3>
-                      <div className="text-muted-foreground flex items-center gap-2 text-xs mt-1">
+                      <div className="text-muted-foreground mt-1 flex items-center gap-2 text-xs">
                         <span>{article.author.name ?? "Anonymous"}</span>
                         <span>•</span>
-                        <span>Updated {formatDistanceToNow(new Date(article.updatedAt))}</span>
+                        <span>
+                          Updated{" "}
+                          {formatDistanceToNow(new Date(article.updatedAt))}
+                        </span>
                       </div>
                     </Link>
                     <div className="mt-2">
@@ -140,10 +154,10 @@ export function SearchDialog() {
                 <p className="text-muted-foreground text-center">
                   Start typing to search articles
                 </p>
-                <div className="text-muted-foreground text-xs mt-2">
-                  <span className="border rounded px-1 py-0.5 mx-1">Ctrl</span>
+                <div className="text-muted-foreground mt-2 text-xs">
+                  <span className="mx-1 rounded border px-1 py-0.5">Ctrl</span>
                   <span>+</span>
-                  <span className="border rounded px-1 py-0.5 mx-1">K</span>
+                  <span className="mx-1 rounded border px-1 py-0.5">K</span>
                   <span>to open search</span>
                 </div>
               </div>
@@ -153,4 +167,4 @@ export function SearchDialog() {
       </Dialog>
     </>
   );
-} 
+}
