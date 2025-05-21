@@ -10,7 +10,6 @@ import {
   User,
   Calendar,
   History,
-  Plus,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { Button } from "~/components/ui/button";
@@ -29,6 +28,9 @@ import {
   SidebarTrigger,
 } from "~/components/ui/sidebar";
 import Image from "next/image";
+import { motion } from "framer-motion";
+
+
 interface WikiArticleContentProps {
   article: RouterOutputs["user"]["articles"]["getBySlug"];
   UseAi: boolean;
@@ -47,6 +49,35 @@ export function WikiArticleContent({
   // State for article content
   const [currentContent, setCurrentContent] = useState(article.content);
 
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.5,
+      },
+    },
+  };
+
+  const fadeInVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { duration: 0.5 }
+    },
+  };
 
   // Handle content change from reading level
   const handleContentChange = (newContent: string) => {
@@ -54,7 +85,13 @@ export function WikiArticleContent({
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#f5f0e6]" id="article-top">
+    <motion.div
+      className="flex min-h-screen flex-col bg-[#f5f0e6]"
+      id="article-top"
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+    >
       <div className="flex flex-1">
         {/* Sidebar and content wrapper */}
         <SidebarProvider defaultOpen={true}>
@@ -70,7 +107,10 @@ export function WikiArticleContent({
 
             {/* AI Features Alert */}
             {!UseAi && (
-              <div className="p-4">
+              <motion.div
+                className="p-4"
+                variants={fadeInVariants}
+              >
                 <div className="rounded-md bg-[#e8dcc3] p-4">
                   <div className="flex">
                     <div className="flex-shrink-0">
@@ -87,13 +127,16 @@ export function WikiArticleContent({
                     </div>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             )}
 
             <div className="flex flex-col md:flex-row max-w-4xl mx-auto">
               {/* Large Image on the Left */}
               <div className="p-4 md:sticky md:top-0 md:h-screen md:w-80 hidden">
-                <div className="h-full">
+                <motion.div
+                  className="h-full"
+                  variants={itemVariants}
+                >
                   <div className="overflow-hidden">
                     <Image
                       src="/placeholder.svg?height=800&width=600"
@@ -106,12 +149,15 @@ export function WikiArticleContent({
                   <p className="mt-2 text-xs text-[#605244]">
                     {article.title} - Representative image
                   </p>
-                </div>
+                </motion.div>
               </div>
 
               {/* Main Article Content */}
               <main className="flex-1 p-4">
-                <div className="rounded-lg border border-[#d4bc8b] bg-[#f9f5eb] p-6 shadow-sm">
+                <motion.div
+                  className="rounded-lg border border-[#d4bc8b] bg-[#f9f5eb] p-6 shadow-sm"
+                  variants={itemVariants}
+                >
                   {/* Reading Level Slider */}
                   {/* {UseAi && ( */}
                   <WikiArticleReadingLevel
@@ -145,14 +191,25 @@ export function WikiArticleContent({
 
                     <TabsContent value="article">
                       {/* Article Title and Alerts */}
-                      <div className="mb-6 border-b border-[#d4bc8b] pb-4">
-                        <h1 className="wiki-title font-serif text-3xl font-bold text-[#3a2a14]">
+                      <motion.div
+                        className="mb-6 border-b border-[#d4bc8b] pb-4"
+                        variants={itemVariants}
+                      >
+                        <motion.h1
+                          className="wiki-title font-serif text-3xl font-bold text-[#3a2a14]"
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ duration: 0.5 }}
+                        >
                           {article.title}
-                        </h1>
-                      </div>
+                        </motion.h1>
+                      </motion.div>
 
                       {/* Article Metadata */}
-                      <div className="mb-6 flex flex-wrap items-center gap-4 text-sm text-[#5c3c10]">
+                      <motion.div
+                        className="mb-6 flex flex-wrap items-center gap-4 text-sm text-[#5c3c10]"
+                        variants={itemVariants}
+                      >
                         <div className="flex items-center gap-1">
                           <User className="h-4 w-4" />
                           <span>{article.author.name ?? "Anonymous"}</span>
@@ -169,22 +226,15 @@ export function WikiArticleContent({
                             Last updated {formatDistanceToNow(new Date(article.updatedAt))}
                           </span>
                         </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="ml-auto border-[#d4bc8b] text-[#5c3c10] hover:bg-[#e8dcc3]"
-                          asChild
-                        >
-                          <Link href={`/wiki/${article.slug}/history`}>
-                            <History className="mr-2 h-4 w-4" />
-                            History
-                          </Link>
-                        </Button>
-                      </div>
+
+                      </motion.div>
 
                       {/* Quick Facts */}
                       {article.quickFacts && Object.keys(article.quickFacts as Record<string, unknown>).length > 0 && (
-                        <div className="mb-6 rounded-lg border border-[#d4bc8b] bg-[#e8dcc3] p-4">
+                        <motion.div
+                          className="mb-6 rounded-lg border border-[#d4bc8b] bg-[#e8dcc3] p-4"
+                          variants={itemVariants}
+                        >
                           <h3 className="mb-4 font-serif text-lg font-semibold text-[#3a2a14]">
                             Quick Facts
                           </h3>
@@ -205,21 +255,27 @@ export function WikiArticleContent({
                               ),
                             )}
                           </dl>
-                        </div>
+                        </motion.div>
                       )}
 
                       {/* Article Content */}
-                      <div className="prose font-serif max-w-none [&>:where(h1,h2,h3,h4,h5,h6)]:scroll-mt-24">
+                      <motion.div
+                        className="prose font-serif max-w-none [&>:where(h1,h2,h3,h4,h5,h6)]:scroll-mt-24"
+                        variants={itemVariants}
+                      >
                         <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeSlug]}>
                           {currentContent}
                         </ReactMarkdown>
-                      </div>
+                      </motion.div>
 
                       {/* Action Buttons */}
-                      <div className="mt-8 mb-8 flex flex-wrap items-center gap-2">
+                      <motion.div
+                        className="mt-8 mb-8 flex flex-wrap items-center gap-2"
+                        variants={itemVariants}
+                      >
                         {session?.user && (
                           <>
-                            <Button
+                            {/* <Button
                               variant="outline"
                               size="sm"
                               className="border-[#d4bc8b] text-[#5c3c10] hover:bg-[#e8dcc3]"
@@ -228,6 +284,17 @@ export function WikiArticleContent({
                               <Link href="/wiki/create">
                                 <Plus className="mr-2 h-4 w-4" />
                                 Create Article
+                              </Link>
+                            </Button> */}
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className=" border-[#d4bc8b] text-[#5c3c10] hover:bg-[#e8dcc3]"
+                              asChild
+                            >
+                              <Link href={`/wiki/${article.slug}/history`}>
+                                <History className="mr-2 h-4 w-4" />
+                                History
                               </Link>
                             </Button>
                             <Button
@@ -257,11 +324,14 @@ export function WikiArticleContent({
                           </Button>
                         )}
                         {/* <AISummaryDialog articleId={article.id} /> */}
-                      </div>
+                      </motion.div>
 
                       {/* Revision History */}
                       {article.revisions.length > 0 && (
-                        <div className="mt-8 rounded-lg border border-[#d4bc8b] bg-[#f9f5eb] p-4">
+                        <motion.div
+                          className="mt-8 rounded-lg border border-[#d4bc8b] bg-[#f9f5eb] p-4"
+                          variants={itemVariants}
+                        >
                           <div className="mb-2 flex items-center gap-2">
                             <History className="h-5 w-5 text-[#5c3c10]" />
                             <h3 className="font-serif font-bold text-[#3a2a14]">
@@ -304,7 +374,7 @@ export function WikiArticleContent({
                               </Button>
                             </div>
                           )}
-                        </div>
+                        </motion.div>
                       )}
                     </TabsContent>
 
@@ -371,38 +441,12 @@ export function WikiArticleContent({
                       </div>
                     </TabsContent>
                   </Tabs>
-                </div>
+                </motion.div>
               </main>
             </div>
           </div>
         </SidebarProvider>
-      </div >
-
-      {/* Footer */}
-      < footer className="mt-8 bg-[#3a2a14] p-4 text-center text-[#f9f5eb]" >
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 text-sm">
-          <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#f9f5eb]">
-              <span className="font-serif font-bold text-[#3a2a14]">W</span>
-            </div>
-            <span className="font-serif">Wikipedia</span>
-          </div>
-          <div className="flex flex-wrap gap-6">
-            <Link href="#" className="hover:underline">
-              Terms of Service
-            </Link>
-            <Link href="#" className="hover:underline">
-              Policy Privacy
-            </Link>
-            <Link href="#" className="hover:underline">
-              Contact Wikipedia
-            </Link>
-            <Link href="#" className="hover:underline">
-              About
-            </Link>
-          </div>
-        </div>
-      </footer >
-    </div >
+      </div>
+    </motion.div>
   );
 }

@@ -2,18 +2,18 @@
 
 import Link from "next/link";
 import { UserMenu } from "./user-menu";
-import { useSession } from "next-auth/react";
-import { Role } from "@prisma/client";
-import { BookText, Settings, StickyNote, Brain, Home, Heart } from "lucide-react";
+// import { useSession } from "next-auth/react";
+// import { Role } from "@prisma/client";
+import { BookText, Brain, Home, Heart } from "lucide-react";
 import { api } from "~/trpc/react";
 import { SearchDialog } from "~/components/wiki/SearchDialog";
 
 export function Header() {
-  const { data: session } = useSession();
-  const isAdmin = session?.user?.role === Role.ADMIN;
+  // const { data: session } = useSession();
+  // const isAdmin = session?.user?.role === Role.ADMIN;
   // const isModerator = session?.user?.role === Role.MODERATOR;
-  const canAccessAdmin = isAdmin;
-  const isAuthenticated = !!session?.user;
+  // const canAccessAdmin = isAdmin;
+  // const isAuthenticated = !!session?.user;
 
   // Fetch public settings to check if AI features are enabled
   const { data: settings } = api.admin.settings.getPublic.useQuery();

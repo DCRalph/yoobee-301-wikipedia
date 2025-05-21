@@ -1,5 +1,6 @@
 import "~/styles/globals.css";
 import { Header } from "~/components/layout/header";
+import { Footer } from "~/components/layout/footer";
 
 export const metadata = {
   title: "Modern Wikipedia Clone",
@@ -16,6 +17,7 @@ export default function MainLayout({
     <div className="min-h-screen">
       <Header />
       <main className="relative w-full">{children}</main>
+      <Footer />
     </div>
   );
 }

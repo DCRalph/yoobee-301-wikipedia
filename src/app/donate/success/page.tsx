@@ -18,7 +18,6 @@ import {
   HeartIcon,
   ArrowLeft,
   ShieldCheck,
-  TrendingUp,
   Users,
 } from "lucide-react";
 
