@@ -118,9 +118,9 @@ export const adminArticlesRouter = createTRPCRouter({
       });
 
       // Delete all notes associated with the article
-      await ctx.db.note.deleteMany({
-        where: { articleId: input.id },
-      });
+      // await ctx.db.note.deleteMany({
+      //   where: { articleId: input.id },
+      // });
 
       // Delete the article
       await ctx.db.article.delete({

@@ -1,116 +1,158 @@
-import Image from "next/image"
-import { Button } from "~/components/ui/button"
-import { FileText, Share2, Star, Printer, ExternalLink } from "lucide-react"
-import { formatDate } from "~/lib/date-utils"
-import type { RouterOutputs } from "~/trpc/react"
+"use client";
 
-interface WikiArticleSidebarProps {
-  article: RouterOutputs["user"]["articles"]["getBySlug"]
-  isClient?: boolean
+import Link from "next/link";
+import { BookOpen } from "lucide-react";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+  useSidebar,
+} from "~/components/ui/sidebar";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "~/components/ui/tooltip";
+
+interface WikiArticleContentsProps {
+  sections?: string[];
+  content?: string;
 }
 
-export function WikiArticleSidebar({ article, isClient = true }: WikiArticleSidebarProps) {
-  // Determine if this is a country article to show appropriate quick facts
-  const isCountryArticle =
-    isClient &&
-    (article.title.includes("Zealand") || article.title.includes("Country") || article.content.includes("country"))
+export function WikiArticleContents({
+  sections = [],
+  content = "",
+}: WikiArticleContentsProps) {
+  const { toggleSidebar } = useSidebar();
+
+  // Default sections if no content is provided
+  const defaultSections = [
+    "Introduction",
+  ];
+
+  // Extract headings from markdown content
+  const extractedSections: { text: string; level: number; id: string }[] = [];
+  if (content) {
+    const lines = content.split("\n");
+    const headingRegex = /^(#{1,6})\s+(.+)$/;
+    for (const line of lines) {
+      const match = headingRegex.exec(line);
+      if (match && match.length >= 3) {
+        const level = match[1]?.length ?? 1;
+        const text = match[2]?.trim() ?? "";
+        const id = text
+          .toLowerCase()
+          .replace(/[^\w\s-]/g, "")
+          .replace(/\s+/g, "-");
+        extractedSections.push({ text, level, id });
+      }
+    }
+  }
+
+  // Determine display sections: extracted > provided > default
+  const displaySections =
+    extractedSections.length > 0
+      ? extractedSections
+      : sections.length > 0
+        ? sections.map((section) => ({
+          text: section,
+          level: 1,
+          id: section.toLowerCase().replace(/\s+/g, "-"),
+        }))
+        : defaultSections.map((section) => ({
+          text: section,
+          level: 1,
+          id: section.toLowerCase().replace(/\s+/g, "-"),
+        }));
+
+  // Helper to compute left padding class based on heading level
+  const getPaddingClass = (level: number) => {
+    if (level <= 1) return "";
+    // For level 2 show pl-6, level 3 => pl-8, level 4+ => pl-10
+    if (level === 2) return "pl-6";
+    if (level === 3) return "pl-8";
+    return "pl-10";
+  };
+
+  // Close the sidebar on mobile after a link is clicked
+  const handleLinkClick = () => {
+    if (typeof window !== "undefined" && window.innerWidth < 768) {
+      setTimeout(() => toggleSidebar(), 100);
+    }
+  };
 
   return (
-    <div className="sticky top-4 rounded-lg border border-[#e5d3b3] bg-white p-4 shadow-sm">
-      <div className="mb-4 overflow-hidden rounded-lg">
-        <Image
-          src="/placeholder.svg?height=300&width=400"
-          alt={article.title}
-          width={400}
-          height={300}
-          className="h-auto w-full object-cover"
-        />
-        <p className="mt-2 text-xs text-[#605244]">{article.title} - Representative image</p>
-      </div>
-
-      <div className="mb-4">
-        <h3 className="mb-2 font-medium text-[#4b2e13]">Quick Facts</h3>
-        <dl className="space-y-2 text-sm">
-          {isClient && isCountryArticle ? (
-            <>
-              <div className="flex justify-between">
-                <dt className="font-medium text-[#4b2e13]">Official Name:</dt>
-                <dd className="text-[#605244]">New Zealand / Aotearoa</dd>
-              </div>
-              <div className="flex justify-between">
-                <dt className="font-medium text-[#4b2e13]">Population:</dt>
-                <dd className="text-[#605244]">5.1 million</dd>
-              </div>
-              <div className="flex justify-between">
-                <dt className="font-medium text-[#4b2e13]">Capital:</dt>
-                <dd className="text-[#605244]">Wellington</dd>
-              </div>
-              <div className="flex justify-between">
-                <dt className="font-medium text-[#4b2e13]">Largest City:</dt>
-                <dd className="text-[#605244]">Auckland</dd>
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="flex justify-between">
-                <dt className="font-medium text-[#4b2e13]">Created:</dt>
-                <dd className="text-[#605244]">{isClient ? formatDate(new Date(article.createdAt)) : "Loading..."}</dd>
-              </div>
-              <div className="flex justify-between">
-                <dt className="font-medium text-[#4b2e13]">Author:</dt>
-                <dd className="text-[#605244]">{article.author.name ?? "Anonymous"}</dd>
-              </div>
-              <div className="flex justify-between">
-                <dt className="font-medium text-[#4b2e13]">Last Updated:</dt>
-                <dd className="text-[#605244]">{isClient ? formatDate(new Date(article.updatedAt)) : "Loading..."}</dd>
-              </div>
-            </>
-          )}
-        </dl>
-      </div>
-
-      <div className="space-y-2">
-        <Button
-          variant="outline"
-          size="sm"
-          className="w-full justify-start border-[#e5d3b3] text-[#4b2e13] hover:bg-[#f3e0c4]"
-        >
-          <FileText className="mr-2 h-4 w-4" />
-          Download PDF
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          className="w-full justify-start border-[#e5d3b3] text-[#4b2e13] hover:bg-[#f3e0c4]"
-        >
-          <Share2 className="mr-2 h-4 w-4" />
-          Share Article
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          className="w-full justify-start border-[#e5d3b3] text-[#4b2e13] hover:bg-[#f3e0c4]"
-        >
-          <Star className="mr-2 h-4 w-4" />
-          Save to Favorites
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          className="w-full justify-start border-[#e5d3b3] text-[#4b2e13] hover:bg-[#f3e0c4]"
-        >
-          <Printer className="mr-2 h-4 w-4" />
-          Print Article
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          className="w-full justify-start border-[#e5d3b3] text-[#4b2e13] hover:bg-[#f3e0c4]"
-        >
-          <ExternalLink className="mr-2 h-4 w-4" />
-          Cite This Article
-        </Button>
-      </div>
-    </div>
-  )
+    <TooltipProvider>
+      <Sidebar
+        className="hidden md:block border-r border-[#e5d3b3] bg-white shadow-sm"
+        variant="inset"
+        collapsible="icon"
+      >
+        <SidebarHeader className="border-b md:mt-12 border-[#e5d3b3] p-3">
+          <div className="flex items-center gap-2 text-[#4b2e13]">
+            <BookOpen className="h-5 w-5" />
+            <h3 className="text-sm font-medium">Contents</h3>
+          </div>
+        </SidebarHeader>
+        <SidebarContent className="overflow-y-auto">
+          <SidebarMenu className="p-2">
+            <SidebarMenuItem>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <SidebarMenuButton
+                    className={`${getPaddingClass(
+                      1
+                    )} text-sm text-[#4b2e13] hover:bg-[#f9f5eb] hover:text-[#3a2a14] transition-colors duration-200`}
+                    onClick={() => {
+                      const href = window.location.href;
+                      const noHash = href.split("#")[0];
+                      window.history.replaceState({}, "", noHash);
+                      window.scrollTo({
+                        top: 0,
+                        behavior: "smooth",
+                      });
+                      handleLinkClick();
+                    }}
+                  >
+                    <span>Top</span>
+                  </SidebarMenuButton>
+                </TooltipTrigger>
+                <TooltipContent side="right">
+                  <p>Jump to top of article</p>
+                </TooltipContent>
+              </Tooltip>
+            </SidebarMenuItem>
+            {displaySections.map((section, index) => (
+              <SidebarMenuItem key={index}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <SidebarMenuButton
+                      asChild
+                      className={`${getPaddingClass(
+                        section.level
+                      )} text-sm text-[#4b2e13] hover:bg-[#f9f5eb] hover:text-[#3a2a14] transition-colors duration-200`}
+                    >
+                      <Link href={`#${section.id}`} onClick={handleLinkClick}>
+                        {section.level > 1 && (
+                          <div className="mr-2 h-2 w-2 aspect-square rounded-full bg-[#d4bc8b]" />
+                        )}
+                        <span>{section.text}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">
+                    <p>Jump to {section.text}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </SidebarMenuItem>
+            ))}
+          </SidebarMenu>
+        </SidebarContent>
+      </Sidebar>
+    </TooltipProvider>
+  );
 }

@@ -15,20 +15,20 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { Button } from "~/components/ui/button";
 import { WikiArticleReadingLevel } from "../components/wiki-article-reading-level";
-import { WikiArticleContents } from "../components/wiki-article";
+import { WikiArticleContents } from "../components/wiki-article-sidebar";
 import { formatDate, formatDistanceToNow } from "~/lib/date-utils";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { AISummaryDialog } from "../components/AISummaryDialog";
-import { useEffect, useState } from "react";
+import rehypeSlug from "rehype-slug";
+// import { AISummaryDialog } from "../components/AISummaryDialog";
+import { useState } from "react";
 import type { RouterOutputs } from "~/trpc/react";
 import React from "react";
 import {
   SidebarProvider,
   SidebarTrigger,
-  useSidebar,
 } from "~/components/ui/sidebar";
-
+import Image from "next/image";
 interface WikiArticleContentProps {
   article: RouterOutputs["user"]["articles"]["getBySlug"];
   UseAi: boolean;
@@ -38,77 +38,38 @@ export function WikiArticleContent({
   article,
   UseAi,
 }: WikiArticleContentProps) {
-  // Use client-side state to prevent hydration mismatch
-  const [isClient, setIsClient] = useState(false);
   const { data: session } = useSession();
+
   const isAdmin = session?.user?.role === Role.ADMIN;
   const isModerator = session?.user?.role === Role.MODERATOR;
   const canEdit = isAdmin || isModerator;
 
-  // Extract headings from content for table of contents
-  const [headings, setHeadings] = useState<
-    Array<{ text: string; level: number; id: string }>
-  >([]);
+  // State for article content
+  const [currentContent, setCurrentContent] = useState(article.content);
 
-  // Set isClient to true after component mounts to prevent hydration mismatch
-  useEffect(() => {
-    setIsClient(true);
 
-    // Extract headings from the content when component mounts
-    if (article.content) {
-      const extractedHeadings: Array<{
-        text: string;
-        level: number;
-        id: string;
-      }> = [];
-
-      const lines = article.content.split("\n");
-      const headingRegex = /^(#{1,6})\s+(.+)$/;
-
-      for (const line of lines) {
-        // Match heading patterns: #, ##, ###, etc.
-        const match = headingRegex.exec(line);
-
-        if (match && match.length >= 3) {
-          const level = match[1]?.length ?? 1; // Number of # symbols indicates heading level
-          const text = match[2]?.trim() ?? "";
-          const id = text
-            .toLowerCase()
-            .replace(/[^\w\s-]/g, "")
-            .replace(/\s+/g, "-");
-
-          extractedHeadings.push({ text, level, id });
-        }
-      }
-
-      setHeadings(extractedHeadings);
-    }
-  }, [article.content]);
-
-  // Safely split content only on client side
-  const contentParts = isClient ? article.content.split("\n\n") : [""];
-  const firstParagraph = isClient ? contentParts[0] : "";
-  const restContent = isClient ? contentParts.slice(1).join("\n\n") : "";
+  // Handle content change from reading level
+  const handleContentChange = (newContent: string) => {
+    setCurrentContent(newContent);
+  };
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#f5f0e6]">
+    <div className="flex min-h-screen flex-col bg-[#f5f0e6]" id="article-top">
       <div className="flex flex-1">
         {/* Sidebar and content wrapper */}
-        <SidebarProvider defaultOpen={false}>
-          {/* Left Sidebar - Proper implementation with Shadcn UI Sidebar */}
-          {/* <aside className="hidden md:block"> */}
-            <WikiArticleContents content={isClient ? article.content : ""} />
-          {/* </aside> */}
+        <SidebarProvider defaultOpen={true}>
+          {/* Left Sidebar */}
+          <WikiArticleContents content={currentContent} />
 
           {/* Main Content Area */}
-          <div className="flex-1">
+          <div className="flex-1 relative">
             {/* Mobile sidebar trigger */}
-            <div className="p-2 md:hidden">
+            <div className="p-2 fixed top-14 left-0 z-10 md:hidden">
               <SidebarTrigger className="border border-[#d4bc8b] bg-[#f9f5eb] text-[#4b2e13]" />
             </div>
 
             {/* AI Features Alert */}
-            {isClient && !UseAi && (
+            {!UseAi && (
               <div className="p-4">
                 <div className="rounded-md bg-[#e8dcc3] p-4">
                   <div className="flex">
@@ -129,32 +90,35 @@ export function WikiArticleContent({
               </div>
             )}
 
-            <div className="flex flex-col md:flex-row">
+            <div className="flex flex-col md:flex-row max-w-4xl mx-auto">
               {/* Large Image on the Left */}
-              <div className="p-4 md:sticky md:top-0 md:h-screen md:w-80">
-                {!isClient ? (
-                  <div className="h-full bg-white"></div>
-                ) : (
-                  <div className="h-full">
-                    <div className="overflow-hidden">
-                      <img
-                        src="/placeholder.svg?height=800&width=600"
-                        alt={article.title}
-                        className="h-auto w-full object-cover"
-                      />
-                    </div>
-                    <p className="mt-2 text-xs text-[#605244]">
-                      {article.title} - Representative image
-                    </p>
+              <div className="p-4 md:sticky md:top-0 md:h-screen md:w-80 hidden">
+                <div className="h-full">
+                  <div className="overflow-hidden">
+                    <Image
+                      src="/placeholder.svg?height=800&width=600"
+                      alt={article.title}
+                      className="h-auto w-full object-cover"
+                      width={600}
+                      height={800}
+                    />
                   </div>
-                )}
+                  <p className="mt-2 text-xs text-[#605244]">
+                    {article.title} - Representative image
+                  </p>
+                </div>
               </div>
 
               {/* Main Article Content */}
               <main className="flex-1 p-4">
                 <div className="rounded-lg border border-[#d4bc8b] bg-[#f9f5eb] p-6 shadow-sm">
                   {/* Reading Level Slider */}
-                  <WikiArticleReadingLevel />
+                  {/* {UseAi && ( */}
+                  <WikiArticleReadingLevel
+                    articleId={article.id}
+                    onContentChange={handleContentChange}
+                  />
+                  {/* )} */}
 
                   {/* Article Tabs */}
                   <Tabs defaultValue="article" className="mb-6">
@@ -185,11 +149,6 @@ export function WikiArticleContent({
                         <h1 className="wiki-title font-serif text-3xl font-bold text-[#3a2a14]">
                           {article.title}
                         </h1>
-                        {isClient && article.title.includes("Zealand") && (
-                          <p className="mt-2 text-[#5c3c10] italic">
-                            Aotearoa (Māori)
-                          </p>
-                        )}
                       </div>
 
                       {/* Article Metadata */}
@@ -201,19 +160,13 @@ export function WikiArticleContent({
                         <div className="flex items-center gap-1">
                           <Calendar className="h-4 w-4" />
                           <span>
-                            Created{" "}
-                            {isClient
-                              ? formatDate(new Date(article.createdAt))
-                              : "..."}
+                            Created {formatDate(new Date(article.createdAt))}
                           </span>
                         </div>
                         <div className="flex items-center gap-1">
                           <Clock className="h-4 w-4" />
                           <span>
-                            Last updated{" "}
-                            {isClient
-                              ? formatDistanceToNow(new Date(article.updatedAt))
-                              : "..."}
+                            Last updated {formatDistanceToNow(new Date(article.updatedAt))}
                           </span>
                         </div>
                         <Button
@@ -230,113 +183,84 @@ export function WikiArticleContent({
                       </div>
 
                       {/* Quick Facts */}
-                      {isClient && (
-                        <div className="mb-6 rounded-lg border border-[#d4bc8b] bg-white p-4">
-                          <h3 className="mb-2 font-medium text-[#4b2e13]">
+                      {article.quickFacts && Object.keys(article.quickFacts as Record<string, unknown>).length > 0 && (
+                        <div className="mb-6 rounded-lg border border-[#d4bc8b] bg-[#e8dcc3] p-4">
+                          <h3 className="mb-4 font-serif text-lg font-semibold text-[#3a2a14]">
                             Quick Facts
                           </h3>
-                          <dl className="space-y-2 text-sm">
-                            {article.quickFacts &&
-                            Object.keys(article.quickFacts).length > 0 ? (
-                              Object.entries(article.quickFacts).map(
-                                ([key, value]) => (
-                                  <div
-                                    key={key}
-                                    className="flex justify-between"
-                                  >
-                                    <dt className="font-medium text-[#4b2e13]">
-                                      {key}:
-                                    </dt>
-                                    <dd className="text-[#605244]">
-                                      {String(value)}
-                                    </dd>
-                                  </div>
-                                ),
-                              )
-                            ) : (
-                              <div className="text-center text-[#605244] italic">
-                                No quick facts available for this article.
-                              </div>
+                          <dl className="space-y-3">
+                            {Object.entries(article.quickFacts as Record<string, unknown>).map(
+                              ([key, value]) => (
+                                <div
+                                  key={key}
+                                  className="flex items-center justify-between border-b border-[#d4bc8b] pb-2 last:border-b-0"
+                                >
+                                  <dt className="font-medium text-[#4b2e13]">
+                                    {key}
+                                  </dt>
+                                  <dd className="text-[#605244]">
+                                    {String(value)}
+                                  </dd>
+                                </div>
+                              ),
                             )}
                           </dl>
                         </div>
                       )}
 
                       {/* Article Content */}
-                      <div className="mb-6">
-                        <h2 className="mb-4 border-b border-[#d4bc8b] pb-2 font-serif text-xl font-bold text-[#3a2a14]">
-                          Overview
-                        </h2>
-                        <div className="prose max-w-none text-[#3a2a14]">
-                          {isClient ? (
-                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                              {firstParagraph}
-                            </ReactMarkdown>
-                          ) : (
-                            <p>Loading content...</p>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Rest of Article Content */}
-                      <div className="prose max-w-none text-[#3a2a14]">
-                        {isClient ? (
-                          <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                            {restContent}
-                          </ReactMarkdown>
-                        ) : (
-                          <p>Loading content...</p>
-                        )}
+                      <div className="prose font-serif max-w-none [&>:where(h1,h2,h3,h4,h5,h6)]:scroll-mt-24">
+                        <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeSlug]}>
+                          {currentContent}
+                        </ReactMarkdown>
                       </div>
 
                       {/* Action Buttons */}
-                      {isClient && (
-                        <div className="mt-8 mb-8 flex flex-wrap items-center gap-2">
-                          {session?.user && (
-                            <>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="border-[#d4bc8b] text-[#5c3c10] hover:bg-[#e8dcc3]"
-                                asChild
-                              >
-                                <Link href="/wiki/create">
-                                  <Plus className="mr-2 h-4 w-4" />
-                                  Create Article
-                                </Link>
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="border-[#d4bc8b] text-[#5c3c10] hover:bg-[#e8dcc3]"
-                                asChild
-                              >
-                                <Link href={`/wiki/${article.slug}/edit`}>
-                                  <Edit className="mr-2 h-4 w-4" />
-                                  Edit Article
-                                </Link>
-                              </Button>
-                            </>
-                          )}
-                          {canEdit && (
+                      <div className="mt-8 mb-8 flex flex-wrap items-center gap-2">
+                        {session?.user && (
+                          <>
                             <Button
                               variant="outline"
                               size="sm"
                               className="border-[#d4bc8b] text-[#5c3c10] hover:bg-[#e8dcc3]"
                               asChild
                             >
-                              <Link href={`/admin/articles/${article.id}`}>
-                                <Edit className="mr-2 h-4 w-4" />
-                                Admin Edit
+                              <Link href="/wiki/create">
+                                <Plus className="mr-2 h-4 w-4" />
+                                Create Article
                               </Link>
                             </Button>
-                          )}
-                          <AISummaryDialog articleId={article.id} />
-                        </div>
-                      )}
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="border-[#d4bc8b] text-[#5c3c10] hover:bg-[#e8dcc3]"
+                              asChild
+                            >
+                              <Link href={`/wiki/${article.slug}/edit`}>
+                                <Edit className="mr-2 h-4 w-4" />
+                                Edit Article
+                              </Link>
+                            </Button>
+                          </>
+                        )}
+                        {canEdit && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="border-[#d4bc8b] text-[#5c3c10] hover:bg-[#e8dcc3]"
+                            asChild
+                          >
+                            <Link href={`/admin/articles/${article.id}`}>
+                              <Edit className="mr-2 h-4 w-4" />
+                              Admin Edit
+                            </Link>
+                          </Button>
+                        )}
+                        {/* <AISummaryDialog articleId={article.id} /> */}
+                      </div>
 
                       {/* Revision History */}
-                      {isClient && article.revisions.length > 0 && (
+                      {article.revisions.length > 0 && (
                         <div className="mt-8 rounded-lg border border-[#d4bc8b] bg-[#f9f5eb] p-4">
                           <div className="mb-2 flex items-center gap-2">
                             <History className="h-5 w-5 text-[#5c3c10]" />
@@ -452,10 +376,10 @@ export function WikiArticleContent({
             </div>
           </div>
         </SidebarProvider>
-      </div>
+      </div >
 
       {/* Footer */}
-      <footer className="mt-8 bg-[#3a2a14] p-4 text-center text-[#f9f5eb]">
+      < footer className="mt-8 bg-[#3a2a14] p-4 text-center text-[#f9f5eb]" >
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 text-sm">
           <div className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#f9f5eb]">
@@ -478,7 +402,7 @@ export function WikiArticleContent({
             </Link>
           </div>
         </div>
-      </footer>
-    </div>
+      </footer >
+    </div >
   );
 }

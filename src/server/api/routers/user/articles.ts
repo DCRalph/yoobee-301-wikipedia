@@ -136,61 +136,61 @@ export const userArticlesRouter = createTRPCRouter({
       });
     }),
 
-  summarize: protectedProcedure
-    .input(
-      z.object({
-        articleId: z.string(),
-        level: z
-          .enum(["novice", "intermediate", "advanced"])
-          .default("intermediate"),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      const article = await ctx.db.article.findUnique({
-        where: { id: input.articleId, approved: true },
-      });
-      if (!article) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Article not found",
-        });
-      }
-      const summary = await generateSummary({
-        content: article.content,
-        level: input.level,
-      });
-      return { summary };
-    }),
+  // summarize: protectedProcedure
+  //   .input(
+  //     z.object({
+  //       articleId: z.string(),
+  //       level: z
+  //         .enum(["novice", "intermediate", "advanced"])
+  //         .default("intermediate"),
+  //     }),
+  //   )
+  //   .mutation(async ({ ctx, input }) => {
+  //     const article = await ctx.db.article.findUnique({
+  //       where: { id: input.articleId, approved: true },
+  //     });
+  //     if (!article) {
+  //       throw new TRPCError({
+  //         code: "NOT_FOUND",
+  //         message: "Article not found",
+  //       });
+  //     }
+  //     const summary = await generateSummary({
+  //       content: article.content,
+  //       level: input.level,
+  //     });
+  //     return { summary };
+  //   }),
 
-  saveSummary: protectedProcedure
-    .input(
-      z.object({
-        articleId: z.string(),
-        summary: z.string().min(10),
-        level: z
-          .enum(["novice", "intermediate", "advanced"])
-          .default("intermediate"),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      // Save summary as a Note of type 'AI_SUMMARY' linked to the article and user
+  // saveSummary: protectedProcedure
+  //   .input(
+  //     z.object({
+  //       articleId: z.string(),
+  //       summary: z.string().min(10),
+  //       level: z
+  //         .enum(["novice", "intermediate", "advanced"])
+  //         .default("intermediate"),
+  //     }),
+  //   )
+  //   .mutation(async ({ ctx, input }) => {
+  //     // Save summary as a Note of type 'AI_SUMMARY' linked to the article and user
 
-      const levelMap = {
-        novice: "AI_SUMMARY_NOVICE",
-        intermediate: "AI_SUMMARY_INTERMEDIATE",
-        advanced: "AI_SUMMARY_ADVANCED",
-      };
+  //     const levelMap = {
+  //       novice: "AI_SUMMARY_NOVICE",
+  //       intermediate: "AI_SUMMARY_INTERMEDIATE",
+  //       advanced: "AI_SUMMARY_ADVANCED",
+  //     };
 
-      await ctx.db.note.create({
-        data: {
-          content: input.summary,
-          type: levelMap[input.level],
-          articleId: input.articleId,
-          userId: ctx.session.user.id,
-        },
-      });
-      return { success: true };
-    }),
+  //     await ctx.db.note.create({
+  //       data: {
+  //         content: input.summary,
+  //         type: levelMap[input.level],
+  //         articleId: input.articleId,
+  //         userId: ctx.session.user.id,
+  //       },
+  //     });
+  //     return { success: true };
+  //   }),
 
   getRevisionById: publicProcedure
     .input(z.object({ revisionId: z.string() }))
@@ -381,7 +381,7 @@ export const userArticlesRouter = createTRPCRouter({
       const contentChanged =
         article.content !== input.content ||
         JSON.stringify(article.quickFacts) !==
-          JSON.stringify(input.quickFacts) ||
+        JSON.stringify(input.quickFacts) ||
         article.sources !== input.sources ||
         article.talkContent !== input.talkContent;
 
@@ -410,12 +410,12 @@ export const userArticlesRouter = createTRPCRouter({
         aiMessage =
           aiModeration.error ??
           `AI Review Summary:\n` +
-            `${aiModeration.reason}\n\n` +
-            `Factual Accuracy & Relevance: ${aiModeration.factual_accuracy_and_relevance}\n` +
-            `Coherence & Readability: ${aiModeration.coherence_and_readability}\n` +
-            `Substance: ${aiModeration.substance}\n` +
-            `Value of Contribution: ${aiModeration.contribution_value}\n\n` +
-            `Overall Score: ${aiModeration.score}/10`;
+          `${aiModeration.reason}\n\n` +
+          `Factual Accuracy & Relevance: ${aiModeration.factual_accuracy_and_relevance}\n` +
+          `Coherence & Readability: ${aiModeration.coherence_and_readability}\n` +
+          `Substance: ${aiModeration.substance}\n` +
+          `Value of Contribution: ${aiModeration.contribution_value}\n\n` +
+          `Overall Score: ${aiModeration.score}/10`;
       }
 
       // Create a revision with the new content

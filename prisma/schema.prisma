@@ -79,7 +79,7 @@ model User {
   sessions      Session[]
   articles      Article[]    @relation("authorArticles")
   revisions     Revision[]   @relation("editorRevisions")
-  notes         Note[]       @relation("userNotes")
+  // notes         Note[]       @relation("userNotes")
   approvedArticles Article[] @relation("approvedArticles")
   approvedRevisions Revision[] @relation("approvedRevisions")
 }
@@ -116,7 +116,9 @@ model Article {
   revisions   Revision[]
   
   // Notes related to the article (including AI summaries)
-  notes       Note[]      @relation("articleNotes")
+  // notes       Note[]      @relation("articleNotes")
+
+  summaries ArticleSummary[]
 }
 
 /// The Revision model represents an edit made to an article.
@@ -147,20 +149,20 @@ model Revision {
   editor      User        @relation("editorRevisions", fields: [editorId], references: [id])
 }
 
-/// The Note model represents additional content related to an article, such as AI summaries.
-model Note {
-  id          String      @id @default(cuid())
-  content     String
-  type        String      // e.g., "AI_SUMMARY", "USER_NOTE", etc.
-  createdAt   DateTime    @default(now())
+// /// The Note model represents additional content related to an article, such as AI summaries.
+// model Note {
+//   id          String      @id @default(cuid())
+//   content     String
+//   type        String      // e.g., "AI_SUMMARY", "USER_NOTE", etc.
+//   createdAt   DateTime    @default(now())
   
-  // Relations
-  articleId   String
-  article     Article     @relation("articleNotes", fields: [articleId], references: [id])
+//   // Relations
+//   articleId   String
+//   article     Article     @relation("articleNotes", fields: [articleId], references: [id])
   
-  userId      String
-  user        User        @relation("userNotes", fields: [userId], references: [id])
-}
+//   userId      String
+//   user        User        @relation("userNotes", fields: [userId], references: [id])
+// }
 
 /// The Setting model stores site-wide configuration settings
 model Setting {
@@ -169,4 +171,16 @@ model Setting {
   allowArticleCreation Boolean @default(true)
   enableAIFeatures Boolean @default(false)
   updatedAt        DateTime  @updatedAt
+}
+
+model ArticleSummary {
+  id        String   @id @default(cuid())
+  content   String   @db.Text
+  level     String   // "original", "novice", "intermediate", "advanced"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  articleId String
+
+  @@unique([articleId, level])
 }

@@ -8,7 +8,7 @@ import { db } from "~/server/db";
 
 interface SummaryProps {
   content: string;
-  level: "novice" | "intermediate" | "advanced";
+  level: "novice" | "intermediate" | "advanced" | "original";
 }
 
 function basicSummary({ content, level }: SummaryProps): string {
@@ -159,7 +159,11 @@ export async function generateSummary({
   content,
   level,
 }: SummaryProps): Promise<string> {
-  // return content;
+  // If level is "original", return the original content
+  if (level === "original") {
+    return content;
+  }
+
   let UseAi = false;
   const setting = await db.setting.findFirst();
 
