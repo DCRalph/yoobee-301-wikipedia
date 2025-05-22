@@ -1,0 +1,227 @@
+"use client"
+
+import { useState } from "react"
+import { api } from "~/trpc/react"
+import { z } from "zod"
+import { toast } from "sonner"
+import { Loader2, Star, StarOff } from "lucide-react"
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter
+} from "~/components/ui/card"
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableHead,
+  TableRow,
+  TableCell
+} from "~/components/ui/table"
+import { Button } from "~/components/ui/button"
+
+const featuredSchema = z.object({
+  description: z.string().min(1, "Description is required")
+})
+
+type FeaturedFormData = z.infer<typeof featuredSchema>
+
+const defaultFormData: FeaturedFormData = {
+  description: ""
+}
+
+export default function FeaturedArticlesPage() {
+  const [selectedArticle, setSelectedArticle] = useState<string | null>(null)
+  const [formData, setFormData] = useState<FeaturedFormData>(defaultFormData)
+  const [errors, setErrors] = useState<Partial<Record<keyof FeaturedFormData, string>>>({})
+
+  const { data: articles, refetch } = api.article.getHomePageData.useQuery()
+  const { mutate: setFeatured, isPending } = api.article.setFeatured.useMutation({
+    onSuccess: () => {
+      setFormData(defaultFormData)
+      setSelectedArticle(null)
+      void refetch()
+      toast.success("Featured status updated successfully")
+    },
+    onError: (error) => {
+      toast.error(error.message)
+    }
+  })
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const { name, value } = e.target
+    setFormData(prev => ({ ...prev, [name]: value }))
+    // Clear error when user starts typing
+    if (errors[name as keyof FeaturedFormData]) {
+      setErrors(prev => ({ ...prev, [name]: undefined }))
+    }
+  }
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+
+    try {
+      const validatedData = featuredSchema.parse(formData)
+      if (!selectedArticle) return
+      setFeatured({
+        id: selectedArticle,
+        featured: true,
+        description: validatedData.description
+      })
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const formattedErrors: Record<string, string> = {}
+        error.errors.forEach(err => {
+          if (err.path[0]) {
+            formattedErrors[err.path[0] as string] = err.message
+          }
+        })
+        setErrors(formattedErrors)
+      }
+    }
+  }
+
+  const handleUnfeature = (id: string) => {
+    setFeatured({
+      id,
+      featured: false
+    })
+  }
+
+  return (
+    <div className="container mx-auto p-6">
+      <h1 className="text-3xl font-serif mb-6">Manage Featured Articles</h1>
+
+      {/* Featured Article Form */}
+      {selectedArticle && (
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle>Set Featured Description</CardTitle>
+            <CardDescription>
+              Add a description explaining why this article is being featured
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form id="featuredForm" onSubmit={handleSubmit}>
+              <div>
+                <label className="block text-sm font-medium mb-1">Featured Description</label>
+                <textarea
+                  name="description"
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  className="w-full p-2 border rounded-md focus:ring-[#6b4c35] focus:border-[#6b4c35]"
+                  placeholder="Enter a description for why this article is featured..."
+                  rows={3}
+                />
+                {errors.description && (
+                  <p className="text-red-500 text-sm mt-1">{errors.description}</p>
+                )}
+              </div>
+            </form>
+          </CardContent>
+          <CardFooter className="flex justify-between">
+            <div className="flex gap-2">
+              <Button
+                type="submit"
+                form="featuredForm"
+                disabled={isPending}
+                className="bg-[#6b4c35] hover:bg-[#8b6c55] text-white"
+              >
+                {isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                Set as Featured
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setSelectedArticle(null)
+                  setFormData(defaultFormData)
+                }}
+              >
+                Cancel
+              </Button>
+            </div>
+          </CardFooter>
+        </Card>
+      )}
+
+      {/* Articles List */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Articles</CardTitle>
+          <CardDescription>
+            Select articles to feature on the homepage
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader className="bg-gray-50">
+              <TableRow>
+                <TableHead>Title</TableHead>
+                <TableHead>Author</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Views</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {articles?.trendingArticles.map((article) => (
+                <TableRow key={article.id} className={article.isFeatured ? "bg-blue-50" : ""}>
+                  <TableCell className="font-medium">{article.title}</TableCell>
+                  <TableCell>{article.author.name}</TableCell>
+                  <TableCell>
+                    {article.isFeatured ? (
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#6b4c35]/10 text-[#6b4c35]">
+                        <Star className="w-3 h-3 mr-1" />
+                        Featured
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                        Not Featured
+                      </span>
+                    )}
+                  </TableCell>
+                  <TableCell>{article.viewCount}</TableCell>
+                  <TableCell className="text-right">
+                    {article.isFeatured ? (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleUnfeature(article.id)}
+                        disabled={isPending}
+                        className="text-red-500 hover:text-red-700"
+                      >
+                        <StarOff className="w-4 h-4 mr-1" />
+                        Remove Featured
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setSelectedArticle(article.id)}
+                        disabled={isPending}
+                        className="text-[#6b4c35] hover:text-[#8b6c55]"
+                      >
+                        <Star className="w-4 h-4 mr-1" />
+                        Set as Featured
+                      </Button>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+              {!articles?.trendingArticles.length && (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center py-4 text-muted-foreground">
+                    No articles found.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+    </div>
+  )
+} 

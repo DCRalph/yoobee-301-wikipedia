@@ -69,6 +69,16 @@ export function AdminNav() {
           icon: FileCheck,
         },
         {
+          name: "Featured",
+          href: "/admin/featured",
+          icon: FileText,
+        },
+        {
+          name: "Categories",
+          href: "/admin/categories",
+          icon: FileText,
+        },
+        {
           name: "Revisions",
           href: "/admin/revisions",
           icon: History,

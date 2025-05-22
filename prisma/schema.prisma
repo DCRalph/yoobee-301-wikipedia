@@ -100,27 +100,85 @@ model Article {
   approver    User?       @relation("approvedArticles", fields: [approvedBy], references: [id])
 
   imageUrl    String?
+  
+  // Featured article fields
+  isFeatured  Boolean     @default(false)
+  featuredAt  DateTime?
+  featuredDescription String?
+  
+  // View tracking
+  viewCount   Int         @default(0)
+  dailyViews  Int         @default(0)
+  lastViewReset DateTime  @default(now())
 
-  // New fields for quick facts
-  quickFacts  Json  @default("{}")      // Stores key-value pairs for the quick facts section
+  // Quick facts and metadata
+  quickFacts  Json        @default("{}")
+  sources     String      @default("")
+  talkContent String      @default("")
   
-  // New field for sources/references
-  sources     String @default("")     // Markdown content for sources and references
-  
-  // New field for talk/discussion
-  talkContent String @default("")     // Markdown content for talk/discussion
-  
-  // The user who originally authored/created the article.
+  // Relations
   authorId    String
   author      User        @relation("authorArticles", fields: [authorId], references: [id])
-  
-  // Revisions history for the article.
   revisions   Revision[]
-  
-  // Notes related to the article (including AI summaries)
-  // notes       Note[]      @relation("articleNotes")
+  summaries   ArticleSummary[]
+  categories  CategoriesOnArticles[]
 
-  summaries ArticleSummary[]
+  // Indexes for efficient querying
+  @@index([isFeatured, featuredAt])
+  @@index([dailyViews])
+  @@index([viewCount])
+}
+
+/// The Category model for organizing articles
+model Category {
+  id          String      @id @default(cuid())
+  name        String
+  slug        String      @unique
+  description String?
+  imageUrl    String?
+  
+  // Hierarchical structure
+  parentId    String?
+  parent      Category?   @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children    Category[]  @relation("CategoryHierarchy")
+  
+  // Relations
+  articles    CategoriesOnArticles[]
+  
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@index([parentId])
+}
+
+/// Junction table for many-to-many relationship between Articles and Categories
+model CategoriesOnArticles {
+  article     Article   @relation(fields: [articleId], references: [id])
+  articleId   String
+  category    Category  @relation(fields: [categoryId], references: [id])
+  categoryId  String
+  assignedAt  DateTime  @default(now())
+
+  @@id([articleId, categoryId])
+  @@index([categoryId])
+  @@index([articleId])
+}
+
+/// The HistoricalEvent model for "On This Day" feature
+model HistoricalEvent {
+  id          String    @id @default(cuid())
+  title       String
+  description String
+  date        DateTime
+  year        Int
+  month       Int
+  day         Int
+  imageUrl    String?
+  
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([month, day])
 }
 
 /// The Revision model represents an edit made to an article.

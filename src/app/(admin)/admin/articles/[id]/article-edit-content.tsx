@@ -70,6 +70,7 @@ const articleSchema = z.object({
   quickFacts: z.any().optional(),
   sources: z.string().optional(),
   talkContent: z.string().optional(),
+  imageUrl: z.string().optional(),
 });
 
 interface ArticleEditContentProps {
@@ -90,6 +91,7 @@ export function ArticleEditContent({ article }: ArticleEditContentProps) {
   const [published, setPublished] = useState(article.published);
   const [approved, setApproved] = useState(article.approved);
   const [needsApproval, setNeedsApproval] = useState(article.needsApproval);
+  const [imageUrl, setImageUrl] = useState(article.imageUrl ?? "");
 
   // New form state for additional fields
   const [quickFacts, setQuickFacts] = useState<Record<string, string>>(
@@ -227,6 +229,7 @@ export function ArticleEditContent({ article }: ArticleEditContentProps) {
         quickFacts,
         sources,
         talkContent,
+        imageUrl,
       };
 
       const validatedData = articleSchema.parse(formData);
@@ -377,6 +380,19 @@ export function ArticleEditContent({ article }: ArticleEditContentProps) {
                         This will be the URL path: /wiki/{slug}
                       </p>
                     </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="imageUrl">Featured Image URL</Label>
+                      <Input
+                        id="imageUrl"
+                        value={imageUrl}
+                        onChange={(e) => setImageUrl(e.target.value)}
+                        placeholder="https://example.com/image.jpg"
+                      />
+                      <p className="text-muted-foreground text-xs">
+                        {"URL for the article's featured image (optional)"}
+                      </p>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -432,9 +448,8 @@ export function ArticleEditContent({ article }: ArticleEditContentProps) {
                         </TabsContent>
                         <TabsContent value="preview">
                           <div
-                            className={`prose dark:prose-invert min-h-[400px] max-w-none rounded-md border p-4 ${
-                              theme === "pink" ? "pink" : ""
-                            }`}
+                            className={`prose dark:prose-invert min-h-[400px] max-w-none rounded-md border p-4 ${theme === "pink" ? "pink" : ""
+                              }`}
                           >
                             {content ? (
                               <ReactMarkdown remarkPlugins={[remarkGfm]}>
@@ -677,9 +692,8 @@ export function ArticleEditContent({ article }: ArticleEditContentProps) {
                         </TabsContent>
                         <TabsContent value="preview">
                           <div
-                            className={`prose dark:prose-invert min-h-[300px] max-w-none rounded-md border p-4 ${
-                              theme === "pink" ? "pink" : ""
-                            }`}
+                            className={`prose dark:prose-invert min-h-[300px] max-w-none rounded-md border p-4 ${theme === "pink" ? "pink" : ""
+                              }`}
                           >
                             {sources ? (
                               <ReactMarkdown remarkPlugins={[remarkGfm]}>
@@ -720,9 +734,8 @@ export function ArticleEditContent({ article }: ArticleEditContentProps) {
                         </TabsContent>
                         <TabsContent value="preview">
                           <div
-                            className={`prose dark:prose-invert min-h-[300px] max-w-none rounded-md border p-4 ${
-                              theme === "pink" ? "pink" : ""
-                            }`}
+                            className={`prose dark:prose-invert min-h-[300px] max-w-none rounded-md border p-4 ${theme === "pink" ? "pink" : ""
+                              }`}
                           >
                             {talkContent ? (
                               <ReactMarkdown remarkPlugins={[remarkGfm]}>
@@ -794,9 +807,8 @@ export function ArticleEditContent({ article }: ArticleEditContentProps) {
                           variant={needsApproval ? "default" : "outline"}
                           size="sm"
                           onClick={setStatusNeedsApproval}
-                          className={`col-span-2 dark:text-white ${
-                            needsApproval ? "bg-blue-600 hover:bg-blue-700" : ""
-                          }`}
+                          className={`col-span-2 dark:text-white ${needsApproval ? "bg-blue-600 hover:bg-blue-700" : ""
+                            }`}
                         >
                           <ClockIcon className="mr-2 h-4 w-4" />
                           Needs Approval
@@ -808,11 +820,10 @@ export function ArticleEditContent({ article }: ArticleEditContentProps) {
                           }
                           size="sm"
                           onClick={setStatusRejected}
-                          className={`dark:text-white ${
-                            !approved && !needsApproval
+                          className={`dark:text-white ${!approved && !needsApproval
                               ? "bg-red-600 hover:bg-red-700"
                               : ""
-                          }`}
+                            }`}
                         >
                           <XCircle className="mr-2 h-4 w-4" />
                           Reject
@@ -822,9 +833,8 @@ export function ArticleEditContent({ article }: ArticleEditContentProps) {
                           variant={approved ? "default" : "outline"}
                           size="sm"
                           onClick={setStatusApproved}
-                          className={`dark:text-white ${
-                            approved ? "bg-green-600 hover:bg-green-700" : ""
-                          }`}
+                          className={`dark:text-white ${approved ? "bg-green-600 hover:bg-green-700" : ""
+                            }`}
                         >
                           <CheckCircle2 className="mr-2 h-4 w-4" />
                           Approve
