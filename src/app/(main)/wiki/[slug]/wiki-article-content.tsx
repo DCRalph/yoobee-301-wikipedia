@@ -152,6 +152,15 @@ export function WikiArticleContent({
                 </motion.div>
               </div>
 
+              <Image
+                src={article.imageUrl ?? ""}
+                alt={article.title}
+                className="h-auto w-full object-cover absolute top-0 left-0"
+                width={10000}
+                height={10000}
+              />
+
+
               {/* Main Article Content */}
               <main className="flex-1 p-4">
                 <motion.div

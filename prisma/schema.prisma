@@ -99,6 +99,8 @@ model Article {
   approvedBy  String?
   approver    User?       @relation("approvedArticles", fields: [approvedBy], references: [id])
 
+  imageUrl    String?
+
   // New fields for quick facts
   quickFacts  Json  @default("{}")      // Stores key-value pairs for the quick facts section
   
