@@ -3,6 +3,34 @@ import { createTRPCRouter, adminProcedure } from "../../trpc";
 import { Role } from "@prisma/client";
 
 export const adminUsersRouter = createTRPCRouter({
+  create: adminProcedure
+    .input(
+      z.object({
+        name: z.string().min(2),
+        email: z.string().email(),
+        role: z.nativeEnum(Role),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      // Check if user with this email already exists
+      const existingUser = await ctx.db.user.findUnique({
+        where: { email: input.email },
+      });
+
+      if (existingUser) {
+        throw new Error("User with this email already exists");
+      }
+
+      // Create the user
+      return ctx.db.user.create({
+        data: {
+          name: input.name,
+          email: input.email,
+          role: input.role,
+        },
+      });
+    }),
+
   getAll: adminProcedure
     .input(
       z.object({

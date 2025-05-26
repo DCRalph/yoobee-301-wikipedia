@@ -23,13 +23,10 @@ import rehypeSlug from "rehype-slug";
 import { useState } from "react";
 import type { RouterOutputs } from "~/trpc/react";
 import React from "react";
-import {
-  SidebarProvider,
-  SidebarTrigger,
-} from "~/components/ui/sidebar";
+import { SidebarProvider, SidebarTrigger } from "~/components/ui/sidebar";
 import Image from "next/image";
 import { motion } from "framer-motion";
-
+import { markdownComponents } from "../components/custom-markdown-components";
 
 interface WikiArticleContentProps {
   article: RouterOutputs["user"]["articles"]["getBySlug"];
@@ -75,7 +72,7 @@ export function WikiArticleContent({
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
-      transition: { duration: 0.5 }
+      transition: { duration: 0.5 },
     },
   };
 
@@ -99,18 +96,15 @@ export function WikiArticleContent({
           <WikiArticleContents content={currentContent} />
 
           {/* Main Content Area */}
-          <div className="flex-1 relative">
+          <div className="relative flex-1">
             {/* Mobile sidebar trigger */}
-            <div className="p-2 fixed top-14 left-0 z-10 md:hidden">
+            <div className="fixed top-14 left-0 z-10 p-2 md:hidden">
               <SidebarTrigger className="border border-[#d4bc8b] bg-[#f9f5eb] text-[#4b2e13]" />
             </div>
 
             {/* AI Features Alert */}
             {!UseAi && (
-              <motion.div
-                className="p-4"
-                variants={fadeInVariants}
-              >
+              <motion.div className="p-4" variants={fadeInVariants}>
                 <div className="rounded-md bg-[#e8dcc3] p-4">
                   <div className="flex">
                     <div className="flex-shrink-0">
@@ -130,13 +124,10 @@ export function WikiArticleContent({
               </motion.div>
             )}
 
-            <div className="flex flex-col md:flex-row max-w-4xl mx-auto">
+            <div className="mx-auto flex max-w-4xl flex-col md:flex-row">
               {/* Large Image on the Left */}
-              <div className="p-4 md:sticky md:top-0 md:h-screen md:w-80 hidden">
-                <motion.div
-                  className="h-full"
-                  variants={itemVariants}
-                >
+              <div className="hidden p-4 md:sticky md:top-0 md:h-screen md:w-80">
+                <motion.div className="h-full" variants={itemVariants}>
                   <div className="overflow-hidden">
                     <Image
                       src="/placeholder.svg?height=800&width=600"
@@ -159,7 +150,6 @@ export function WikiArticleContent({
                 width={10000}
                 height={10000}
               /> */}
-
 
               {/* Main Article Content */}
               <main className="flex-1 p-4">
@@ -232,24 +222,28 @@ export function WikiArticleContent({
                         <div className="flex items-center gap-1">
                           <Clock className="h-4 w-4" />
                           <span>
-                            Last updated {formatDistanceToNow(new Date(article.updatedAt))}
+                            Last updated{" "}
+                            {formatDistanceToNow(new Date(article.updatedAt))}
                           </span>
                         </div>
-
                       </motion.div>
 
                       {/* Quick Facts */}
-                      {article.quickFacts && Object.keys(article.quickFacts as Record<string, unknown>).length > 0 && (
-                        <motion.div
-                          className="mb-6 rounded-lg border border-[#d4bc8b] bg-[#e8dcc3] p-4"
-                          variants={itemVariants}
-                        >
-                          <h3 className="mb-4 font-serif text-lg font-semibold text-[#3a2a14]">
-                            Quick Facts
-                          </h3>
-                          <dl className="space-y-3">
-                            {Object.entries(article.quickFacts as Record<string, unknown>).map(
-                              ([key, value]) => (
+                      {article.quickFacts &&
+                        Object.keys(
+                          article.quickFacts as Record<string, unknown>,
+                        ).length > 0 && (
+                          <motion.div
+                            className="mb-6 rounded-lg border border-[#d4bc8b] bg-[#e8dcc3] p-4"
+                            variants={itemVariants}
+                          >
+                            <h3 className="mb-4 font-serif text-lg font-semibold text-[#3a2a14]">
+                              Quick Facts
+                            </h3>
+                            <dl className="space-y-3">
+                              {Object.entries(
+                                article.quickFacts as Record<string, unknown>,
+                              ).map(([key, value]) => (
                                 <div
                                   key={key}
                                   className="flex items-center justify-between border-b border-[#d4bc8b] pb-2 last:border-b-0"
@@ -257,22 +251,30 @@ export function WikiArticleContent({
                                   <dt className="font-medium text-[#4b2e13]">
                                     {key}
                                   </dt>
-                                  <dd className="text-[#605244]">
-                                    {String(value)}
+                                  <dd className="text-[#605244] prose">
+                                    <ReactMarkdown
+                                      remarkPlugins={[remarkGfm]}
+                                      components={markdownComponents}
+                                    >
+                                      {String(value)}
+                                    </ReactMarkdown>
                                   </dd>
                                 </div>
-                              ),
-                            )}
-                          </dl>
-                        </motion.div>
-                      )}
+                              ))}
+                            </dl>
+                          </motion.div>
+                        )}
 
                       {/* Article Content */}
                       <motion.div
-                        className="prose font-serif max-w-none [&>:where(h1,h2,h3,h4,h5,h6)]:scroll-mt-24"
+                        className="prose max-w-none font-serif [&>:where(h1,h2,h3,h4,h5,h6)]:scroll-mt-24"
                         variants={itemVariants}
                       >
-                        <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeSlug]}>
+                        <ReactMarkdown
+                          remarkPlugins={[remarkGfm]}
+                          rehypePlugins={[rehypeSlug]}
+                          components={markdownComponents}
+                        >
                           {currentContent}
                         </ReactMarkdown>
                       </motion.div>
@@ -298,7 +300,7 @@ export function WikiArticleContent({
                             <Button
                               variant="outline"
                               size="sm"
-                              className=" border-[#d4bc8b] text-[#5c3c10] hover:bg-[#e8dcc3]"
+                              className="border-[#d4bc8b] text-[#5c3c10] hover:bg-[#e8dcc3]"
                               asChild
                             >
                               <Link href={`/wiki/${article.slug}/history`}>
@@ -391,7 +393,10 @@ export function WikiArticleContent({
                       <div className="p-4 text-[#5c3c10]">
                         {article.talkContent ? (
                           <div className="prose max-w-none text-[#3a2a14]">
-                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                            <ReactMarkdown
+                              remarkPlugins={[remarkGfm]}
+                              components={markdownComponents}
+                            >
                               {article.talkContent}
                             </ReactMarkdown>
                           </div>
@@ -423,7 +428,10 @@ export function WikiArticleContent({
                       <div className="p-4 text-[#5c3c10]">
                         {article.sources ? (
                           <div className="prose max-w-none text-[#3a2a14]">
-                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                            <ReactMarkdown
+                              remarkPlugins={[remarkGfm]}
+                              components={markdownComponents}
+                            >
                               {article.sources}
                             </ReactMarkdown>
                           </div>

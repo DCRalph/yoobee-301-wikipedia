@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import {
@@ -12,6 +13,7 @@ import {
 } from "~/components/ui/select";
 import { toast } from "sonner";
 import { Role } from "@prisma/client";
+import { api } from "~/trpc/react";
 
 interface NewUserFormData {
   name: string;
@@ -24,6 +26,7 @@ type FormChangeEvent =
   | { name: keyof NewUserFormData; value: string };
 
 export function NewUserForm() {
+  const router = useRouter();
   const [formData, setFormData] = useState<NewUserFormData>({
     name: "",
     email: "",
@@ -32,6 +35,16 @@ export function NewUserForm() {
   const [errors, setErrors] = useState<
     Partial<Record<keyof NewUserFormData, string>>
   >({});
+
+  const createUserMutation = api.admin.users.create.useMutation({
+    onSuccess: () => {
+      toast.success("User created successfully");
+      router.push("/admin/users");
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to create user");
+    },
+  });
 
   const validateForm = () => {
     const newErrors: Partial<Record<keyof NewUserFormData, string>> = {};
@@ -60,10 +73,12 @@ export function NewUserForm() {
     }
 
     try {
-      // TODO: Implement user creation API call
-      console.log(formData);
-      toast.success("User created successfully");
-    } catch {
+      createUserMutation.mutate({
+        name: formData.name,
+        email: formData.email,
+        role: formData.role,
+      });
+    } catch (error) {
       toast.error("Failed to create user");
     }
   };
@@ -150,7 +165,9 @@ export function NewUserForm() {
           {errors.role && <p className="text-sm text-red-500">{errors.role}</p>}
         </div>
 
-        <Button type="submit">Create User</Button>
+        <Button type="submit" disabled={createUserMutation.isPending}>
+          {createUserMutation.isPending ? "Creating..." : "Create User"}
+        </Button>
       </form>
     </div>
   );

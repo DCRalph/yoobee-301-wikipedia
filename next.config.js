@@ -7,7 +7,7 @@ import "./src/env.js";
 /** @type {import("next").NextConfig} */
 const config = {
   images: {
-    domains: ["cdn.discordapp.com", "lh3.googleusercontent.com", "placehold.co"],
+    // domains: ["cdn.discordapp.com", "lh3.googleusercontent.com", "placehold.co"],
     remotePatterns: [
       {
         protocol: "https",
@@ -18,6 +18,12 @@ const config = {
       {
         protocol: "https",
         hostname: "placehold.co",
+        port: "",
+        pathname: "**",
+      },
+      {
+        protocol: "https",
+        hostname: "upload.wikimedia.org",
         port: "",
         pathname: "**",
       },
