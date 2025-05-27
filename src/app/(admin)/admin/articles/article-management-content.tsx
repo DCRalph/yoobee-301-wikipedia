@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Table,
@@ -40,17 +40,39 @@ import {
   Clock,
 } from "lucide-react";
 import { formatDistanceToNow } from "~/lib/date-utils";
+import {
+  PaginatedSearchList,
+  type PaginatedSearchListRef,
+  type SortOption,
+} from "~/components/PaginatedSearchList";
 
 export function ArticleManagementContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const status = searchParams.get("status");
   const approval = searchParams.get("approval");
+  const searchRef = useRef<PaginatedSearchListRef>(null);
 
   const [mounted, setMounted] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [articleToDelete, setArticleToDelete] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [currentSort, setCurrentSort] = useState<SortOption>({
+    field: "updatedAt",
+    direction: "desc",
+    label: "Recently Updated",
+  });
+
+  // Available sort options
+  const sortOptions: SortOption[] = [
+    { field: "title", direction: "asc", label: "Title A-Z" },
+    { field: "title", direction: "desc", label: "Title Z-A" },
+    { field: "updatedAt", direction: "desc", label: "Recently Updated" },
+    { field: "updatedAt", direction: "asc", label: "Oldest Updated" },
+    { field: "createdAt", direction: "desc", label: "Recently Created" },
+    { field: "createdAt", direction: "asc", label: "Oldest Created" },
+  ];
 
   // Determine if we should filter by published status
   const filterPublished =
@@ -71,13 +93,17 @@ export function ArticleManagementContent() {
   // Get articles API
   const articlesApi = api.admin.articles;
 
-  // Query articles with tRPC
+  // Query articles with tRPC - modified to support pagination
   const { data, isLoading, refetch } = articlesApi.getAll.useQuery(
     {
+      page: currentPage,
       limit: 100,
+      search: searchTerm,
       filterPublished,
       filterApproved,
       filterNeedsApproval,
+      sortField: currentSort.field,
+      sortDirection: currentSort.direction,
     },
     { enabled: mounted },
   );
@@ -100,15 +126,6 @@ export function ArticleManagementContent() {
   useEffect(() => {
     setMounted(true);
   }, []);
-
-  // Filter articles based on search term
-  const filteredArticles = data?.articles.filter((article) => {
-    const searchLower = searchTerm.toLowerCase();
-    return (
-      article.title.toLowerCase().includes(searchLower) ||
-      article.slug.toLowerCase().includes(searchLower)
-    );
-  });
 
   // Handle delete confirmation
   const confirmDelete = (articleId: string) => {
@@ -144,6 +161,35 @@ export function ArticleManagementContent() {
     });
   };
 
+  // Handle search
+  const handleSearch = (search: string) => {
+    setSearchTerm(search);
+    setCurrentPage(1); // Reset to first page on new search
+  };
+
+  // Handle page change
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  // Handle sort change
+  const handleSortChange = (sort: SortOption) => {
+    setCurrentSort(sort);
+  };
+
+  // Add tag to search (for status/approval filters)
+  const addSearchTag = (tag: string) => {
+    searchRef.current?.addTag(tag);
+  };
+
+  // Calculate pagination data
+  const pagination = {
+    total: data?.total ?? 0,
+    page: currentPage,
+    limit: 100,
+    totalPages: Math.ceil((data?.total ?? 0) / 100),
+  };
+
   return (
     <div className="mx-auto max-w-5xl space-y-6 p-8">
       <div className="flex items-center justify-between">
@@ -172,7 +218,12 @@ export function ArticleManagementContent() {
           <Button
             variant={status === "published" ? "default" : "outline"}
             size="sm"
-            onClick={() => router.push("/admin/articles?status=published")}
+            onClick={() => {
+              router.push("/admin/articles?status=published");
+              if (status !== "published") {
+                addSearchTag("published");
+              }
+            }}
           >
             <Check className="mr-2 h-4 w-4 text-green-500" />
             Published
@@ -180,7 +231,12 @@ export function ArticleManagementContent() {
           <Button
             variant={status === "draft" ? "default" : "outline"}
             size="sm"
-            onClick={() => router.push("/admin/articles?status=draft")}
+            onClick={() => {
+              router.push("/admin/articles?status=draft");
+              if (status !== "draft") {
+                addSearchTag("draft");
+              }
+            }}
           >
             <Clock className="mr-2 h-4 w-4 text-amber-500" />
             Drafts
@@ -200,13 +256,16 @@ export function ArticleManagementContent() {
           <Button
             variant={approval === "approved" ? "default" : "outline"}
             size="sm"
-            onClick={() =>
+            onClick={() => {
               router.push(
                 status
                   ? `/admin/articles?status=${status}&approval=approved`
                   : "/admin/articles?approval=approved",
-              )
-            }
+              );
+              if (approval !== "approved") {
+                addSearchTag("approved");
+              }
+            }}
           >
             <Check className="mr-2 h-4 w-4 text-green-500" />
             Approved
@@ -214,13 +273,16 @@ export function ArticleManagementContent() {
           <Button
             variant={approval === "pending" ? "default" : "outline"}
             size="sm"
-            onClick={() =>
+            onClick={() => {
               router.push(
                 status
                   ? `/admin/articles?status=${status}&approval=pending`
                   : "/admin/articles?approval=pending",
-              )
-            }
+              );
+              if (approval !== "pending") {
+                addSearchTag("pending");
+              }
+            }}
           >
             <Clock className="mr-2 h-4 w-4 text-blue-500" />
             Pending Approval
@@ -228,13 +290,16 @@ export function ArticleManagementContent() {
           <Button
             variant={approval === "rejected" ? "default" : "outline"}
             size="sm"
-            onClick={() =>
+            onClick={() => {
               router.push(
                 status
                   ? `/admin/articles?status=${status}&approval=rejected`
                   : "/admin/articles?approval=rejected",
-              )
-            }
+              );
+              if (approval !== "rejected") {
+                addSearchTag("rejected");
+              }
+            }}
           >
             <X className="mr-2 h-4 w-4 text-red-500" />
             Rejected
@@ -253,7 +318,18 @@ export function ArticleManagementContent() {
         </div>
       </div>
 
-      <div className="rounded-md border">
+      <PaginatedSearchList
+        ref={searchRef}
+        onSearch={handleSearch}
+        onPageChange={handlePageChange}
+        onSortChange={handleSortChange}
+        pagination={pagination}
+        searchPlaceholder="Search articles..."
+        isLoading={isLoading}
+        initialSearchValue={searchParams.get("q") ?? ""}
+        sortOptions={sortOptions}
+        initialSort={currentSort}
+      >
         <Table>
           <TableHeader>
             <TableRow>
@@ -273,8 +349,8 @@ export function ArticleManagementContent() {
                   Loading articles...
                 </TableCell>
               </TableRow>
-            ) : filteredArticles && filteredArticles.length > 0 ? (
-              filteredArticles.map((article) => (
+            ) : data?.articles && data.articles.length > 0 ? (
+              data.articles.map((article) => (
                 <TableRow key={article.id}>
                   <TableCell className="font-medium">{article.title}</TableCell>
                   <TableCell className="text-muted-foreground">
@@ -397,7 +473,7 @@ export function ArticleManagementContent() {
             )}
           </TableBody>
         </Table>
-      </div>
+      </PaginatedSearchList>
 
       {/* Delete confirmation dialog */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>

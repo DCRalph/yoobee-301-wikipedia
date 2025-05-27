@@ -1,4 +1,4 @@
-import { WikiArticleList } from "./wiki-article-list";
+import WikiArticleListWithSuspense from "./wiki-article-list";
 
 export const metadata = {
   title: "Articles | Modern Wikipedia Clone",
@@ -6,6 +6,5 @@ export const metadata = {
 };
 
 export default function page() {
-  return <WikiArticleList />;
+  return <WikiArticleListWithSuspense />;
 }
-

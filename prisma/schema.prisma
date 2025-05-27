@@ -84,6 +84,20 @@ model User {
   approvedRevisions Revision[] @relation("approvedRevisions")
 }
 
+/// Model to track IP address views for Articles
+model ArticleView {
+  id        String   @id @default(cuid())
+  ip        String
+  articleId String
+  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([ip, articleId], name: "ip_articleId")
+  @@index([ip])
+  @@index([articleId])
+  @@index([createdAt])
+}
+
 /// The Article model represents a Wikipedia-like article.
 model Article {
   id          String      @id @default(cuid())
@@ -110,6 +124,7 @@ model Article {
   viewCount   Int         @default(0)
   dailyViews  Int         @default(0)
   lastViewReset DateTime  @default(now())
+  views       ArticleView[]
 
   // Quick facts and metadata
   quickFacts  Json        @default("{}")
@@ -127,6 +142,18 @@ model Article {
   @@index([isFeatured, featuredAt])
   @@index([dailyViews])
   @@index([viewCount])
+  @@index([published])
+  @@index([slug])
+  @@index([title])
+  @@index([authorId])
+  @@index([createdAt])
+  @@index([updatedAt])
+
+  @@index([published, approved, needsApproval, createdAt])
+  @@index([published, approved, needsApproval, createdAt, updatedAt])
+  @@index([published, approved, needsApproval, createdAt, title, slug])
+  @@index([isFeatured, published, approved, needsApproval])
+  
 }
 
 /// The Category model for organizing articles

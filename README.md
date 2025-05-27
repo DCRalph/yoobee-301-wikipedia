@@ -14,10 +14,24 @@ This application now includes advanced AI summaries powered by OpenAI's GPT mode
 
 If the API key is not available or there's an error with the OpenAI service, the application will automatically fall back to a basic summary algorithm.
 
-## Summary Level Options
 
-The summary generator supports three levels of comprehension:
+# Live: [wiki.w-g.co](https://wiki.w-g.co)
 
-- **Novice**: Simple overview with basic vocabulary
-- **Intermediate**: Balanced summary with moderate technical details
-- **Advanced**: Comprehensive technical analysis with in-depth explanations
+## Stats
+
+Progress Update:
+Lines processed: 18410541
+Success: 5839351 + 400000 + 30699
+Skipped (length): 11740192 
+Skipped (already exists):30699
+Skipped (other): 0
+Errors: 185
+Jobs queued: 83
+Workers busy: 32
+File read: 99%
+Bytes read: 62.5784 GB
+Total size: 62.5792 GB
+
+- **18 Million articles downloaded**
+- **6.2 Million after filtering**
+- **19Gb in postgress**

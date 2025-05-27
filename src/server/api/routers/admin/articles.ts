@@ -1,40 +1,131 @@
 import { z } from "zod";
 import { createTRPCRouter, adminProcedure } from "../../trpc";
 import { TRPCError } from "@trpc/server";
+import { type Prisma } from "@prisma/client";
 
 export const adminArticlesRouter = createTRPCRouter({
   getAll: adminProcedure
     .input(
       z.object({
+        page: z.number().min(1).default(1),
         limit: z.number().min(1).max(100).default(10),
-        cursor: z.string().nullish(),
+        search: z.string().optional(),
         filterPublished: z.boolean().optional(),
         filterApproved: z.boolean().optional(),
         filterNeedsApproval: z.boolean().optional(),
+        sortField: z.string().optional().default("updatedAt"),
+        sortDirection: z.enum(["asc", "desc"]).optional().default("desc"),
       }),
     )
     .query(async ({ ctx, input }) => {
       const {
+        page,
         limit,
-        cursor,
+        search,
         filterPublished,
         filterApproved,
         filterNeedsApproval,
+        sortField,
+        sortDirection,
       } = input;
 
+      // Calculate offset based on page and limit
+      const skip = (page - 1) * limit;
+
+      // Build where conditions based on filters and search term
+      const whereConditions: Prisma.ArticleWhereInput = {};
+
+      // Apply status filters
+      if (filterPublished !== undefined) {
+        whereConditions.published = filterPublished;
+      }
+
+      if (filterApproved !== undefined) {
+        whereConditions.approved = filterApproved;
+      }
+
+      if (filterNeedsApproval !== undefined) {
+        whereConditions.needsApproval = filterNeedsApproval;
+      }
+
+      // Apply search term if provided
+      if (search && search.trim() !== "") {
+        const searchTerm = search.trim();
+
+        // Extract tags from search term
+        const tagRegex = /\[([^\]]+)\]/g;
+        const tags: string[] = [];
+        let match;
+        let searchString = searchTerm;
+
+        while ((match = tagRegex.exec(searchTerm)) !== null) {
+          const tag = match[1];
+          if (tag) {
+            tags.push(tag);
+          }
+        }
+
+        // Remove tags from search string
+        searchString = searchTerm.replace(/\[[^\]]+\]/g, "").trim();
+
+        // Process tags
+        tags.forEach((tag) => {
+          // Handle specific tags
+          if (tag.toLowerCase() === "published") {
+            whereConditions.published = true;
+          } else if (tag.toLowerCase() === "draft") {
+            whereConditions.published = false;
+          } else if (tag.toLowerCase() === "approved") {
+            whereConditions.approved = true;
+          } else if (tag.toLowerCase() === "pending") {
+            whereConditions.needsApproval = true;
+          } else if (tag.toLowerCase() === "rejected") {
+            whereConditions.approved = false;
+            whereConditions.needsApproval = false;
+          }
+        });
+
+        // Apply text search if there's any remaining search string
+        if (searchString) {
+          whereConditions.OR = [
+            { title: { contains: searchString, mode: "insensitive" } },
+            { slug: { contains: searchString, mode: "insensitive" } },
+            // { content: { contains: searchString, mode: "insensitive" } },
+          ];
+        }
+      }
+
+      // Count total articles matching the query
+      const total = await ctx.db.article.count({
+        where: whereConditions,
+      });
+
+      // Setup sort options - validate the field is an actual field in the model
+      // Only allow sorting by specific fields to prevent SQL injection
+      const allowedSortFields = [
+        "title",
+        "slug",
+        "updatedAt",
+        "createdAt",
+        "published",
+        "approved",
+      ];
+
+      const finalSortField = allowedSortFields.includes(sortField)
+        ? sortField
+        : "updatedAt";
+
+      // Create dynamic order by object
+      const orderBy: Prisma.ArticleOrderByWithRelationInput = {
+        [finalSortField]: sortDirection,
+      };
+
+      // Get articles with pagination
       const articles = await ctx.db.article.findMany({
-        take: limit + 1,
-        cursor: cursor ? { id: cursor } : undefined,
-        orderBy: { updatedAt: "desc" },
-        where: {
-          ...(filterPublished !== undefined
-            ? { published: filterPublished }
-            : {}),
-          ...(filterApproved !== undefined ? { approved: filterApproved } : {}),
-          ...(filterNeedsApproval !== undefined
-            ? { needsApproval: filterNeedsApproval }
-            : {}),
-        },
+        skip,
+        take: limit,
+        where: whereConditions,
+        orderBy,
         include: {
           author: {
             select: {
@@ -46,15 +137,12 @@ export const adminArticlesRouter = createTRPCRouter({
         },
       });
 
-      let nextCursor: typeof cursor = undefined;
-      if (articles.length > limit) {
-        const nextItem = articles.pop();
-        nextCursor = nextItem?.id;
-      }
-
       return {
         articles,
-        nextCursor,
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
       };
     }),
 

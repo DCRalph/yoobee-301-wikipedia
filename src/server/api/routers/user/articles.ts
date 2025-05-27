@@ -16,24 +16,58 @@ export const userArticlesRouter = createTRPCRouter({
       z.object({
         limit: z.number().min(1).max(100).default(10),
         cursor: z.string().nullish(),
-        filterPublished: z.boolean().optional(),
+        page: z.number().min(1).default(1),
+        sortBy: z
+          .enum(["viewCount", "dailyViews", "updatedAt"])
+          .default("updatedAt"),
+        searchTerm: z.string().optional(),
       }),
     )
     .query(async ({ ctx, input }) => {
-      const { limit, cursor, filterPublished } = input;
+      const { limit, cursor, sortBy, searchTerm, page } =
+        input;
 
+      // Build the where clause based on filters and search term
       const where = {
-        ...(filterPublished !== undefined
-          ? { published: filterPublished }
-          : {}),
+        published: true,
         approved: true,
         needsApproval: false,
+        ...(searchTerm !== undefined && searchTerm.trim() !== ""
+          ? {
+              OR: [
+                {
+                  title: { contains: searchTerm, mode: "insensitive" as const },
+                },
+                // {
+                //   content: {
+                //     contains: searchTerm,
+                //     mode: "insensitive" as const,
+                //   },
+                // },
+                {
+                  slug: { contains: searchTerm, mode: "insensitive" as const },
+                },
+              ],
+            }
+          : {}),
+      };
+
+      // Get total count for pagination
+      const total = await ctx.db.article.count({ where });
+
+      // Calculate skip based on page number if provided, otherwise use cursor
+      const skip = cursor ? undefined : (page - 1) * limit;
+
+      // Determine sort order
+      const orderBy = {
+        [sortBy]: "desc",
       };
 
       const articles = await ctx.db.article.findMany({
         take: limit + 1,
+        skip,
         cursor: cursor ? { id: cursor } : undefined,
-        orderBy: { updatedAt: "desc" },
+        orderBy,
         where,
         include: {
           author: {
@@ -55,6 +89,12 @@ export const userArticlesRouter = createTRPCRouter({
       return {
         articles,
         nextCursor,
+        pagination: {
+          total,
+          page,
+          limit,
+          totalPages: Math.ceil(total / limit),
+        },
       };
     }),
 
@@ -381,7 +421,7 @@ export const userArticlesRouter = createTRPCRouter({
       const contentChanged =
         article.content !== input.content ||
         JSON.stringify(article.quickFacts) !==
-        JSON.stringify(input.quickFacts) ||
+          JSON.stringify(input.quickFacts) ||
         article.sources !== input.sources ||
         article.talkContent !== input.talkContent;
 
@@ -410,12 +450,12 @@ export const userArticlesRouter = createTRPCRouter({
         aiMessage =
           aiModeration.error ??
           `AI Review Summary:\n` +
-          `${aiModeration.reason}\n\n` +
-          `Factual Accuracy & Relevance: ${aiModeration.factual_accuracy_and_relevance}\n` +
-          `Coherence & Readability: ${aiModeration.coherence_and_readability}\n` +
-          `Substance: ${aiModeration.substance}\n` +
-          `Value of Contribution: ${aiModeration.contribution_value}\n\n` +
-          `Overall Score: ${aiModeration.score}/10`;
+            `${aiModeration.reason}\n\n` +
+            `Factual Accuracy & Relevance: ${aiModeration.factual_accuracy_and_relevance}\n` +
+            `Coherence & Readability: ${aiModeration.coherence_and_readability}\n` +
+            `Substance: ${aiModeration.substance}\n` +
+            `Value of Contribution: ${aiModeration.contribution_value}\n\n` +
+            `Overall Score: ${aiModeration.score}/10`;
       }
 
       // Create a revision with the new content

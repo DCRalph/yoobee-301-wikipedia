@@ -21,7 +21,7 @@ export function RecentArticles() {
 
   // Get published articles only
   const { data, isLoading } = api.user.articles.getAll.useQuery(
-    { filterPublished: true, limit: 6 },
+    { limit: 6 },
     { enabled: mounted },
   );
 

@@ -23,7 +23,7 @@ export const adminDashboardRouter = createTRPCRouter({
     const publishedArticles = await ctx.db.article.findMany({
       where: { published: true },
       orderBy: { updatedAt: "desc" },
-      // take: 5,
+      take: 5,
       include: {
         author: {
           select: {

@@ -1,66 +1,155 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import Image from "next/image"
-import { useSession } from "next-auth/react"
-import { ChevronLeft, ChevronRight, Globe, Search } from "lucide-react"
-import { useEffect, useState } from "react"
-import CategorySelector from "../components/CategorySelector"
-import { api } from "~/trpc/react"
+import Link from "next/link";
+import Image from "next/image";
+import { useSession } from "next-auth/react";
+import { useEffect, useState, useRef } from "react";
+import CategorySelector from "../components/CategorySelector";
+import { api } from "~/trpc/react";
 
-// Types for our API responses
-type FeaturedArticle = {
-  id: string;
-  title: string;
-  excerpt: string;
-  imageUrl: string;
-  category: string;
-  readMoreUrl: string;
-};
-
-type TrendingArticle = {
-  id: string;
-  title: string;
-  excerpt: string;
-  imageUrl?: string;
-  category: string;
-  readMoreUrl: string;
-};
-
-type DailyContent = {
-  todaysArticle: {
+// Type for HomeContent API response
+type HomeContent = {
+  featured: Array<{
     id: string;
     title: string;
     excerpt: string;
-    imageUrl: string;
+    imageUrl?: string;
+    category: string;
     readMoreUrl: string;
-  };
-  onThisDay: {
+  }>;
+  trending: Array<{
     id: string;
     title: string;
     excerpt: string;
-    imageUrl: string;
+    imageUrl?: string;
+    category: string;
     readMoreUrl: string;
-    items: Array<{
+  }>;
+  daily: {
+    todaysArticle?: {
       id: string;
-      year: number;
-      text: string;
-      readMoreUrl?: string;
-    }>;
+      title: string;
+      excerpt: string;
+      imageUrl?: string;
+      readMoreUrl: string;
+    };
+    onThisDay?: {
+      id: string;
+      title: string;
+      excerpt: string;
+      imageUrl?: string;
+      readMoreUrl: string;
+      items: Array<{
+        id: string;
+        year: number;
+        text: string;
+        readMoreUrl?: string;
+      }>;
+    };
+  };
+  stats?: {
+    totalArticles: number;
+    totalUsers: number;
+    totalCategories: number;
+    dailyViews: number;
   };
 };
 
-export default function Home() {
-  const { data: session } = useSession()
-  const { data: featuredArticlesData, isLoading: isFeaturedLoading } = api.home.getFeaturedArticles.useQuery()
-  const { data: trendingArticlesData, isLoading: isTrendingLoading } = api.home.getTrendingArticles.useQuery()
-  const { data: dailyContentData, isLoading: isDailyLoading } = api.home.getDailyContent.useQuery()
+// CountUp animation component
+const CountUp = ({
+  end,
+  duration = 2000,
+  prefix = "",
+  suffix = "",
+}: {
+  end: number;
+  duration?: number;
+  prefix?: string;
+  suffix?: string;
+}) => {
+  const [count, setCount] = useState(0);
+  const countRef = useRef(0);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const startTimeRef = useRef<number | null>(null);
 
-  const loading = isFeaturedLoading || isTrendingLoading || isDailyLoading
+  useEffect(() => {
+    startTimeRef.current = Date.now();
+    const step = () => {
+      const now = Date.now();
+      const elapsed = now - (startTimeRef.current ?? now);
+      const progress = Math.min(elapsed / duration, 1);
+
+      countRef.current = Math.floor(progress * end);
+      setCount(countRef.current);
+
+      if (progress < 1) {
+        timerRef.current = setTimeout(step, 16); // roughly 60fps
+      }
+    };
+
+    step();
+
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+    };
+  }, [end, duration]);
 
   return (
-    <div className="flex min-h-screen flex-col ">
+    <span>
+      {prefix}
+      {count.toLocaleString()}
+      {suffix}
+    </span>
+  );
+};
 
+// Article Card component to display articles
+const ArticleCard = ({
+  title,
+  excerpt,
+  readMoreUrl,
+  darkMode = false,
+}: {
+  title: string;
+  excerpt: string;
+  readMoreUrl: string;
+  darkMode?: boolean;
+}) => (
+  <div
+    className={`p-4 ${darkMode ? "bg-[#6b4c35] text-white" : "border border-[#d0c0a0] bg-white"}`}
+  >
+    <h4 className="mb-2 font-medium">{title}</h4>
+    <p className="line-clamp-3 text-sm">{excerpt}</p>
+    <div className="mt-4 text-right">
+      <Link
+        href={readMoreUrl}
+        className={`${darkMode ? "text-white" : "text-[#6b4c35]"} hover:underline`}
+      >
+        Read more
+      </Link>
+    </div>
+  </div>
+);
+
+// Section header component
+const SectionHeader = ({ title }: { title: string }) => (
+  <div className="mb-6 flex items-center justify-center">
+    <div className="h-px w-12 bg-[#c0a080]"></div>
+    <h2 className="mx-4 text-center font-serif text-2xl font-medium">
+      {title}
+    </h2>
+    <div className="h-px w-12 bg-[#c0a080]"></div>
+  </div>
+);
+
+export default function Home() {
+  const { data: session } = useSession();
+  const { data: homeContent, isLoading } = api.home.getHomeContent.useQuery();
+
+  return (
+    <div className="flex min-h-screen flex-col">
       {/* Hero Section */}
       <section className="relative h-[300px] overflow-hidden">
         <div className="absolute inset-0">
@@ -73,222 +162,345 @@ export default function Home() {
           />
         </div>
         <div className="absolute inset-0 flex flex-col items-end justify-center px-12 text-white">
-          <h1 className="text-4xl md:text-5xl font-serif mb-2">Welcome to Wikipedia</h1>
-          <p className="text-xl md:text-2xl font-serif">the free encyclopedia</p>
+          <h1 className="mb-2 font-serif text-4xl md:text-5xl">
+            Welcome to Wikipedia
+          </h1>
+          <p className="font-serif text-xl md:text-2xl">
+            the free encyclopedia
+          </p>
         </div>
       </section>
 
-      {/* Divider */}
-      <div className="container mx-auto my-8 flex items-center justify-center">
-        <div className="h-px w-full max-w-3xl bg-[#c0a080]"></div>
-        <div className="mx-4 h-2 w-2 rotate-45 bg-[#c0a080]"></div>
-        <div className="h-px w-full max-w-3xl bg-[#c0a080]"></div>
-      </div>
-
       {/* Categories Section */}
-      <section className="container mx-auto mb-12 px-4">
-        <h2 className="mb-2 text-center text-3xl font-serif">Articles</h2>
-        <p className="mb-6 text-center">Find an article under the categories</p>
+      <section className="container mx-auto my-12 px-4">
+        <SectionHeader title="Browse by Category" />
         <CategorySelector />
       </section>
 
       {/* News and Trending Section */}
-      <section className="container mx-auto mb-12 px-4">
-        <div className="relative mx-auto max-w-5xl">
-          <div className="absolute -left-4 top-4 bg-white px-4 py-2 shadow-md z-10">
-            <h3 className="text-lg font-medium">News</h3>
+      <section className="container mx-auto my-16 px-4">
+        <SectionHeader title="Featured & Trending" />
+
+        {isLoading ? (
+          <div className="flex justify-center py-20">
+            <div className="h-12 w-12 animate-spin rounded-full border-t-2 border-b-2 border-[#6b4c35]"></div>
           </div>
-
-          <div className="absolute -right-4 top-4 bg-white px-4 py-2 shadow-md z-10">
-            <h3 className="text-lg font-medium">Trending</h3>
-          </div>
-
-          {loading ? (
-            <div className="flex justify-center py-20">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#6b4c35]"></div>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="overflow-hidden">
-                {featuredArticlesData && featuredArticlesData.length > 0 && (
-                  <Image
-                    src={featuredArticlesData[0]?.imageUrl ?? "/home/1.png"}
-                    alt={featuredArticlesData[0]?.title ?? "Featured Article"}
-                    width={300}
-                    height={200}
-                    className="h-[200px] w-full object-cover"
-                  />
-                )}
-              </div>
-
-              <div className="col-span-2 grid grid-cols-2 gap-4">
-                <div className="bg-[#6b4c35] p-4 text-white">
-                  {featuredArticlesData && featuredArticlesData.length > 0 && (
-                    <>
-                      <h4 className="font-medium mb-2">{featuredArticlesData[0]?.title}</h4>
-                      <p>{featuredArticlesData[0]?.excerpt}</p>
-                      <div className="mt-4 text-right">
-                        <Link href={featuredArticlesData[0]?.readMoreUrl ?? "#"} className="text-white hover:underline">
-                          Read more
-                        </Link>
+        ) : (
+          <div className="mx-auto max-w-5xl">
+            <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2">
+              <div>
+                <h3 className="mb-4 border-b border-[#c0a080] pb-2 font-serif text-xl">
+                  Featured Articles
+                </h3>
+                <div className="grid gap-4">
+                  {homeContent?.featured && homeContent.featured.length > 0 ? (
+                    homeContent.featured.slice(0, 2).map((article) => (
+                      <div
+                        key={article.id}
+                        className="grid grid-cols-1 gap-4 md:grid-cols-3"
+                      >
+                        {article.imageUrl && (
+                          <div className="overflow-hidden">
+                            <Image
+                              src={article.imageUrl}
+                              alt={article.title}
+                              width={300}
+                              height={200}
+                              className="h-[160px] w-full object-cover"
+                            />
+                          </div>
+                        )}
+                        <div
+                          className={`${article.imageUrl ? "md:col-span-2" : "col-span-full"}`}
+                        >
+                          <ArticleCard
+                            title={article.title}
+                            excerpt={article.excerpt}
+                            readMoreUrl={article.readMoreUrl}
+                            darkMode={true}
+                          />
+                        </div>
                       </div>
-                    </>
-                  )}
-                </div>
-
-                <div className="bg-white p-4 border border-[#d0c0a0]">
-                  {trendingArticlesData && trendingArticlesData.length > 0 && (
-                    <>
-                      <h4 className="font-medium mb-2">{trendingArticlesData[0]?.title}</h4>
-                      <p>{trendingArticlesData[0]?.excerpt}</p>
-                      <div className="mt-4 text-right">
-                        <Link href={trendingArticlesData[0]?.readMoreUrl ?? "#"} className="text-[#6b4c35] hover:underline">
-                          Read more
-                        </Link>
-                      </div>
-                    </>
-                  )}
-                </div>
-
-                <div className="bg-[#6b4c35] p-4 text-white">
-                  {trendingArticlesData && trendingArticlesData.length > 1 && (
-                    <>
-                      <h4 className="font-medium mb-2">{trendingArticlesData[1]?.title}</h4>
-                      <p>{trendingArticlesData[1]?.excerpt}</p>
-                      <div className="mt-4 text-right">
-                        <Link href={trendingArticlesData[1]?.readMoreUrl ?? "#"} className="text-white hover:underline">
-                          Read more
-                        </Link>
-                      </div>
-                    </>
-                  )}
-                </div>
-
-                <div className="overflow-hidden">
-                  {featuredArticlesData && featuredArticlesData.length > 1 && (
-                    <Image
-                      src={featuredArticlesData[1]?.imageUrl ?? "/home/2.png"}
-                      alt={featuredArticlesData[1]?.title ?? "Featured Article"}
-                      width={300}
-                      height={200}
-                      className="h-full w-full object-cover"
-                    />
+                    ))
+                  ) : (
+                    <p className="text-center text-gray-500">
+                      No featured articles available
+                    </p>
                   )}
                 </div>
               </div>
+
+              <div>
+                <h3 className="mb-4 border-b border-[#c0a080] pb-2 font-serif text-xl">
+                  Trending Now
+                </h3>
+                <div className="grid gap-4">
+                  {homeContent?.trending && homeContent.trending.length > 0 ? (
+                    homeContent.trending.slice(0, 2).map((article) => (
+                      <div
+                        key={article.id}
+                        className="grid grid-cols-1 gap-4 md:grid-cols-3"
+                      >
+                        <div
+                          className={`${article.imageUrl ? "md:col-span-2" : "col-span-full"}`}
+                        >
+                          <ArticleCard
+                            title={article.title}
+                            excerpt={article.excerpt}
+                            readMoreUrl={article.readMoreUrl}
+                            darkMode={false}
+                          />
+                        </div>
+                        {article.imageUrl && (
+                          <div className="overflow-hidden">
+                            <Image
+                              src={article.imageUrl}
+                              alt={article.title}
+                              width={300}
+                              height={200}
+                              className="h-[160px] w-full object-cover"
+                            />
+                          </div>
+                        )}
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-center text-gray-500">
+                      No trending articles available
+                    </p>
+                  )}
+                </div>
+              </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </section>
 
       {/* Today's Article and On This Day Section */}
-      <section className="container mx-auto mb-12 px-4">
-        <div className="relative mx-auto max-w-5xl">
-          <div className="absolute -left-4 top-4 bg-white px-4 py-2 shadow-md z-10">
-            <h3 className="text-lg font-medium">{"Today's Article"}</h3>
-          </div>
+      <section className="container mx-auto my-16 px-4 pb-12">
+        <SectionHeader title="Daily Content" />
 
-          <div className="absolute -right-4 top-4 bg-white px-4 py-2 shadow-md z-10">
-            <h3 className="text-lg font-medium">On this day</h3>
+        {isLoading ? (
+          <div className="flex justify-center py-20">
+            <div className="h-12 w-12 animate-spin rounded-full border-t-2 border-b-2 border-[#6b4c35]"></div>
           </div>
-
-          {loading ? (
-            <div className="flex justify-center py-20">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#6b4c35]"></div>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="overflow-hidden">
-                {dailyContentData && (
-                  <Image
-                    src={dailyContentData.todaysArticle.imageUrl}
-                    alt={dailyContentData.todaysArticle.title}
-                    width={300}
-                    height={200}
-                    className="h-[200px] w-full object-cover"
-                  />
+        ) : (
+          <div className="mx-auto max-w-5xl">
+            <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2">
+              {/* Today's Article */}
+              <div>
+                <h3 className="mb-4 border-b border-[#c0a080] pb-2 font-serif text-xl">
+                  {"Today's Article"}
+                </h3>
+                {homeContent?.daily?.todaysArticle ? (
+                  <div className="grid grid-cols-1 gap-4">
+                    {homeContent.daily.todaysArticle.imageUrl && (
+                      <div className="overflow-hidden">
+                        <Image
+                          src={homeContent.daily.todaysArticle.imageUrl}
+                          alt={homeContent.daily.todaysArticle.title}
+                          width={600}
+                          height={300}
+                          className="h-[240px] w-full object-cover"
+                        />
+                      </div>
+                    )}
+                    <ArticleCard
+                      title={homeContent.daily.todaysArticle.title}
+                      excerpt={homeContent.daily.todaysArticle.excerpt}
+                      readMoreUrl={homeContent.daily.todaysArticle.readMoreUrl}
+                      darkMode={false}
+                    />
+                  </div>
+                ) : (
+                  <p className="text-center text-gray-500">
+                    No article of the day available
+                  </p>
                 )}
               </div>
 
-              <div className="col-span-2 grid grid-cols-2 gap-4">
-                <div className="bg-white p-4 border border-[#d0c0a0]">
-                  {dailyContentData && (
-                    <>
-                      <h4 className="font-medium mb-2">{dailyContentData.todaysArticle.title}</h4>
-                      <p>{dailyContentData.todaysArticle.excerpt}</p>
-                      <div className="mt-4 text-right">
-                        <Link href={dailyContentData.todaysArticle.readMoreUrl} className="text-[#6b4c35] hover:underline">
-                          Read more
-                        </Link>
+              {/* On This Day */}
+              <div>
+                <h3 className="mb-4 border-b border-[#c0a080] pb-2 font-serif text-xl">
+                  On This Day
+                </h3>
+                {homeContent?.daily?.onThisDay ? (
+                  <div className="grid grid-cols-1 gap-4">
+                    {homeContent.daily.onThisDay.imageUrl && (
+                      <div className="overflow-hidden">
+                        <Image
+                          src={homeContent.daily.onThisDay.imageUrl}
+                          alt={homeContent.daily.onThisDay.title}
+                          width={600}
+                          height={300}
+                          className="h-[240px] w-full object-cover"
+                        />
                       </div>
-                    </>
-                  )}
-                </div>
+                    )}
 
-                <div className="bg-[#6b4c35] p-4 text-white">
-                  {dailyContentData?.onThisDay?.items && dailyContentData.onThisDay.items.length > 0 && (
-                    <>
-                      <h4 className="font-medium mb-2">{dailyContentData.onThisDay.items[0]?.year}</h4>
-                      <p>{dailyContentData.onThisDay.items[0]?.text}</p>
-                      {dailyContentData.onThisDay.items[0]?.readMoreUrl && (
-                        <div className="mt-4 text-right">
-                          <Link href={dailyContentData.onThisDay.items[0]?.readMoreUrl || "#"} className="text-white hover:underline">
-                            Read more
-                          </Link>
+                    <div className="grid grid-cols-1 gap-4">
+                      {homeContent.daily.onThisDay.items.map((item, index) => (
+                        <div
+                          key={item.id}
+                          className={
+                            index % 2 === 0
+                              ? "border border-[#d0c0a0] bg-white p-4"
+                              : "bg-[#6b4c35] p-4 text-white"
+                          }
+                        >
+                          <h4 className="mb-2 font-medium">{item.year}</h4>
+                          <p className="text-sm">{item.text}</p>
+                          {item.readMoreUrl && (
+                            <div className="mt-4 text-right">
+                              <Link
+                                href={item.readMoreUrl}
+                                className={
+                                  index % 2 === 0
+                                    ? "text-[#6b4c35] hover:underline"
+                                    : "text-white hover:underline"
+                                }
+                              >
+                                Read more
+                              </Link>
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </>
-                  )}
-                </div>
-
-                <div className="bg-[#6b4c35] p-4 text-white">
-                  {dailyContentData?.onThisDay?.items && dailyContentData.onThisDay.items.length > 1 && (
-                    <>
-                      <h4 className="font-medium mb-2">{dailyContentData.onThisDay.items[1]?.year}</h4>
-                      <p>{dailyContentData.onThisDay.items[1]?.text}</p>
-                      {dailyContentData.onThisDay.items[1]?.readMoreUrl && (
-                        <div className="mt-4 text-right">
-                          <Link href={dailyContentData.onThisDay.items[1]?.readMoreUrl || "#"} className="text-white hover:underline">
-                            Read more
-                          </Link>
-                        </div>
-                      )}
-                    </>
-                  )}
-                </div>
-
-                <div className="bg-white p-4 border border-[#d0c0a0]">
-                  {dailyContentData?.onThisDay?.items && dailyContentData.onThisDay.items.length > 2 && (
-                    <>
-                      <h4 className="font-medium mb-2">{dailyContentData.onThisDay.items[2]?.year}</h4>
-                      <p>{dailyContentData.onThisDay.items[2]?.text}</p>
-                      {dailyContentData.onThisDay.items[2]?.readMoreUrl && (
-                        <div className="mt-4 text-right">
-                          <Link href={dailyContentData.onThisDay.items[2]?.readMoreUrl || "#"} className="text-[#6b4c35] hover:underline">
-                            Read more
-                          </Link>
-                        </div>
-                      )}
-                    </>
-                  )}
-                </div>
-
-                <div className="col-span-1 md:col-span-2 overflow-hidden">
-                  {dailyContentData && (
-                    <Image
-                      src={dailyContentData.onThisDay.imageUrl}
-                      alt={dailyContentData.onThisDay.title}
-                      width={600}
-                      height={200}
-                      className="h-[200px] w-full object-cover"
-                    />
-                  )}
-                </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-center text-gray-500">
+                    No historical events for today
+                  </p>
+                )}
               </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
+      </section>
+
+      {/* Stats Section */}
+      <section className="container mx-auto my-16 px-4 pb-16">
+        <SectionHeader title="Wikipedia by the Numbers" />
+
+        {isLoading ? (
+          <div className="flex justify-center py-20">
+            <div className="h-12 w-12 animate-spin rounded-full border-t-2 border-b-2 border-[#6b4c35]"></div>
+          </div>
+        ) : (
+          <div className="mx-auto max-w-5xl">
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="flex flex-col items-center rounded-lg border border-[#d0c0a0] bg-white p-6 shadow-sm">
+                <div className="mb-3 text-[#6b4c35]">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-8 w-8"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"
+                    />
+                  </svg>
+                </div>
+                <h3 className="mb-2 text-3xl font-bold">
+                  <CountUp end={homeContent?.stats?.totalArticles ?? 0} />
+                </h3>
+                <p className="text-center text-sm text-gray-600">
+                  Articles Published
+                </p>
+              </div>
+
+              <div className="flex flex-col items-center rounded-lg border border-[#d0c0a0] bg-white p-6 shadow-sm">
+                <div className="mb-3 text-[#6b4c35]">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-8 w-8"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+                    />
+                  </svg>
+                </div>
+                <h3 className="mb-2 text-3xl font-bold">
+                  <CountUp end={homeContent?.stats?.totalUsers ?? 0} />
+                </h3>
+                <p className="text-center text-sm text-gray-600">
+                  Contributors
+                </p>
+              </div>
+
+              <div className="flex flex-col items-center rounded-lg border border-[#d0c0a0] bg-white p-6 shadow-sm">
+                <div className="mb-3 text-[#6b4c35]">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-8 w-8"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
+                    />
+                  </svg>
+                </div>
+                <h3 className="mb-2 text-3xl font-bold">
+                  <CountUp end={homeContent?.stats?.totalCategories ?? 0} />
+                </h3>
+                <p className="text-center text-sm text-gray-600">Categories</p>
+              </div>
+
+              <div className="flex flex-col items-center rounded-lg border border-[#d0c0a0] bg-white p-6 shadow-sm">
+                <div className="mb-3 text-[#6b4c35]">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-8 w-8"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                    />
+                  </svg>
+                </div>
+                <h3 className="mb-2 text-3xl font-bold">
+                  <CountUp end={homeContent?.stats?.dailyViews ?? 0} />
+                </h3>
+                <p className="text-center text-sm text-gray-600">Daily Views</p>
+              </div>
+            </div>
+
+            <div className="mt-12 text-center">
+              <p className="text-accent-foreground">
+                Wikipedia is growing every day thanks to contributors like you!
+              </p>
+            </div>
+          </div>
+        )}
       </section>
     </div>
-  )
+  );
 }

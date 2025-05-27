@@ -46,6 +46,12 @@ export function WikiArticleContents({
       if (match && match.length >= 3) {
         const level = match[1]?.length ?? 1;
         const text = match[2]?.trim() ?? "";
+        
+        // Skip headings that contain square brackets (like image references)
+        if (text.includes('[') && text.includes(']')) {
+          continue;
+        }
+        
         const id = text
           .toLowerCase()
           .replace(/[^\w\s-]/g, "")
