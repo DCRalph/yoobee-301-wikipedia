@@ -34,6 +34,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
+import { AIDisabledMessage } from "~/app/testing/ai-disabled-message";
 
 interface WikiArticleContentProps {
   article: RouterOutputs["user"]["articles"]["getBySlug"];
@@ -110,26 +111,7 @@ export function WikiArticleContent({
             </div>
 
             {/* AI Features Alert */}
-            {!UseAi && (
-              <motion.div className="p-4" variants={fadeInVariants}>
-                <div className="rounded-md bg-[#e8dcc3] p-4">
-                  <div className="flex">
-                    <div className="flex-shrink-0">
-                      <AlertCircle className="h-5 w-5 text-[#5c3c10]" />
-                    </div>
-                    <div className="ml-3">
-                      <h3 className="text-sm font-medium text-[#3a2a14]">
-                        AI Features Disabled
-                      </h3>
-                      <div className="mt-2 text-sm text-[#5c3c10]">
-                        AI features are currently disabled because I&apos;m
-                        balling like that.
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            )}
+            {!UseAi && <AIDisabledMessage />}
 
             <div className="mx-auto flex max-w-4xl flex-col md:flex-row">
               {/* Large Image on the Left */}

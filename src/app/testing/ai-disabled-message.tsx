@@ -13,7 +13,7 @@ export function AIDisabledMessage() {
       </div>
 
       <p className="text-xl text-muted-foreground">
-        AI features are currently disabled. Please contact your administrator to enable them.
+        AI features are currently disabled. Donate so we can enable them.
       </p>
 
       <Button asChild variant="outline" className="mt-4">
