@@ -192,7 +192,7 @@ export function UserManagementContent() {
                       {user.role}
                     </div>
                   </TableCell>
-                  <TableCell>{user.articles.length}</TableCell>
+                  <TableCell>{user._count.articles}</TableCell>
                   <TableCell>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>

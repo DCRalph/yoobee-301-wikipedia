@@ -50,11 +50,16 @@ export const adminUsersRouter = createTRPCRouter({
           email: true,
           role: true,
           image: true,
-          articles: {
+          _count: {
             select: {
-              id: true,
+              articles: true,
             },
           },
+          // articles: {
+          //   select: {
+          //     id: true,
+          //   },
+          // },
         },
       });
 
