@@ -134,8 +134,8 @@ model Article {
   talkContent String      @default("")
   
   // NEW: Vector fields for embeddings
-  titleVector   Unsupported("vector(384)")?   // 384 dimensions for all-MiniLM-L6-v2
-  contentVector Unsupported("vector(384)")?
+  // titleVector   Unsupported("vector(384)")?   // 384 dimensions for all-MiniLM-L6-v2
+  // contentVector Unsupported("vector(384)")?
   vectorsGeneratedAt DateTime?                 // Track when vectors were created
   
   // Relations
