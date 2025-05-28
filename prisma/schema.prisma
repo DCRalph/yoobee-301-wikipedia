@@ -131,6 +131,11 @@ model Article {
   sources     String      @default("")
   talkContent String      @default("")
   
+  // NEW: Vector fields for embeddings
+  titleVector   Unsupported("vector(384)")?   // 384 dimensions for all-MiniLM-L6-v2
+  contentVector Unsupported("vector(384)")?
+  vectorsGeneratedAt DateTime?                 // Track when vectors were created
+  
   // Relations
   authorId    String
   author      User        @relation("authorArticles", fields: [authorId], references: [id])
@@ -138,7 +143,7 @@ model Article {
   summaries   ArticleSummary[]
   categories  CategoriesOnArticles[]
 
-  // Indexes for efficient querying
+  // Existing indexes
   @@index([isFeatured, featuredAt])
   @@index([dailyViews])
   @@index([viewCount])
@@ -148,12 +153,14 @@ model Article {
   @@index([authorId])
   @@index([createdAt])
   @@index([updatedAt])
-
   @@index([published, approved, needsApproval, createdAt])
   @@index([published, approved, needsApproval, createdAt, updatedAt])
   @@index([published, approved, needsApproval, createdAt, title, slug])
   @@index([isFeatured, published, approved, needsApproval])
   
+  // NEW: Vector similarity indexes for fast similarity search
+  // @@index([titleVector], map: "idx_article_title_vector", type: Gin)
+  // @@index([contentVector], map: "idx_article_content_vector", type: Gin)
 }
 
 /// The Category model for organizing articles
