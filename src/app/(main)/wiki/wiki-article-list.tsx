@@ -14,7 +14,6 @@ import {
   BarChart,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { type RouterOutputs } from "~/trpc/react";
 import { Badge } from "~/components/ui/badge";
 import {
   PaginatedSearchList,

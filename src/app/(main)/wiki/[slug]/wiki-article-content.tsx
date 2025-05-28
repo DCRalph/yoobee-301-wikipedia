@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { Role } from "@prisma/client";
 import {
-  AlertCircle,
   Edit,
   Clock,
   User,
@@ -76,13 +75,6 @@ export function WikiArticleContent({
     },
   };
 
-  const fadeInVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { duration: 0.5 },
-    },
-  };
 
   // Handle content change from reading level
   const handleContentChange = (newContent: string) => {

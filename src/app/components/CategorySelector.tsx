@@ -2,24 +2,7 @@ import { useState, useRef } from 'react'
 import type { MouseEvent } from 'react'
 import Link from 'next/link'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-
-interface Category {
-  name: string
-  slug: string
-}
-
-const categories: Category[] = [
-  { name: 'Arts & Culture', slug: 'arts' },
-  { name: 'Literature', slug: 'literature' },
-  { name: 'History', slug: 'history' },
-  { name: 'Science', slug: 'science' },
-  { name: 'Technology', slug: 'technology' },
-  { name: 'Geography', slug: 'geography' },
-  { name: 'Mathematics', slug: 'mathematics' },
-  { name: 'Philosophy', slug: 'philosophy' },
-  { name: 'Religion', slug: 'religion' },
-  { name: 'Society', slug: 'society' }
-]
+import { api } from "~/trpc/react"
 
 export default function CategorySelector() {
   const scrollContainerRef = useRef<HTMLDivElement>(null)
@@ -28,6 +11,9 @@ export default function CategorySelector() {
   const [scrollLeft, setScrollLeft] = useState(0)
   const [showLeftShadow, setShowLeftShadow] = useState(false)
   const [showRightShadow, setShowRightShadow] = useState(true)
+
+  // Fetch categories from tRPC
+  const { data: categories, isLoading } = api.category.getAll.useQuery()
 
   const handleScroll = () => {
     if (scrollContainerRef.current) {
@@ -74,11 +60,35 @@ export default function CategorySelector() {
     }
   }
 
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="relative mx-auto max-w-5xl">
+        <div className="overflow-x-hidden mx-12">
+          <div className="flex gap-3 w-max py-2">
+            {/* Loading skeleton */}
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div
+                key={i}
+                className="min-w-[180px] border border-[#3b2a1a] bg-gray-200 p-4 text-center animate-pulse"
+              >
+                <div className="h-6 bg-gray-300 rounded"></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Filter to only show top-level categories and sort by name
+  const topLevelCategories = categories?.filter(cat => !cat.parentId).sort((a, b) => a.name.localeCompare(b.name)) ?? []
+
   return (
     <div className="relative mx-auto max-w-5xl">
       {/* Left Shadow Overlay */}
       <div
-        className={`absolute left-0 top-0 bottom-0 w-24  z-10 pointer-events-none transition-opacity duration-300 ${showLeftShadow ? 'opacity-100' : 'opacity-0'
+        className={`absolute left-0 top-0 bottom-0 w-24 z-10 pointer-events-none transition-opacity duration-300 ${showLeftShadow ? 'opacity-100' : 'opacity-0'
           }`}
       />
 
@@ -102,15 +112,31 @@ export default function CategorySelector() {
         onScroll={handleScroll}
       >
         <div className="flex gap-3 w-max py-2">
-          {categories.map((category) => (
+          {/* View All Categories Link */}
+          <Link
+            href="/category"
+            className="block min-w-[180px] border-2 border-[#6b4c35] bg-[#6b4c35] p-4 text-center shadow-md transition-all duration-200 hover:bg-[#8b6c55] hover:border-[#8b6c55]"
+          >
+            <span className="font-medium text-white">
+              View All Categories
+            </span>
+          </Link>
+
+          {/* Category Links */}
+          {topLevelCategories.map((category) => (
             <Link
               key={category.slug}
               href={`/category/${category.slug}`}
-              className="block min-w-[180px] border border-[#3b2a1a] bg-white p-4 text-center shadow-md transition-all duration-200 hover:bg-[#f8f5f1]"
+              className="block min-w-[180px] border border-[#3b2a1a] bg-white p-4 text-center shadow-md transition-all duration-200 hover:bg-[#f8f5f1] group"
             >
-              <span className="font-medium text-[#3b2a1a]">
+              <span className="font-medium text-[#3b2a1a] group-hover:text-[#6b4c35]">
                 {category.name}
               </span>
+              {category._count && (
+                <div className="text-xs text-gray-500 mt-1">
+                  {category._count.articles} articles
+                </div>
+              )}
             </Link>
           ))}
         </div>
@@ -118,7 +144,7 @@ export default function CategorySelector() {
 
       {/* Right Shadow Overlay */}
       <div
-        className={`absolute right-0 top-0 bottom-0 w-24  z-10 pointer-events-none transition-opacity duration-300 ${showRightShadow ? 'opacity-100' : 'opacity-0'
+        className={`absolute right-0 top-0 bottom-0 w-24 z-10 pointer-events-none transition-opacity duration-300 ${showRightShadow ? 'opacity-100' : 'opacity-0'
           }`}
       />
 
