@@ -72,6 +72,8 @@ enum Role {
 /// The User model extends authentication properties and includes roles.
 model User {
   id            String    @id @default(cuid())
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt @default(now())
   name          String?
   email         String?   @unique
   emailVerified DateTime?
@@ -135,8 +137,8 @@ model Article {
   talkContent String      @default("")
   
   // NEW: Vector fields for embeddings
-  titleVector   Unsupported("vector(384)")?   // 384 dimensions for all-MiniLM-L6-v2
-  contentVector Unsupported("vector(384)")?
+  // titleVector   Unsupported("vector(384)")?   // 384 dimensions for all-MiniLM-L6-v2
+  // contentVector Unsupported("vector(384)")?
   vectorsGeneratedAt DateTime?                 // Track when vectors were created
   
   // Relations

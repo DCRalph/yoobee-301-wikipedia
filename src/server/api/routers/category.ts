@@ -1,6 +1,7 @@
 import { z } from "zod"
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc"
 import { TRPCError } from "@trpc/server"
+import { type Prisma } from "@prisma/client"
 
 export const categoryRouter = createTRPCRouter({
   // Get all categories
@@ -17,6 +18,71 @@ export const categoryRouter = createTRPCRouter({
           parent: true
         }
       })
+    }),
+
+  // Get top articles for each category
+  getTopArticlesByCategory: publicProcedure
+    .query(async ({ ctx }) => {
+      // Get all categories first
+      const categories = await ctx.db.category.findMany({
+        where: {
+          parentId: null // Only top-level categories
+        },
+        include: {
+          _count: {
+            select: {
+              articles: true
+            }
+          }
+        }
+      });
+
+      // For each category, get the top 10 most viewed articles
+      const categoriesWithTopArticles = await Promise.all(
+        categories.map(async (category) => {
+          const topArticles = await ctx.db.article.findMany({
+            where: {
+              published: true,
+              approved: true,
+              needsApproval: false,
+              categories: {
+                some: {
+                  categoryId: category.id
+                }
+              }
+            },
+            orderBy: {
+              viewCount: 'desc'
+            },
+            take: 10,
+            include: {
+              author: {
+                select: {
+                  name: true,
+                  image: true
+                }
+              },
+              categories: {
+                include: {
+                  category: {
+                    select: {
+                      name: true,
+                      slug: true
+                    }
+                  }
+                }
+              }
+            }
+          });
+
+          return {
+            ...category,
+            topArticles
+          };
+        })
+      );
+
+      return categoriesWithTopArticles;
     }),
 
   // Get category by slug
@@ -46,6 +112,102 @@ export const categoryRouter = createTRPCRouter({
       }
 
       return category
+    }),
+
+  // Get articles by category slug with pagination
+  getArticlesBySlug: publicProcedure
+    .input(z.object({
+      slug: z.string(),
+      page: z.number().min(1).default(1),
+      limit: z.number().min(1).max(50).default(12),
+      sortBy: z.enum(['recent', 'popular', 'title']).default('recent')
+    }))
+    .query(async ({ ctx, input }) => {
+      const { slug, page, limit, sortBy } = input;
+      const skip = (page - 1) * limit;
+
+      // First, get the category to ensure it exists
+      const category = await ctx.db.category.findUnique({
+        where: { slug },
+        select: { id: true, name: true, description: true }
+      });
+
+      if (!category) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Category not found'
+        });
+      }
+
+      // Build the orderBy clause based on sortBy
+      let orderBy: Prisma.ArticleOrderByWithRelationInput = { createdAt: 'desc' };
+      if (sortBy === 'popular') {
+        orderBy = { viewCount: 'desc' };
+      } else if (sortBy === 'title') {
+        orderBy = { title: 'asc' };
+      }
+
+      // Get articles in this category
+      const articles = await ctx.db.article.findMany({
+        where: {
+          published: true,
+          approved: true,
+          categories: {
+            some: {
+              categoryId: category.id
+            }
+          }
+        },
+        orderBy,
+        skip,
+        take: limit,
+        include: {
+          author: {
+            select: {
+              name: true,
+              image: true
+            }
+          },
+          categories: {
+            include: {
+              category: {
+                select: {
+                  name: true,
+                  slug: true
+                }
+              }
+            }
+          },
+        }
+      });
+
+      // Get total count for pagination
+      const totalCount = await ctx.db.article.count({
+        where: {
+          published: true,
+          approved: true,
+          categories: {
+            some: {
+              categoryId: category.id
+            }
+          }
+        }
+      });
+
+      const totalPages = Math.ceil(totalCount / limit);
+
+      return {
+        category,
+        articles,
+        pagination: {
+          page,
+          limit,
+          totalCount,
+          totalPages,
+          hasNext: page < totalPages,
+          hasPrev: page > 1
+        }
+      };
     }),
 
   // Create new category

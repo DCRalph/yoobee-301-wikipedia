@@ -1,20 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { signIn, useSession } from "next-auth/react";
+import { useState, useEffect } from "react";
+import { signIn, signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 import { api } from "~/trpc/react";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "~/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import {
   Dialog,
@@ -27,14 +20,15 @@ import {
 } from "~/components/ui/dialog";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { Badge } from "~/components/ui/badge";
 import { toast } from "sonner";
 import {
-  User,
+  Edit3,
+  Trophy,
+  ChevronDown,
   Mail,
   Shield,
   Key,
-  Lock,
-  ExternalLink,
   AlertCircle,
   CheckCircle,
 } from "lucide-react";
@@ -44,9 +38,14 @@ import { FaDiscord } from "react-icons/fa";
 
 export function AccountPage() {
   const { data: session, update } = useSession();
+  const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
+
+  // Profile editing state
   const [name, setName] = useState(session?.user?.name ?? "");
   const [imageUrl, setImageUrl] = useState(session?.user?.image ?? "");
   const [isEditingProfile, setIsEditingProfile] = useState(false);
+
+  // Password management state
   const [newPassword, setNewPassword] = useState("");
   const [currentPassword, setCurrentPassword] = useState("");
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
@@ -54,13 +53,17 @@ export function AccountPage() {
   const [confirmAddPasswordValue, setConfirmAddPasswordValue] = useState("");
   const [addPasswordDialogOpen, setAddPasswordDialogOpen] = useState(false);
 
+  // Get dashboard data
+  const { data: suggestedTopics } = api.user.dashboard.getSuggestedTopics.useQuery();
+  const { data: recentActivity } = api.user.dashboard.getRecentActivity.useQuery();
+  const { data: userStats } = api.user.dashboard.getUserStats.useQuery();
+
   // Get profile data
   const {
     data: profileData,
-    isLoading,
-    refetch,
+    isLoading: profileLoading,
+    refetch: refetchProfile,
   } = api.user.profile.getMyProfile.useQuery(undefined, {
-    // Refetch on window focus to ensure we have latest data
     refetchOnWindowFocus: true,
   });
 
@@ -71,11 +74,11 @@ export function AccountPage() {
     }
   }, [profileData]);
 
-  // TRPCs
+  // TRPC mutations
   const updateProfile = api.user.profile.updateProfile.useMutation({
     onSuccess: async () => {
       await update();
-      await refetch(); // Refetch profile data
+      await refetchProfile();
       toast.success("Profile updated successfully");
       setIsEditingProfile(false);
     },
@@ -86,7 +89,7 @@ export function AccountPage() {
 
   const addPassword = api.user.profile.addPassword.useMutation({
     onSuccess: async () => {
-      await refetch(); // Refetch profile data
+      await refetchProfile();
       toast.success("Password added successfully");
       setAddPasswordValue("");
       setConfirmAddPasswordValue("");
@@ -99,7 +102,7 @@ export function AccountPage() {
 
   const changePassword = api.user.profile.changePassword.useMutation({
     onSuccess: async () => {
-      await refetch(); // Refetch profile data
+      await refetchProfile();
       toast.success("Password changed successfully");
       setCurrentPassword("");
       setNewPassword("");
@@ -156,403 +159,544 @@ export function AccountPage() {
     (account) => account.provider === "credentials",
   );
 
-  // Loading state
-  if (isLoading) {
+  if (!session) {
     return (
       <div className="container mx-auto py-8">
-        <div className="mx-auto max-w-4xl">
-          <h1 className="mb-8 text-3xl font-bold">
-            Loading account information...
-          </h1>
-        </div>
-      </div>
-    );
-  }
-
-  if (!profileData) {
-    return (
-      <div className="container mx-auto py-8">
-        <div className="mx-auto max-w-4xl">
-          <h1 className="mb-8 text-3xl font-bold">
-            Failed to load account information
-          </h1>
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Error</AlertTitle>
-            <AlertDescription>
-              There was a problem loading your account information. Please try
-              refreshing the page.
-            </AlertDescription>
-          </Alert>
-        </div>
+        <h1 className="text-3xl font-bold">Please sign in to view your account</h1>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto py-8">
-      <div className="mx-auto max-w-4xl">
-        <h1 className="mb-8 text-3xl font-bold">Your Account</h1>
-
-        <Tabs defaultValue="profile" className="w-full">
-          <TabsList className="mb-8">
-            <TabsTrigger value="profile">Profile</TabsTrigger>
-            <TabsTrigger value="linked-accounts">Linked Accounts</TabsTrigger>
-            <TabsTrigger value="security">Security</TabsTrigger>
-          </TabsList>
-
-          {/* Profile Tab */}
-          <TabsContent value="profile">
-            <Card className="mb-8">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <User className="h-5 w-5" />
-                  Profile Information
+    <div className="min-h-screen bg-[var(--background)]">
+      <div className="container mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Main Content */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Suggested Edits */}
+            <Card className="bg-[var(--card)] overflow-hidden py-0 border-[var(--border)]">
+              <CardHeader className="bg-[var(--primary)] py-3">
+                <CardTitle className="text-white flex items-center gap-2">
+                  <Edit3 className="w-5 h-5" />
+                  Suggested Edits
                 </CardTitle>
-                <CardDescription>
-                  Manage your personal information and how it appears
-                </CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="mb-6 flex items-center gap-4">
-                  <Avatar className="h-20 w-20">
-                    <AvatarImage
-                      src={profileData.image ?? ""}
-                      alt={profileData.name ?? "User"}
-                    />
-                    <AvatarFallback>
-                      {profileData.name
-                        ? profileData.name.substring(0, 2).toUpperCase()
-                        : "U"}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <h3 className="text-xl font-semibold">
-                      {profileData.name ?? "Anonymous User"}
-                    </h3>
-                    <p className="text-muted-foreground flex items-center gap-1">
-                      <Mail className="h-4 w-4" />
-                      {profileData.email ?? "No email set"}
-                    </p>
-                    <p className="text-muted-foreground flex items-center gap-1">
-                      <Shield className="h-4 w-4" />
-                      {profileData.role}
-                    </p>
-                  </div>
+              <CardContent className="p-6">
+                <p className="mb-4 text-[var(--foreground)]">
+                  {"Choose some topics you're interested in editing"}
+                </p>
+                <div className="space-y-3 mb-6">
+                  {suggestedTopics?.topics.map((topic) => (
+                    <div key={topic} className="relative">
+                      <Button
+                        variant="outline"
+                        className="w-full justify-between h-12 bg-[var(--secondary)] border-[var(--border)] text-[var(--foreground)]"
+                      >
+                        {topic}
+                        <ChevronDown className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ))}
                 </div>
-
-                {isEditingProfile ? (
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="name">Name</Label>
-                      <Input
-                        id="name"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        placeholder="Your name"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="imageUrl">Profile Image URL</Label>
-                      <Input
-                        id="imageUrl"
-                        value={imageUrl}
-                        onChange={(e) => setImageUrl(e.target.value)}
-                        placeholder="https://example.com/image.jpg"
-                      />
-                    </div>
-                  </div>
-                ) : null}
-              </CardContent>
-              <CardFooter className="flex justify-end gap-2">
-                {isEditingProfile ? (
-                  <>
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        setName(profileData.name ?? "");
-                        setImageUrl(profileData.image ?? "");
-                        setIsEditingProfile(false);
-                      }}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      onClick={handleProfileUpdate}
-                      disabled={updateProfile.isPending}
-                    >
-                      {updateProfile.isPending ? "Saving..." : "Save Changes"}
-                    </Button>
-                  </>
-                ) : (
-                  <Button onClick={() => setIsEditingProfile(true)}>
-                    Edit Profile
+                <div className="flex justify-end">
+                  <Button className="bg-[var(--primary)] text-[var(--primary-foreground)]">
+                    Continue
                   </Button>
-                )}
-              </CardFooter>
+                </div>
+              </CardContent>
             </Card>
-          </TabsContent>
 
-          {/* Linked Accounts Tab */}
-          <TabsContent value="linked-accounts">
-            <Card className="mb-8">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <ExternalLink className="h-5 w-5" />
-                  Linked Accounts
-                </CardTitle>
-                <CardDescription>
-                  Manage accounts that are linked to your profile for
-                  authentication
-                </CardDescription>
+            {/* Recent Activity & Watch List */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card className="bg-[var(--card)] border-[var(--border)]">
+                <CardHeader>
+                  <CardTitle className="text-[var(--foreground)]">Recent Activity</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {recentActivity?.hasActivity ? (
+                    <div className="space-y-3">
+                      {recentActivity.articles.slice(0, 3).map((article) => (
+                        <div key={article.id} className="p-3 rounded bg-[var(--muted)]">
+                          <h4 className="font-medium text-[var(--foreground)]">
+                            {article.title}
+                          </h4>
+                          <p className="text-sm text-[var(--muted-foreground)]">
+                            {new Date(article.updatedAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-[var(--muted-foreground)]">
+                      {"You haven't made any edits yet. Start with suggested edits to begin your journey."}
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card className="bg-[var(--card)] border-[var(--border)]">
+                <CardHeader>
+                  <CardTitle className="text-[var(--foreground)]">Watch list</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-[var(--muted-foreground)]">
+                    Add articles to your watchlist to track changes and updates.
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Account Management */}
+            <Card className="bg-[var(--card)] overflow-hidden py-0 border-[var(--border)]">
+              <CardHeader className="bg-[var(--primary)] py-3">
+                <CardTitle className="text-white">Account Management</CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {/* Credentials Account */}
-                  <div className="flex items-center justify-between rounded-lg border p-4">
-                    <div className="flex items-center gap-3">
-                      <Key className="h-8 w-8" />
-                      <div>
-                        <h3 className="font-medium">Password</h3>
-                        <p className="text-muted-foreground text-sm">
-                          Email and password authentication
-                        </p>
+              <CardContent className="py-0">
+                <Tabs defaultValue="profile" className="w-full">
+                  <TabsList className="w-full rounded-none border-b bg-[var(--card)]">
+                    <TabsTrigger value="profile" className="flex-1">Profile</TabsTrigger>
+                    <TabsTrigger value="linked-accounts" className="flex-1">Linked Accounts</TabsTrigger>
+                    <TabsTrigger value="security" className="flex-1">Security</TabsTrigger>
+                  </TabsList>
+
+                  {/* Profile Tab */}
+                  <TabsContent value="profile" className="p-6">
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-4 mb-6">
+                        <Avatar className="h-16 w-16">
+                          <AvatarImage
+                            src={profileData?.image ?? ""}
+                            alt={profileData?.name ?? "User"}
+                          />
+                          <AvatarFallback>
+                            {profileData?.name
+                              ? profileData.name.substring(0, 2).toUpperCase()
+                              : "U"}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <h3 className="text-lg font-semibold text-[var(--foreground)]">
+                            {profileData?.name ?? "Anonymous User"}
+                          </h3>
+                          <p className="text-[var(--muted-foreground)] flex items-center gap-1">
+                            <Mail className="h-4 w-4" />
+                            {profileData?.email ?? "No email set"}
+                          </p>
+                          <p className="text-[var(--muted-foreground)] flex items-center gap-1">
+                            <Shield className="h-4 w-4" />
+                            {profileData?.role}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                    <div>
-                      {hasCredentialsAccount ? (
-                        <Button variant="outline" size="sm" className="gap-1">
-                          <CheckCircle className="h-4 w-4 text-green-500" />
-                          Connected
-                        </Button>
+
+                      {isEditingProfile ? (
+                        <div className="space-y-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="name">Name</Label>
+                            <Input
+                              id="name"
+                              value={name}
+                              onChange={(e) => setName(e.target.value)}
+                              placeholder="Your name"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="imageUrl">Profile Image URL</Label>
+                            <Input
+                              id="imageUrl"
+                              value={imageUrl}
+                              onChange={(e) => setImageUrl(e.target.value)}
+                              placeholder="https://example.com/image.jpg"
+                            />
+                          </div>
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              variant="outline"
+                              onClick={() => {
+                                setName(profileData?.name ?? "");
+                                setImageUrl(profileData?.image ?? "");
+                                setIsEditingProfile(false);
+                              }}
+                            >
+                              Cancel
+                            </Button>
+                            <Button
+                              onClick={handleProfileUpdate}
+                              disabled={updateProfile.isPending}
+                            >
+                              {updateProfile.isPending ? "Saving..." : "Save Changes"}
+                            </Button>
+                          </div>
+                        </div>
                       ) : (
-                        <Dialog
-                          open={addPasswordDialogOpen}
-                          onOpenChange={setAddPasswordDialogOpen}
-                        >
-                          <DialogTrigger asChild>
-                            <Button size="sm">Add Password</Button>
-                          </DialogTrigger>
-                          <DialogContent>
-                            <DialogHeader>
-                              <DialogTitle>Set up password login</DialogTitle>
-                              <DialogDescription>
-                                Add a password to your account to enable
-                                email/password login
-                              </DialogDescription>
-                            </DialogHeader>
-                            <div className="space-y-4 py-4">
-                              <div className="space-y-2">
-                                <Label htmlFor="add-password">
-                                  New Password
-                                </Label>
-                                <Input
-                                  id="add-password"
-                                  type="password"
-                                  value={addPasswordValue}
-                                  onChange={(e) =>
-                                    setAddPasswordValue(e.target.value)
-                                  }
-                                />
-                              </div>
-                              <div className="space-y-2">
-                                <Label htmlFor="confirm-add-password">
-                                  Confirm Password
-                                </Label>
-                                <Input
-                                  id="confirm-add-password"
-                                  type="password"
-                                  value={confirmAddPasswordValue}
-                                  onChange={(e) =>
-                                    setConfirmAddPasswordValue(e.target.value)
-                                  }
-                                />
-                              </div>
-                            </div>
-                            <DialogFooter>
-                              <Button
-                                onClick={handleAddPassword}
-                                disabled={
-                                  addPassword.isPending ||
-                                  !addPasswordValue ||
-                                  addPasswordValue !== confirmAddPasswordValue
-                                }
-                              >
-                                {addPassword.isPending
-                                  ? "Adding..."
-                                  : "Add Password"}
-                              </Button>
-                            </DialogFooter>
-                          </DialogContent>
-                        </Dialog>
+                        <div className="flex justify-end">
+                          <Button onClick={() => setIsEditingProfile(true)}>
+                            Edit Profile
+                          </Button>
+                        </div>
                       )}
                     </div>
-                  </div>
+                  </TabsContent>
 
-                  {/* Google Account */}
-                  <div className="flex items-center justify-between rounded-lg border p-4">
-                    <div className="flex items-center gap-3">
-                      <FcGoogle className="h-8 w-8" />
-                      <div>
-                        <h3 className="font-medium">Google</h3>
-                        <p className="text-muted-foreground text-sm">
-                          Login with your Google account
-                        </p>
+                  {/* Linked Accounts Tab */}
+                  <TabsContent value="linked-accounts" className="p-6">
+                    <div className="space-y-4">
+                      {/* Credentials Account */}
+                      <div className="flex items-center justify-between rounded-lg border border-[var(--border)] p-4">
+                        <div className="flex items-center gap-3">
+                          <Key className="h-8 w-8 text-[var(--muted-foreground)]" />
+                          <div>
+                            <h3 className="font-medium text-[var(--foreground)]">Password</h3>
+                            <p className="text-[var(--muted-foreground)] text-sm">
+                              Email and password authentication
+                            </p>
+                          </div>
+                        </div>
+                        <div>
+                          {hasCredentialsAccount ? (
+                            <Button variant="outline" size="sm" className="gap-1">
+                              <CheckCircle className="h-4 w-4 text-green-500" />
+                              Connected
+                            </Button>
+                          ) : (
+                            <Dialog
+                              open={addPasswordDialogOpen}
+                              onOpenChange={setAddPasswordDialogOpen}
+                            >
+                              <DialogTrigger asChild>
+                                <Button size="sm">Add Password</Button>
+                              </DialogTrigger>
+                              <DialogContent>
+                                <DialogHeader>
+                                  <DialogTitle>Set up password login</DialogTitle>
+                                  <DialogDescription>
+                                    Add a password to your account to enable email/password login
+                                  </DialogDescription>
+                                </DialogHeader>
+                                <div className="space-y-4 py-4">
+                                  <div className="space-y-2">
+                                    <Label htmlFor="add-password">New Password</Label>
+                                    <Input
+                                      id="add-password"
+                                      type="password"
+                                      value={addPasswordValue}
+                                      onChange={(e) => setAddPasswordValue(e.target.value)}
+                                    />
+                                  </div>
+                                  <div className="space-y-2">
+                                    <Label htmlFor="confirm-add-password">Confirm Password</Label>
+                                    <Input
+                                      id="confirm-add-password"
+                                      type="password"
+                                      value={confirmAddPasswordValue}
+                                      onChange={(e) => setConfirmAddPasswordValue(e.target.value)}
+                                    />
+                                  </div>
+                                </div>
+                                <DialogFooter>
+                                  <Button
+                                    onClick={handleAddPassword}
+                                    disabled={
+                                      addPassword.isPending ||
+                                      !addPasswordValue ||
+                                      addPasswordValue !== confirmAddPasswordValue
+                                    }
+                                  >
+                                    {addPassword.isPending ? "Adding..." : "Add Password"}
+                                  </Button>
+                                </DialogFooter>
+                              </DialogContent>
+                            </Dialog>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Google Account */}
+                      <div className="flex items-center justify-between rounded-lg border border-[var(--border)] p-4">
+                        <div className="flex items-center gap-3">
+                          <FcGoogle className="h-8 w-8" />
+                          <div>
+                            <h3 className="font-medium text-[var(--foreground)]">Google</h3>
+                            <p className="text-[var(--muted-foreground)] text-sm">
+                              Login with your Google account
+                            </p>
+                          </div>
+                        </div>
+                        <div>
+                          {profileData?.accounts?.some((account) => account.provider === "google") ? (
+                            <Button variant="outline" size="sm" className="gap-1">
+                              <CheckCircle className="h-4 w-4 text-green-500" />
+                              Connected
+                            </Button>
+                          ) : (
+                            <Button size="sm" variant="outline" asChild>
+                              <Link href="/api/auth/signin?provider=google&callbackUrl=/account">
+                                Connect
+                              </Link>
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Discord Account */}
+                      <div className="flex items-center justify-between rounded-lg border border-[var(--border)] p-4">
+                        <div className="flex items-center gap-3">
+                          <FaDiscord className="h-8 w-8 text-[#5865F2]" />
+                          <div>
+                            <h3 className="font-medium text-[var(--foreground)]">Discord</h3>
+                            <p className="text-[var(--muted-foreground)] text-sm">
+                              Login with your Discord account
+                            </p>
+                          </div>
+                        </div>
+                        <div>
+                          {profileData?.accounts?.some((account) => account.provider === "discord") ? (
+                            <Button variant="outline" size="sm" className="gap-1">
+                              <CheckCircle className="h-4 w-4 text-green-500" />
+                              Connected
+                            </Button>
+                          ) : (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={async () => {
+                                await signIn("discord", {
+                                  redirect: false,
+                                  callbackUrl: "/account",
+                                });
+                              }}
+                            >
+                              Connect
+                            </Button>
+                          )}
+                        </div>
                       </div>
                     </div>
-                    <div>
-                      {profileData.accounts.some(
-                        (account) => account.provider === "google",
-                      ) ? (
-                        <Button variant="outline" size="sm" className="gap-1">
-                          <CheckCircle className="h-4 w-4 text-green-500" />
-                          Connected
-                        </Button>
-                      ) : (
-                        <Button size="sm" variant="outline" asChild>
-                          <Link href="/api/auth/signin?provider=google&callbackUrl=/account">
-                            Connect
-                          </Link>
-                        </Button>
-                      )}
-                    </div>
-                  </div>
+                  </TabsContent>
 
-                  {/* Discord Account */}
-                  <div className="flex items-center justify-between rounded-lg border p-4">
-                    <div className="flex items-center gap-3">
-                      <FaDiscord className="h-8 w-8 text-[#5865F2]" />
-                      <div>
-                        <h3 className="font-medium">Discord</h3>
-                        <p className="text-muted-foreground text-sm">
-                          Login with your Discord account
-                        </p>
-                      </div>
-                    </div>
-                    <div>
-                      {profileData.accounts.some(
-                        (account) => account.provider === "discord",
-                      ) ? (
-                        <Button variant="outline" size="sm" className="gap-1">
-                          <CheckCircle className="h-4 w-4 text-green-500" />
-                          Connected
-                        </Button>
-                      ) : (
+                  {/* Security Tab */}
+                  <TabsContent value="security" className="p-6">
+                    {hasCredentialsAccount ? (
+                      <div className="space-y-4">
+                        <h3 className="text-lg font-medium text-[var(--foreground)]">Change Password</h3>
+                        <div className="space-y-2">
+                          <Label htmlFor="current-password">Current Password</Label>
+                          <Input
+                            id="current-password"
+                            type="password"
+                            value={currentPassword}
+                            onChange={(e) => setCurrentPassword(e.target.value)}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="new-password">New Password</Label>
+                          <Input
+                            id="new-password"
+                            type="password"
+                            value={newPassword}
+                            onChange={(e) => setNewPassword(e.target.value)}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="confirm-password">Confirm New Password</Label>
+                          <Input
+                            id="confirm-password"
+                            type="password"
+                            value={confirmNewPassword}
+                            onChange={(e) => setConfirmNewPassword(e.target.value)}
+                          />
+                        </div>
                         <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={async () => {
-                            await signIn("discord", {
-                              redirect: false,
-                              callbackUrl: "/account",
-                            });
+                          onClick={handleChangePassword}
+                          disabled={
+                            changePassword.isPending ||
+                            !currentPassword ||
+                            !newPassword ||
+                            newPassword !== confirmNewPassword
+                          }
+                        >
+                          {changePassword.isPending ? "Updating..." : "Update Password"}
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        <Alert>
+                          <AlertCircle className="h-4 w-4" />
+                          <AlertTitle>No Password Set</AlertTitle>
+                          <AlertDescription>
+                            {"You don't have a password set for your account. You can add one from the Linked Accounts tab."}
+                          </AlertDescription>
+                        </Alert>
+                        <Button
+                          onClick={() => {
+                            const tabsList = document.querySelector('[role="tablist"]');
+                            const linkedAccountsTab = tabsList?.querySelector('[value="linked-accounts"]');
+                            if (linkedAccountsTab && "click" in linkedAccountsTab) {
+                              (linkedAccountsTab as HTMLElement).click();
+                              setTimeout(() => {
+                                setAddPasswordDialogOpen(true);
+                              }, 100);
+                            }
                           }}
                         >
-                          {/* <Link href="/api/auth/signin?provider=discord&callbackUrl=/account">
-                            Connect
-                            </Link> */}
-                          Connect
+                          Add Password Now
                         </Button>
-                      )}
-                    </div>
-                  </div>
+                      </div>
+                    )}
+                  </TabsContent>
+                </Tabs>
+              </CardContent>
+            </Card>
+
+            {/* Your Contributions */}
+            <Card className="bg-[var(--card)] overflow-hidden py-0 border-[var(--border)]">
+              <CardHeader className="bg-[var(--primary)] py-3">
+                <CardTitle className="text-white">Your Contributions</CardTitle>
+              </CardHeader>
+              <CardContent className="py-0">
+                <Tabs defaultValue="recent-edits" className="w-full">
+                  <TabsList className="w-full rounded-none border-b bg-[var(--card)]">
+                    <TabsTrigger value="recent-edits" className="flex-1">Recent Edits</TabsTrigger>
+                    <TabsTrigger value="articles-created" className="flex-1">Articles Created</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="recent-edits">
+                    {recentActivity?.hasActivity ? (
+                      <div className="space-y-3">
+                        {recentActivity.articles.map((article) => (
+                          <div key={article.id} className="flex items-center justify-between p-3 rounded bg-[var(--muted)]">
+                            <div>
+                              <h4 className="font-medium text-[var(--foreground)]">
+                                {article.title}
+                              </h4>
+                              <p className="text-sm text-[var(--muted-foreground)]">
+                                {new Date(article.updatedAt).toLocaleDateString()}
+                              </p>
+                            </div>
+                            <Badge variant={article.published ? "default" : "secondary"}>
+                              {article.published ? "Published" : "Draft"}
+                            </Badge>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-[var(--muted-foreground)]">
+                        {"You haven't made any edits yet."}
+                      </p>
+                    )}
+                  </TabsContent>
+                  <TabsContent value="articles-created" className="p-6">
+                    {userStats?.articlesCreated?.hasArticles ? (
+                      <div className="space-y-3">
+                        {userStats.articlesCreated.articles.map((article) => (
+                          <div key={article.id} className="flex items-center justify-between p-3 rounded bg-[var(--muted)]">
+                            <div>
+                              <h4 className="font-medium text-[var(--foreground)]">
+                                {article.title}
+                              </h4>
+                              <p className="text-sm text-[var(--muted-foreground)]">
+                                Created {new Date(article.createdAt).toLocaleDateString()}
+                              </p>
+                              {article.viewCount > 0 && (
+                                <p className="text-xs text-[var(--muted-foreground)]">
+                                  {article.viewCount} views
+                                </p>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Badge variant={article.published ? "default" : "secondary"}>
+                                {article.published ? "Published" : "Draft"}
+                              </Badge>
+                              {article.published && article.approved && (
+                                <Badge variant="outline" className="text-green-600 border-green-600">
+                                  Approved
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-[var(--muted-foreground)]">
+                        {"You haven't created any articles yet."}
+                      </p>
+                    )}
+                  </TabsContent>
+                </Tabs>
+                <div className="p-6 border-t border-[var(--border)]">
+                  <Button variant="outline" className="w-full">
+                    View all contributions
+                  </Button>
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
+          </div>
 
-          {/* Security Tab */}
-          <TabsContent value="security">
-            <Card className="mb-8">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Lock className="h-5 w-5" />
-                  Password & Security
-                </CardTitle>
-                <CardDescription>
-                  Manage your password and security settings
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {hasCredentialsAccount ? (
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-medium">Change Password</h3>
-                    <div className="space-y-2">
-                      <Label htmlFor="current-password">Current Password</Label>
-                      <Input
-                        id="current-password"
-                        type="password"
-                        value={currentPassword}
-                        onChange={(e) => setCurrentPassword(e.target.value)}
-                      />
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* User Profile */}
+            <Card className="bg-[var(--card)] border-[var(--border)]">
+              <CardContent className="p-6 text-center">
+                <div className="relative mb-4">
+                  <Avatar className="w-24 h-24 mx-auto border-4 border-blue-500">
+                    <AvatarImage src={userStats?.user?.image ?? ""} />
+                    <AvatarFallback className="text-2xl">
+                      {userStats?.user?.name?.substring(0, 2).toUpperCase() ?? "U"}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2">
+                    <div className="bg-blue-500 text-white px-3 py-1 rounded-full text-xs font-bold">
+                      {session?.user?.email?.split("@")[0] ?? "User"}
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="new-password">New Password</Label>
-                      <Input
-                        id="new-password"
-                        type="password"
-                        value={newPassword}
-                        onChange={(e) => setNewPassword(e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="confirm-password">
-                        Confirm New Password
-                      </Label>
-                      <Input
-                        id="confirm-password"
-                        type="password"
-                        value={confirmNewPassword}
-                        onChange={(e) => setConfirmNewPassword(e.target.value)}
-                      />
-                    </div>
-                    <Button
-                      onClick={handleChangePassword}
-                      disabled={
-                        changePassword.isPending ||
-                        !currentPassword ||
-                        !newPassword ||
-                        newPassword !== confirmNewPassword
-                      }
-                    >
-                      {changePassword.isPending
-                        ? "Updating..."
-                        : "Update Password"}
-                    </Button>
                   </div>
-                ) : (
-                  <div className="space-y-4">
-                    <Alert>
-                      <AlertCircle className="h-4 w-4" />
-                      <AlertTitle>No Password Set</AlertTitle>
-                      <AlertDescription>
-                        {`You don't have a password set for your account. You can add one from the
-                        Linked Accounts tab.`}
-                      </AlertDescription>
-                    </Alert>
-                    <Button
-                      onClick={() => {
-                        const tabsList =
-                          document.querySelector('[role="tablist"]');
-                        const linkedAccountsTab = tabsList?.querySelector(
-                          '[value="linked-accounts"]',
-                        );
-                        if (linkedAccountsTab && "click" in linkedAccountsTab) {
-                          (linkedAccountsTab as HTMLElement).click();
-                          setTimeout(() => {
-                            setAddPasswordDialogOpen(true);
-                          }, 100);
-                        }
-                      }}
-                    >
-                      Add Password Now
-                    </Button>
+                </div>
+                <h3 className="text-xl font-bold mb-2 text-[var(--foreground)]">
+                  {userStats?.user?.name ?? "Anonymous User"}
+                </h3>
+                <p className="text-sm mb-4 text-[var(--muted-foreground)]">
+                  Member since {userStats?.stats.memberSince ?
+                    new Date(userStats.stats.memberSince).toLocaleDateString('en-US', {
+                      month: 'long',
+                      year: 'numeric'
+                    }) : 'Unknown'
+                  }
+                </p>
+
+                <div className="grid grid-cols-2 gap-4 mb-6">
+                  <div className="text-center">
+                    <div className="flex items-center justify-center mb-1">
+                      <Edit3 className="w-4 h-4 mr-1 text-[var(--muted-foreground)]" />
+                    </div>
+                    <div className="text-2xl font-bold text-[var(--foreground)]">
+                      {userStats?.stats.totalEdits ?? 0}
+                    </div>
+                    <div className="text-xs text-[var(--muted-foreground)]">
+                      Edits
+                    </div>
                   </div>
-                )}
+                  <div className="text-center">
+                    <div className="flex items-center justify-center mb-1">
+                      <Trophy className="w-4 h-4 mr-1 text-[var(--muted-foreground)]" />
+                    </div>
+                    <div className="text-2xl font-bold text-[var(--foreground)]">
+                      {userStats?.stats.totalArticlesCreated ?? 0}
+                    </div>
+                    <div className="text-xs text-[var(--muted-foreground)]">
+                      Articles Created
+                    </div>
+                  </div>
+                </div>
+
+                <Button
+                  variant="outline"
+                  onClick={() => signOut()}
+                  className="w-full mt-4 bg-[var(--primary)] text-[var(--primary-foreground)] border-[var(--primary)]"
+                >
+                  Logout
+                </Button>
               </CardContent>
             </Card>
-          </TabsContent>
-        </Tabs>
+          </div>
+        </div>
       </div>
     </div>
   );

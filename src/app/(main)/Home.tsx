@@ -2,58 +2,11 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useSession } from "next-auth/react";
 import { useEffect, useState, useRef } from "react";
 import CategorySelector from "../components/CategorySelector";
 import { api } from "~/trpc/react";
 
-// Type for HomeContent API response
-type HomeContent = {
-  featured: Array<{
-    id: string;
-    title: string;
-    excerpt: string;
-    imageUrl?: string;
-    category: string;
-    readMoreUrl: string;
-  }>;
-  trending: Array<{
-    id: string;
-    title: string;
-    excerpt: string;
-    imageUrl?: string;
-    category: string;
-    readMoreUrl: string;
-  }>;
-  daily: {
-    todaysArticle?: {
-      id: string;
-      title: string;
-      excerpt: string;
-      imageUrl?: string;
-      readMoreUrl: string;
-    };
-    onThisDay?: {
-      id: string;
-      title: string;
-      excerpt: string;
-      imageUrl?: string;
-      readMoreUrl: string;
-      items: Array<{
-        id: string;
-        year: number;
-        text: string;
-        readMoreUrl?: string;
-      }>;
-    };
-  };
-  stats?: {
-    totalArticles: number;
-    totalUsers: number;
-    totalCategories: number;
-    dailyViews: number;
-  };
-};
+
 
 // CountUp animation component
 const CountUp = ({
@@ -145,7 +98,6 @@ const SectionHeader = ({ title }: { title: string }) => (
 );
 
 export default function Home() {
-  const { data: session } = useSession();
   const { data: homeContent, isLoading } = api.home.getHomeContent.useQuery();
 
   return (

@@ -78,7 +78,7 @@ export function NewUserForm() {
         email: formData.email,
         role: formData.role,
       });
-    } catch (error) {
+    } catch {
       toast.error("Failed to create user");
     }
   };
