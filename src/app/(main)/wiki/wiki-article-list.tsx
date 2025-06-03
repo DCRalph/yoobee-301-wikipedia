@@ -66,6 +66,10 @@ export function WikiArticleList() {
   const [currentPage, setCurrentPage] = useState(initialPage);
   const [sortBy, setSortBy] = useState(initialSortField);
   const [limit] = useState(10);
+  const [searchTimeMs, setSearchTimeMs] = useState<number | undefined>(
+    undefined,
+  );
+  const [queryStartTime, setQueryStartTime] = useState<number | null>(null);
 
   // Sort options for articles
   const sortOptions: SortOption[] = [
@@ -86,9 +90,23 @@ export function WikiArticleList() {
       page: currentPage,
       sortBy: sortBy as "updatedAt" | "viewCount" | "dailyViews",
       searchTerm,
+      vectorSearch: true,
+      vectorSearchType: "title",
+      titleWeight: 0.3,
+      contentWeight: 0.7,
     },
     { enabled: mounted },
   );
+
+  // Track timing when query completes
+  useEffect(() => {
+    if (!isLoading && queryStartTime !== null) {
+      const endTime = performance.now();
+      const duration = Math.round(endTime - queryStartTime);
+      setSearchTimeMs(duration);
+      setQueryStartTime(null);
+    }
+  }, [isLoading, queryStartTime]);
 
   useEffect(() => {
     setMounted(true);
@@ -98,16 +116,22 @@ export function WikiArticleList() {
   const handleSearch = (search: string) => {
     setSearchTerm(search);
     setCurrentPage(1); // Reset to first page on search
+    setQueryStartTime(performance.now()); // Start timing
+    setSearchTimeMs(undefined); // Clear previous timing
   };
 
   // Handler for page changes
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
+    setQueryStartTime(performance.now()); // Start timing
+    setSearchTimeMs(undefined); // Clear previous timing
   };
 
   // Handler for sort changes
   const handleSortChange = (sort: SortOption) => {
     setSortBy(sort.field);
+    setQueryStartTime(performance.now()); // Start timing
+    setSearchTimeMs(undefined); // Clear previous timing
   };
 
   // Render function for content based on loading state
@@ -225,6 +249,7 @@ export function WikiArticleList() {
         initialSearchValue={initialSearch}
         sortOptions={sortOptions}
         initialSort={initialSort}
+        searchTimeMs={searchTimeMs}
       >
         {renderContent()}
       </PaginatedSearchList>

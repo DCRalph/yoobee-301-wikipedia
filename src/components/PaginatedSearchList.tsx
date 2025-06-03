@@ -16,6 +16,7 @@ import {
   FiTag,
   FiArrowDown,
   FiArrowUp,
+  FiRefreshCw,
 } from "react-icons/fi";
 import { cn } from "~/lib/utils";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -58,6 +59,7 @@ interface PaginatedSearchListProps {
   initialSearchValue?: string;
   sortOptions?: SortOption[];
   initialSort?: SortOption;
+  searchTimeMs?: number;
 }
 
 // This helper reconstructs the search string from confirmed tags
@@ -68,6 +70,14 @@ const reconstructSearchString = (tags: string[], text: string): string => {
     return tagPart + " " + text;
   }
   return tagPart || text;
+};
+
+// Helper function to format search time
+const formatSearchTime = (timeMs: number): string => {
+  if (timeMs >= 1000) {
+    return `${(timeMs / 1000).toFixed(1)} s`;
+  }
+  return `${timeMs} ms`;
 };
 
 export const PaginatedSearchList = forwardRef<
@@ -85,6 +95,7 @@ export const PaginatedSearchList = forwardRef<
     initialSearchValue = "",
     sortOptions = [],
     initialSort,
+    searchTimeMs,
   },
   ref,
 ) {
@@ -233,6 +244,13 @@ export const PaginatedSearchList = forwardRef<
     updateUrlParams(currentSearchString, 1, currentSort); // Reset to page 1 on new search
   };
 
+  // Handle refresh - re-run current search without changing page
+  const handleRefresh = () => {
+    const currentSearchString = reconstructSearchString(tags, textInputValue);
+    onSearch(currentSearchString);
+    updateUrlParams(currentSearchString, pagination.page, currentSort);
+  };
+
   // Clear all states when the Clear button is pressed.
   const handleClearClick = () => {
     setTags([]);
@@ -374,6 +392,15 @@ export const PaginatedSearchList = forwardRef<
         <Button
           type="button"
           variant="outline"
+          onClick={handleRefresh}
+          disabled={isLoading}
+          aria-label="Refresh search"
+        >
+          <FiRefreshCw className="h-4 w-4" />
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
           onClick={handleClearClick}
           disabled={isLoading || (!textInputValue && tags.length === 0)}
           aria-label="Clear search"
@@ -396,6 +423,15 @@ export const PaginatedSearchList = forwardRef<
             {Math.min(pagination.page * pagination.limit, pagination.total)}
           </span>{" "}
           of <span className="font-medium">{pagination.total}</span> results
+          {searchTimeMs !== undefined && (
+            <span>
+              {" "}
+              in{" "}
+              <span className="font-medium">
+                {formatSearchTime(searchTimeMs)}
+              </span>
+            </span>
+          )}
         </div>
 
         <div className="flex items-center space-x-4">
@@ -501,6 +537,15 @@ export const PaginatedSearchList = forwardRef<
             {Math.min(pagination.page * pagination.limit, pagination.total)}
           </span>{" "}
           of <span className="font-medium">{pagination.total}</span> results
+          {searchTimeMs !== undefined && (
+            <span>
+              {" "}
+              in{" "}
+              <span className="font-medium">
+                {formatSearchTime(searchTimeMs)}
+              </span>
+            </span>
+          )}
         </div>
 
         <div className="flex items-center space-x-4">

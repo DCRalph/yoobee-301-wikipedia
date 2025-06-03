@@ -5,9 +5,7 @@ import Image from "next/image";
 import { useEffect, useState, useRef } from "react";
 import CategorySelector from "../components/CategorySelector";
 import { api } from "~/trpc/react";
-
-
-
+import ReactMarkdown from "react-markdown";
 // CountUp animation component
 const CountUp = ({
   end,
@@ -74,7 +72,8 @@ const ArticleCard = ({
     className={`p-4 ${darkMode ? "bg-[#6b4c35] text-white" : "border border-[#d0c0a0] bg-white"}`}
   >
     <h4 className="mb-2 font-medium">{title}</h4>
-    <p className="line-clamp-3 text-sm">{excerpt}</p>
+    {/* <p className="line-clamp-3 text-sm">{excerpt}</p> */}
+    <ReactMarkdown>{excerpt}</ReactMarkdown>
     <div className="mt-4 text-right">
       <Link
         href={readMoreUrl}
@@ -276,55 +275,9 @@ export default function Home() {
                 <h3 className="mb-4 border-b border-[#c0a080] pb-2 font-serif text-xl">
                   On This Day
                 </h3>
-                {homeContent?.daily?.onThisDay ? (
-                  <div className="grid grid-cols-1 gap-4">
-                    {homeContent.daily.onThisDay.imageUrl && (
-                      <div className="overflow-hidden">
-                        <Image
-                          src={homeContent.daily.onThisDay.imageUrl}
-                          alt={homeContent.daily.onThisDay.title}
-                          width={600}
-                          height={300}
-                          className="h-[240px] w-full object-cover"
-                        />
-                      </div>
-                    )}
-
-                    <div className="grid grid-cols-1 gap-4">
-                      {homeContent.daily.onThisDay.items.map((item, index) => (
-                        <div
-                          key={item.id}
-                          className={
-                            index % 2 === 0
-                              ? "border border-[#d0c0a0] bg-white p-4"
-                              : "bg-[#6b4c35] p-4 text-white"
-                          }
-                        >
-                          <h4 className="mb-2 font-medium">{item.year}</h4>
-                          <p className="text-sm">{item.text}</p>
-                          {item.readMoreUrl && (
-                            <div className="mt-4 text-right">
-                              <Link
-                                href={item.readMoreUrl}
-                                className={
-                                  index % 2 === 0
-                                    ? "text-[#6b4c35] hover:underline"
-                                    : "text-white hover:underline"
-                                }
-                              >
-                                Read more
-                              </Link>
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ) : (
-                  <p className="text-center text-gray-500">
-                    No historical events for today
-                  </p>
-                )}
+                <p className="text-center text-gray-500">
+                  No historical events for today
+                </p>
               </div>
             </div>
           </div>

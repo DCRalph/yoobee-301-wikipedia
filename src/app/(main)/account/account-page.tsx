@@ -38,7 +38,6 @@ import { FaDiscord } from "react-icons/fa";
 
 export function AccountPage() {
   const { data: session, update } = useSession();
-  const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
 
   // Profile editing state
   const [name, setName] = useState(session?.user?.name ?? "");
@@ -61,7 +60,6 @@ export function AccountPage() {
   // Get profile data
   const {
     data: profileData,
-    isLoading: profileLoading,
     refetch: refetchProfile,
   } = api.user.profile.getMyProfile.useQuery(undefined, {
     refetchOnWindowFocus: true,

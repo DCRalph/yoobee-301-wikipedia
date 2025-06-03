@@ -10,10 +10,10 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Users, FileText, FileCheck, FilePen, ArrowRight } from "lucide-react";
 import { api } from "~/trpc/react";
 import { type RouterOutputs } from "~/trpc/react";
-import Image from "next/image";
 
 // Define types for the dashboard data
 type DashboardData = RouterOutputs["admin"]["dashboard"]["getDashboardStats"];
@@ -159,36 +159,33 @@ export function AdminDashboardContent() {
             ) : dashboardData?.recentUsers.length ? (
               <div className="space-y-2">
                 {dashboardData.recentUsers.map((user: DashboardUser) => (
-                  <div
+                  <Link
                     key={user.id}
-                    className="flex items-center justify-between"
+                    href={`/admin/users/${user.id}`}
+                    className="flex items-center space-x-3 rounded-md p-2 transition-colors hover:bg-gray-50"
                   >
-                    <div className="flex items-center">
-                      {user.image && (
-                        <Image
-                          src={user.image}
-                          alt={user.name ?? "User"}
-                          className="h-8 w-8 rounded-full"
-                          width={32}
-                          height={32}
-                        />
-                      )}
-                      <div className="ml-2">
-                        <p className="text-sm leading-none font-medium">
-                          {user.name ?? "Anonymous"}
-                        </p>
-                        <p className="text-muted-foreground text-xs">
-                          {user.articles.length} articles
-                        </p>
-                      </div>
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage
+                        src={user.image ?? ""}
+                        alt={user.name ?? "User"}
+                      />
+                      <AvatarFallback>
+                        {user.name
+                          ? user.name
+                              .split(" ")
+                              .map((n) => n[0])
+                              .join("")
+                              .toUpperCase()
+                              .slice(0, 2)
+                          : "U"}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="text-sm font-medium">
+                        {user.name ?? "Anonymous"}
+                      </p>
                     </div>
-                    <Link
-                      href={`/admin/users/${user.id}`}
-                      className="text-xs text-blue-500"
-                    >
-                      View
-                    </Link>
-                  </div>
+                  </Link>
                 ))}
               </div>
             ) : (

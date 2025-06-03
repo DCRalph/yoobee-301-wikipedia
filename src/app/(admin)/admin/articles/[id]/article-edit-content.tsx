@@ -36,6 +36,9 @@ import {
   MessageSquare,
   BookOpen,
   ListFilter,
+  Star,
+  StarOff,
+  Loader2,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import {
@@ -73,6 +76,12 @@ const articleSchema = z.object({
   imageUrl: z.string().optional(),
 });
 
+const featuredSchema = z.object({
+  description: z.string().min(1, "Description is required"),
+});
+
+type FeaturedFormData = z.infer<typeof featuredSchema>;
+
 interface ArticleEditContentProps {
   article: RouterOutputs["admin"]["articles"]["getById"];
 }
@@ -99,6 +108,15 @@ export function ArticleEditContent({ article }: ArticleEditContentProps) {
   );
   const [sources, setSources] = useState(article.sources ?? "");
   const [talkContent, setTalkContent] = useState(article.talkContent ?? "");
+
+  // Featured article state
+  const [showFeaturedForm, setShowFeaturedForm] = useState(false);
+  const [featuredFormData, setFeaturedFormData] = useState<FeaturedFormData>({
+    description: article.featuredDescription ?? "",
+  });
+  const [featuredErrors, setFeaturedErrors] = useState<
+    Partial<Record<keyof FeaturedFormData, string>>
+  >({});
 
   // Separate tab state for each section
   const [activeSideTab, setActiveSideTab] = useState<string>("content");
@@ -210,6 +228,21 @@ export function ArticleEditContent({ article }: ArticleEditContentProps) {
     },
   });
 
+  // Featured mutation
+  const setFeaturedMutation = api.article.setFeatured.useMutation({
+    onSuccess: () => {
+      setSuccess("Featured status updated successfully");
+      setShowFeaturedForm(false);
+      setFeaturedFormData({ description: "" });
+      setFeaturedErrors({});
+      // Refresh the page data
+      router.refresh();
+    },
+    onError: (error) => {
+      setError(`Failed to update featured status: ${error.message}`);
+    },
+  });
+
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -276,6 +309,56 @@ export function ArticleEditContent({ article }: ArticleEditContentProps) {
     setNeedsApproval(false);
   };
 
+  // Handle featured form input changes
+  const handleFeaturedInputChange = (
+    e: React.ChangeEvent<HTMLTextAreaElement>,
+  ) => {
+    const { name, value } = e.target;
+    setFeaturedFormData((prev) => ({ ...prev, [name]: value }));
+    // Clear error when user starts typing
+    if (featuredErrors[name as keyof FeaturedFormData]) {
+      setFeaturedErrors((prev) => ({ ...prev, [name]: undefined }));
+    }
+  };
+
+  // Handle featured form submission
+  const handleFeaturedSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    try {
+      const validatedData = featuredSchema.parse(featuredFormData);
+      setFeaturedMutation.mutate({
+        id: article.id,
+        featured: true,
+        description: validatedData.description,
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const formattedErrors: Record<string, string> = {};
+        error.errors.forEach((err) => {
+          if (err.path[0]) {
+            formattedErrors[err.path[0] as string] = err.message;
+          }
+        });
+        setFeaturedErrors(formattedErrors);
+      }
+    }
+  };
+
+  // Handle unfeature action
+  const handleUnfeature = () => {
+    setFeaturedMutation.mutate({
+      id: article.id,
+      featured: false,
+    });
+  };
+
+  // Handle feature button click
+  const handleFeatureClick = () => {
+    setShowFeaturedForm(true);
+    setFeaturedFormData({ description: article.featuredDescription ?? "" });
+  };
+
   return (
     <div className="mx-auto max-w-5xl p-8">
       <div className="mb-6 flex items-center justify-between">
@@ -324,6 +407,76 @@ export function ArticleEditContent({ article }: ArticleEditContentProps) {
         </div>
       </div>
 
+      {success && (
+        <Alert className="border-green-200 bg-green-50 text-green-800 dark:border-green-900 dark:bg-green-900/20 dark:text-green-300">
+          <CheckCircle2 className="h-4 w-4" />
+          <AlertTitle>Success</AlertTitle>
+          <AlertDescription>{success}</AlertDescription>
+        </Alert>
+      )}
+
+      {/* Featured Article Form */}
+      {showFeaturedForm && (
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Star className="h-5 w-5 text-[#6b4c35]" />
+              Set Featured Description
+            </CardTitle>
+            <CardDescription>
+              Add a description explaining why this article is being featured
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form id="featuredForm" onSubmit={handleFeaturedSubmit}>
+              <div>
+                <Label className="mb-1 block text-sm font-medium">
+                  Featured Description
+                </Label>
+                <Textarea
+                  name="description"
+                  value={featuredFormData.description}
+                  onChange={handleFeaturedInputChange}
+                  className="w-full rounded-md border p-2 focus:border-[#6b4c35] focus:ring-[#6b4c35]"
+                  placeholder="Enter a description for why this article is featured..."
+                  rows={3}
+                />
+                {featuredErrors.description && (
+                  <p className="mt-1 text-sm text-red-500">
+                    {featuredErrors.description}
+                  </p>
+                )}
+              </div>
+            </form>
+          </CardContent>
+          <CardFooter className="flex justify-between">
+            <div className="flex gap-2">
+              <Button
+                type="submit"
+                form="featuredForm"
+                disabled={setFeaturedMutation.isPending}
+                className="bg-[#6b4c35] text-white hover:bg-[#8b6c55]"
+              >
+                {setFeaturedMutation.isPending && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
+                Set as Featured
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowFeaturedForm(false);
+                  setFeaturedFormData({ description: "" });
+                  setFeaturedErrors({});
+                }}
+              >
+                Cancel
+              </Button>
+            </div>
+          </CardFooter>
+        </Card>
+      )}
+
       <form onSubmit={handleSubmit}>
         <div className="space-y-6">
           {error && (
@@ -331,14 +484,6 @@ export function ArticleEditContent({ article }: ArticleEditContentProps) {
               <AlertCircle className="h-4 w-4" />
               <AlertTitle>Error</AlertTitle>
               <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-
-          {success && (
-            <Alert className="border-green-200 bg-green-50 text-green-800 dark:border-green-900 dark:bg-green-900/20 dark:text-green-300">
-              <CheckCircle2 className="h-4 w-4" />
-              <AlertTitle>Success</AlertTitle>
-              <AlertDescription>{success}</AlertDescription>
             </Alert>
           )}
 
@@ -448,8 +593,9 @@ export function ArticleEditContent({ article }: ArticleEditContentProps) {
                         </TabsContent>
                         <TabsContent value="preview">
                           <div
-                            className={`prose dark:prose-invert min-h-[400px] max-w-none rounded-md border p-4 ${theme === "pink" ? "pink" : ""
-                              }`}
+                            className={`prose dark:prose-invert min-h-[400px] max-w-none rounded-md border p-4 ${
+                              theme === "pink" ? "pink" : ""
+                            }`}
                           >
                             {content ? (
                               <ReactMarkdown remarkPlugins={[remarkGfm]}>
@@ -692,8 +838,9 @@ export function ArticleEditContent({ article }: ArticleEditContentProps) {
                         </TabsContent>
                         <TabsContent value="preview">
                           <div
-                            className={`prose dark:prose-invert min-h-[300px] max-w-none rounded-md border p-4 ${theme === "pink" ? "pink" : ""
-                              }`}
+                            className={`prose dark:prose-invert min-h-[300px] max-w-none rounded-md border p-4 ${
+                              theme === "pink" ? "pink" : ""
+                            }`}
                           >
                             {sources ? (
                               <ReactMarkdown remarkPlugins={[remarkGfm]}>
@@ -734,8 +881,9 @@ export function ArticleEditContent({ article }: ArticleEditContentProps) {
                         </TabsContent>
                         <TabsContent value="preview">
                           <div
-                            className={`prose dark:prose-invert min-h-[300px] max-w-none rounded-md border p-4 ${theme === "pink" ? "pink" : ""
-                              }`}
+                            className={`prose dark:prose-invert min-h-[300px] max-w-none rounded-md border p-4 ${
+                              theme === "pink" ? "pink" : ""
+                            }`}
                           >
                             {talkContent ? (
                               <ReactMarkdown remarkPlugins={[remarkGfm]}>
@@ -807,8 +955,9 @@ export function ArticleEditContent({ article }: ArticleEditContentProps) {
                           variant={needsApproval ? "default" : "outline"}
                           size="sm"
                           onClick={setStatusNeedsApproval}
-                          className={`col-span-2 dark:text-white ${needsApproval ? "bg-blue-600 hover:bg-blue-700" : ""
-                            }`}
+                          className={`col-span-2 dark:text-white ${
+                            needsApproval ? "bg-blue-600 hover:bg-blue-700" : ""
+                          }`}
                         >
                           <ClockIcon className="mr-2 h-4 w-4" />
                           Needs Approval
@@ -820,10 +969,11 @@ export function ArticleEditContent({ article }: ArticleEditContentProps) {
                           }
                           size="sm"
                           onClick={setStatusRejected}
-                          className={`dark:text-white ${!approved && !needsApproval
+                          className={`dark:text-white ${
+                            !approved && !needsApproval
                               ? "bg-red-600 hover:bg-red-700"
                               : ""
-                            }`}
+                          }`}
                         >
                           <XCircle className="mr-2 h-4 w-4" />
                           Reject
@@ -833,13 +983,84 @@ export function ArticleEditContent({ article }: ArticleEditContentProps) {
                           variant={approved ? "default" : "outline"}
                           size="sm"
                           onClick={setStatusApproved}
-                          className={`dark:text-white ${approved ? "bg-green-600 hover:bg-green-700" : ""
-                            }`}
+                          className={`dark:text-white ${
+                            approved ? "bg-green-600 hover:bg-green-700" : ""
+                          }`}
                         >
                           <CheckCircle2 className="mr-2 h-4 w-4" />
                           Approve
                         </Button>
                       </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Star className="h-5 w-5" />
+                    Featured Status
+                  </CardTitle>
+                  <CardDescription>
+                    Control whether this article appears as featured
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-1">
+                        <Label>Current Status</Label>
+                        <div>
+                          {article.isFeatured ? (
+                            <span className="inline-flex items-center rounded-full bg-[#6b4c35]/10 px-2.5 py-0.5 text-xs font-medium text-[#6b4c35]">
+                              <Star className="mr-1 h-3 w-3" />
+                              Featured
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-800">
+                              Not Featured
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {article.isFeatured && article.featuredDescription && (
+                      <div className="space-y-1">
+                        <Label>Featured Description</Label>
+                        <p className="text-muted-foreground rounded bg-gray-50 p-2 text-sm dark:bg-gray-800">
+                          {article.featuredDescription}
+                        </p>
+                      </div>
+                    )}
+
+                    <div className="flex flex-col gap-2">
+                      {article.isFeatured ? (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={handleUnfeature}
+                          disabled={setFeaturedMutation.isPending}
+                          className="border-red-200 text-red-500 hover:border-red-300 hover:text-red-700"
+                        >
+                          <StarOff className="mr-1 h-4 w-4" />
+                          Remove Featured
+                        </Button>
+                      ) : (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={handleFeatureClick}
+                          disabled={setFeaturedMutation.isPending}
+                          className="border-[#6b4c35]/20 text-[#6b4c35] hover:border-[#6b4c35]/30 hover:text-[#8b6c55]"
+                        >
+                          <Star className="mr-1 h-4 w-4" />
+                          Set as Featured
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </CardContent>

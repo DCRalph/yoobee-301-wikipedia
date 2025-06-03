@@ -55,19 +55,6 @@ export const articleRouter = createTRPCRouter({
       },
     });
 
-    // Get today's historical events
-    const today = new Date();
-    const historicalEvents = await ctx.db.historicalEvent.findMany({
-      where: {
-        month: today.getMonth() + 1,
-        day: today.getDate(),
-      },
-      orderBy: {
-        year: "desc",
-      },
-      take: 5,
-    });
-
     // Get popular categories
     const categories = await ctx.db.category.findMany({
       include: {
@@ -88,7 +75,6 @@ export const articleRouter = createTRPCRouter({
     return {
       featuredArticle,
       trendingArticles,
-      historicalEvents,
       categories,
     };
   }),

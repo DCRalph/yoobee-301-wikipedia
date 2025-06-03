@@ -9,6 +9,7 @@ import { TRPCError } from "@trpc/server";
 // import { generateSummary } from "~/lib/summary-generator";
 import { generateTextDiff } from "~/lib/diff-utils";
 import { moderateContent } from "~/lib/ai-moderator";
+import { vectorSearch, findSimilarArticles } from "~/lib/vector-search";
 
 export const userArticlesRouter = createTRPCRouter({
   getAll: publicProcedure
@@ -21,35 +22,125 @@ export const userArticlesRouter = createTRPCRouter({
           .enum(["viewCount", "dailyViews", "updatedAt"])
           .default("updatedAt"),
         searchTerm: z.string().optional(),
+        vectorSearch: z.boolean().default(false),
+        vectorSearchType: z
+          .enum(["title", "content", "hybrid"])
+          .default("title"),
+        titleWeight: z.number().min(0).max(1).default(0.3),
+        contentWeight: z.number().min(0).max(1).default(0.7),
       }),
     )
     .query(async ({ ctx, input }) => {
-      const { limit, cursor, sortBy, searchTerm, page } =
-        input;
+      const {
+        limit,
+        cursor,
+        sortBy,
+        searchTerm,
+        page,
+        vectorSearch: useVectorSearch,
+        vectorSearchType,
+        titleWeight,
+        contentWeight,
+      } = input;
 
+      console.log("\n".repeat(10));
+
+      // If vector search is enabled and we have a search term, use vector search
+      if (useVectorSearch && searchTerm && searchTerm.trim() !== "") {
+        try {
+          const vectorResponse = await vectorSearch({
+            searchTerm: searchTerm.trim(),
+            itemsPerPage: limit,
+            searchType: vectorSearchType,
+            page,
+            maxQueryLimit: 40,
+            titleWeight,
+            contentWeight,
+          });
+
+          // Convert vector results to match the expected format
+          const articles = await Promise.all(
+            vectorResponse.results.map(async (result) => {
+              // const author = await ctx.db.user.findUnique({
+              //   where: { id: result.authorId },
+              //   select: {
+              //     id: true,
+              //     name: true,
+              //     image: true,
+              //   },
+              // });
+
+              return {
+                id: result.id,
+                title: result.title,
+                content: result.content,
+                slug: result.slug,
+                published: result.published,
+                approved: result.approved,
+                needsApproval: result.needsApproval,
+                createdAt: result.createdAt,
+                updatedAt: result.updatedAt,
+                author: result.author ?? null,
+                // author: {
+                //   id: result.author.id,
+                //   name: "Unknown",
+                // },
+                // Add vector search metadata
+                vectorDistance: result.distance,
+                titleDistance: result.titleDistance,
+                contentDistance: result.contentDistance,
+                dailyViews: result.dailyViews,
+                viewCount: result.viewCount,
+              };
+            }),
+          );
+
+          return {
+            articles,
+            nextCursor: undefined, // Vector search uses page-based pagination
+            pagination: {
+              total: vectorResponse.totalFound,
+              page,
+              limit,
+              totalPages: vectorResponse.totalPages,
+            },
+            vectorSearch: true,
+            searchType: vectorSearchType,
+            // Add performance statistics
+            vectorStats: {
+              executionTime: vectorResponse.executionTime,
+              totalResults: vectorResponse.totalFound,
+              vectorizedArticles: vectorResponse.stats.articlesWithBothVectors,
+              searchType: vectorResponse.searchType,
+            },
+          };
+        } catch (error) {
+          console.error("Vector search failed:", error);
+          // Fall back to regular search if vector search fails
+        }
+      }
+
+      // Regular database search (fallback or when vector search is disabled)
       // Build the where clause based on filters and search term
       const where = {
         published: true,
         approved: true,
         needsApproval: false,
-        ...(searchTerm !== undefined && searchTerm.trim() !== ""
-          ? {
-              OR: [
-                {
-                  title: { contains: searchTerm, mode: "insensitive" as const },
-                },
-                // {
-                //   content: {
-                //     contains: searchTerm,
-                //     mode: "insensitive" as const,
-                //   },
-                // },
-                {
-                  slug: { contains: searchTerm, mode: "insensitive" as const },
-                },
-              ],
-            }
-          : {}),
+        // ...(searchTerm !== undefined && searchTerm.trim() !== ""
+        //   ? {
+        //       OR: [
+        //         {
+        //           title: { contains: searchTerm, mode: "insensitive" as const },
+        //         },
+        //         {
+        //           content: {
+        //             contains: searchTerm,
+        //             mode: "insensitive" as const,
+        //           },
+        //         },
+        //       ],
+        //     }
+        //   : {}),
       };
 
       // Get total count for pagination
@@ -95,6 +186,7 @@ export const userArticlesRouter = createTRPCRouter({
           limit,
           totalPages: Math.ceil(total / limit),
         },
+        vectorSearch: false,
       };
     }),
 
@@ -696,5 +788,127 @@ export const userArticlesRouter = createTRPCRouter({
       return {
         articles,
       };
+    }),
+
+  findSimilarArticles: publicProcedure
+    .input(
+      z.object({
+        articleId: z.string(),
+        limit: z.number().min(1).max(20).default(5),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const { articleId, limit } = input;
+
+      // First verify the article exists and is accessible
+      const sourceArticle = await ctx.db.article.findUnique({
+        where: {
+          id: articleId,
+          published: true,
+          approved: true,
+          needsApproval: false,
+        },
+        select: { id: true, title: true, authorId: true },
+      });
+
+      if (!sourceArticle) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Article not found",
+        });
+      }
+
+      try {
+        // Use vector search to find similar articles
+        const vectorResponse = await findSimilarArticles(articleId, limit);
+
+        // Convert vector results to match the expected format
+        const articles = await Promise.all(
+          vectorResponse.results.map(async (result) => {
+            const author = await ctx.db.user.findUnique({
+              where: { id: result.author.id },
+              select: {
+                id: true,
+                name: true,
+                image: true,
+              },
+            });
+
+            return {
+              id: result.id,
+              title: result.title,
+              content: result.content,
+              slug: result.slug,
+              published: result.published,
+              approved: result.approved,
+              needsApproval: result.needsApproval,
+              createdAt: result.createdAt,
+              updatedAt: result.updatedAt,
+              author: author ?? null,
+              // author: {
+              //   id: result.author.id,
+              //   name: "Unknown",
+              //   image: null,
+              // },
+              // Add vector search metadata
+              vectorDistance: result.distance,
+              titleDistance: result.titleDistance,
+              contentDistance: result.contentDistance,
+            };
+          }),
+        );
+
+        return {
+          sourceArticle,
+          similarArticles: articles,
+          vectorSearch: true,
+          vectorStats: {
+            executionTime: vectorResponse.executionTime,
+            totalResults: vectorResponse.totalFound,
+            searchType: vectorResponse.searchType,
+          },
+        };
+      } catch (error) {
+        console.error("Vector similarity search failed:", error);
+
+        // Fallback to basic similarity using database queries
+        // This is a simple fallback that finds articles by the same author or with similar titles
+        const fallbackArticles = await ctx.db.article.findMany({
+          where: {
+            AND: [
+              { id: { not: articleId } },
+              { published: true },
+              { approved: true },
+              { needsApproval: false },
+            ],
+            OR: [
+              { authorId: sourceArticle.authorId }, // Same author
+              {
+                title: {
+                  contains: sourceArticle.title.split(" ")[0], // First word of title
+                  mode: "insensitive",
+                },
+              },
+            ],
+          },
+          take: limit,
+          orderBy: { updatedAt: "desc" },
+          include: {
+            author: {
+              select: {
+                id: true,
+                name: true,
+                image: true,
+              },
+            },
+          },
+        });
+
+        return {
+          sourceArticle,
+          similarArticles: fallbackArticles,
+          vectorSearch: false,
+        };
+      }
     }),
 });

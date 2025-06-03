@@ -28,19 +28,6 @@ export type DailyContent = {
     imageUrl?: string;
     readMoreUrl: string;
   };
-  onThisDay?: {
-    id: string;
-    title: string;
-    excerpt: string;
-    imageUrl?: string;
-    readMoreUrl: string;
-    items: Array<{
-      id: string;
-      year: number;
-      text: string;
-      readMoreUrl?: string;
-    }>;
-  };
 };
 
 export type HomeContent = {
@@ -78,7 +65,7 @@ const transformArticle = (
       };
     }>;
   },
-  urlPrefix = "/article/",
+  urlPrefix = "/wiki/",
 ): FeaturedArticle | TrendingArticle => {
   const firstCategory = article.categories[0]?.category.name ?? "Uncategorized";
 
@@ -108,6 +95,7 @@ export const homeRouter = createTRPCRouter({
           isFeatured: true,
           published: true,
           approved: true,
+          needsApproval: false,
         },
         orderBy: {
           featuredAt: "desc",
@@ -131,6 +119,7 @@ export const homeRouter = createTRPCRouter({
         where: {
           published: true,
           approved: true,
+          needsApproval: false,
         },
         orderBy: {
           dailyViews: "desc",
@@ -154,6 +143,7 @@ export const homeRouter = createTRPCRouter({
         where: {
           published: true,
           approved: true,
+          needsApproval: false,
         },
         orderBy: [
           { isFeatured: "desc" },
@@ -178,50 +168,7 @@ export const homeRouter = createTRPCRouter({
             todaysArticle.featuredDescription,
           ),
           imageUrl: todaysArticle.imageUrl ?? undefined,
-          readMoreUrl: `/article/${todaysArticle.slug}`,
-        };
-      }
-
-      // Get today's historical events
-      const today = new Date();
-      const month = today.getMonth() + 1;
-      const day = today.getDate();
-
-      const historicalEvents = await ctx.db.historicalEvent.findMany({
-        where: {
-          month,
-          day,
-        },
-        orderBy: {
-          year: "desc",
-        },
-        take: 5,
-      });
-
-      if (historicalEvents.length > 0) {
-        // Get the on this day page info
-        const onThisDayPage = await ctx.db.article.findFirst({
-          where: {
-            slug: "on-this-day",
-            published: true,
-            approved: true,
-          },
-        });
-
-        result.daily.onThisDay = {
-          id: "otd",
-          title: onThisDayPage?.title ?? `Events on ${month}/${day}`,
-          excerpt:
-            onThisDayPage?.featuredDescription ??
-            `Historical events from ${month}/${day}`,
-          imageUrl: onThisDayPage?.imageUrl ?? undefined,
-          readMoreUrl: "/on-this-day",
-          items: historicalEvents.map((event) => ({
-            id: event.id,
-            year: event.year,
-            text: event.description,
-            readMoreUrl: `/historical-event/${event.id}`,
-          })),
+          readMoreUrl: `/wiki/${todaysArticle.slug}`,
         };
       }
 
@@ -352,50 +299,7 @@ export const homeRouter = createTRPCRouter({
             todaysArticle.featuredDescription,
           ),
           imageUrl: todaysArticle.imageUrl ?? undefined,
-          readMoreUrl: `/article/${todaysArticle.slug}`,
-        };
-      }
-
-      // Get today's historical events
-      const today = new Date();
-      const month = today.getMonth() + 1;
-      const day = today.getDate();
-
-      const historicalEvents = await ctx.db.historicalEvent.findMany({
-        where: {
-          month,
-          day,
-        },
-        orderBy: {
-          year: "desc",
-        },
-        take: 5,
-      });
-
-      if (historicalEvents.length > 0) {
-        // Get the on this day page info
-        const onThisDayPage = await ctx.db.article.findFirst({
-          where: {
-            slug: "on-this-day",
-            published: true,
-            approved: true,
-          },
-        });
-
-        result.onThisDay = {
-          id: "otd",
-          title: onThisDayPage?.title ?? `Events on ${month}/${day}`,
-          excerpt:
-            onThisDayPage?.featuredDescription ??
-            `Historical events from ${month}/${day}`,
-          imageUrl: onThisDayPage?.imageUrl ?? undefined,
-          readMoreUrl: "/on-this-day",
-          items: historicalEvents.map((event) => ({
-            id: event.id,
-            year: event.year,
-            text: event.description,
-            readMoreUrl: `/historical-event/${event.id}`,
-          })),
+          readMoreUrl: `/wiki/${todaysArticle.slug}`,
         };
       }
 
