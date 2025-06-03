@@ -13,20 +13,41 @@ export type ModerationResult = {
   substance: string;
   contribution_value: string;
   score: number;
-}
+};
 
-export async function moderateContent(content: string, diff: DiffResult): Promise<ModerationResult> {
+export async function moderateContent(
+  content: string,
+  diff: DiffResult,
+): Promise<ModerationResult> {
   // Check if AI features are enabled in settings
   const setting = await db.setting.findFirst();
   if (!setting?.enableAIFeatures) {
-    return { isUseful: false, error: "AI moderation skipped", reason: "", factual_accuracy_and_relevance: "", coherence_and_readability: "", substance: "", contribution_value: "", score: 0 };
+    return {
+      isUseful: false,
+      error: "AI moderation skipped",
+      reason: "",
+      factual_accuracy_and_relevance: "",
+      coherence_and_readability: "",
+      substance: "",
+      contribution_value: "",
+      score: 0,
+    };
   }
 
   // Check if API key is available
   const apiKey = env.OPENAI_API_KEY;
   if (!apiKey) {
     console.warn("OpenAI API key not found. Skipping content moderation.");
-    return { isUseful: false, error: "API key not found", reason: "", factual_accuracy_and_relevance: "", coherence_and_readability: "", substance: "", contribution_value: "", score: 0 };
+    return {
+      isUseful: false,
+      error: "API key not found",
+      reason: "",
+      factual_accuracy_and_relevance: "",
+      coherence_and_readability: "",
+      substance: "",
+      contribution_value: "",
+      score: 0,
+    };
   }
 
   try {
@@ -38,6 +59,14 @@ export async function moderateContent(content: string, diff: DiffResult): Promis
     // Extract relevant information from the diff
     const { stats } = diff;
     const diffSummary = `Content changes: ${stats.additions} additions, ${stats.deletions} deletions, ${stats.unchanged} unchanged`;
+    const addedContent = diff.changes
+      .filter((change) => change.added)
+      .map((change) => change.value)
+      .join("\n");
+    const removedContent = diff.changes
+      .filter((change) => change.removed)
+      .map((change) => change.value)
+      .join("\n");
 
     // Prepare prompt for OpenAI
     const prompt = `
@@ -47,11 +76,14 @@ Evaluate based on:
 2. Coherence and readability
 3. Substance (not placeholder text, spam, or gibberish)
 4. Contribution value to a wiki-style knowledge base
+5. Any vandalism or attempts should be rejected
 
 Content to review:
 ${content}
 
 Diff summary: ${diffSummary}
+Added content: ${addedContent}
+Removed content: ${removedContent}
 
 IMPORTANT: Respond with a JSON object in the following strict format:
 {
@@ -65,13 +97,16 @@ IMPORTANT: Respond with a JSON object in the following strict format:
 }
 `;
 
+    console.log(prompt);
+
     // Call the OpenAI API
     const response = await openai.chat.completions.create({
       model: "gpt-4.1",
       messages: [
         {
           role: "system",
-          content: "You are a content moderation assistant that evaluates whether content is useful and meaningful for a wiki-style application. Always respond with the requested JSON format.",
+          content:
+            "You are a content moderation assistant that evaluates whether content is useful and meaningful for a wiki-style application. Always respond with the requested JSON format.",
         },
         {
           role: "user",
@@ -93,11 +128,29 @@ IMPORTANT: Respond with a JSON object in the following strict format:
       return moderationResult;
     } catch (error) {
       console.error("Failed to parse AI moderation response:", error);
-      return { isUseful: false, error: "Error parsing moderation response", reason: "", factual_accuracy_and_relevance: "", coherence_and_readability: "", substance: "", contribution_value: "", score: 0 };
+      return {
+        isUseful: false,
+        error: "Error parsing moderation response",
+        reason: "",
+        factual_accuracy_and_relevance: "",
+        coherence_and_readability: "",
+        substance: "",
+        contribution_value: "",
+        score: 0,
+      };
     }
   } catch (error) {
     console.error("Error in AI content moderation:", error);
     // Fail open - allow content if AI moderation fails
-    return { isUseful: false, error: "Error during moderation", reason: "", factual_accuracy_and_relevance: "", coherence_and_readability: "", substance: "", contribution_value: "", score: 0 };
+    return {
+      isUseful: false,
+      error: "Error during moderation",
+      reason: "",
+      factual_accuracy_and_relevance: "",
+      coherence_and_readability: "",
+      substance: "",
+      contribution_value: "",
+      score: 0,
+    };
   }
 }

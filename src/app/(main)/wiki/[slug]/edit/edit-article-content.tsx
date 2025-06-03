@@ -30,10 +30,14 @@ import {
   Save,
   Clock,
   Eye,
+  CheckCircle,
+  XCircle,
 } from "lucide-react";
 import { api } from "~/trpc/react";
 import { toast } from "sonner";
 import { handleTRPCMutation } from "~/lib/toast";
+import { ScrollArea } from "~/components/ui/scroll-area";
+import { cn } from "~/lib/utils";
 
 interface EditArticleContentProps {
   article: {
@@ -68,6 +72,7 @@ export function EditArticleContent({ article }: EditArticleContentProps) {
   const [activeTab, setActiveTab] = useState<string>("editor");
   const [aiDialog, setAiDialog] = useState(false);
   const [aiMessage, setAiMessage] = useState<string | null>(null);
+  const [aiApproved, setAiApproved] = useState<boolean | null>(null);
 
   // Create revision mutation
   const createRevision = api.user.articles.createRevision.useMutation({
@@ -83,7 +88,7 @@ export function EditArticleContent({ article }: EditArticleContentProps) {
 
     // Don't submit if content hasn't changed
     if (content === article.content) {
-      toast.info("No changes detected");
+      toast.warning("No changes detected");
       return;
     }
 
@@ -99,11 +104,14 @@ export function EditArticleContent({ article }: EditArticleContentProps) {
 
     // Check if AI has flagged the content and show dialog if needed
     if (result.result?.checkedByAi) {
+      setAiApproved(result.result.approved);
       if (result.result.aiMessage) {
         setAiMessage(result.result.aiMessage);
       } else {
         setAiMessage(
-          "AI has reviewed your submission and found potential issues.",
+          result.result.approved
+            ? "AI has reviewed and approved your submission."
+            : "AI has reviewed your submission and found potential issues.",
         );
       }
       setAiDialog(true);
@@ -118,16 +126,79 @@ export function EditArticleContent({ article }: EditArticleContentProps) {
       <Dialog open={aiDialog} onOpenChange={setAiDialog}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>AI Content Check</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              {aiApproved ? (
+                <CheckCircle className="h-5 w-5 text-green-600" />
+              ) : (
+                <XCircle className="h-5 w-5 text-red-600" />
+              )}
+              AI Content Review
+            </DialogTitle>
             <DialogDescription>
-              The AI has reviewed your submission and found the following:
+              {aiApproved ? (
+                <span className="text-green-700 dark:text-green-400">
+                  Your changes have been approved and published automatically.
+                </span>
+              ) : (
+                <span className="text-amber-700 dark:text-amber-400">
+                  Your changes have been submitted for manual review by a
+                  moderator.
+                </span>
+              )}
             </DialogDescription>
           </DialogHeader>
-          <div className="prose dark:prose-invert max-w-none py-4">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>
-              {aiMessage}
-            </ReactMarkdown>
-          </div>
+
+          <Alert
+            className={cn(
+              "mb-4",
+              aiApproved
+                ? "border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950/30"
+                : "border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/30",
+            )}
+          >
+            <AlertTitle
+              className={cn(
+                "flex items-center gap-2",
+                aiApproved
+                  ? "text-green-800 dark:text-green-200"
+                  : "text-amber-800 dark:text-amber-200",
+              )}
+            >
+              {aiApproved ? (
+                <>
+                  <CheckCircle className="h-4 w-4" />
+                  Changes Accepted
+                </>
+              ) : (
+                <>
+                  <XCircle className="h-4 w-4" />
+                  Changes Require Review
+                </>
+              )}
+            </AlertTitle>
+            <AlertDescription
+              className={cn(
+                aiApproved
+                  ? "text-green-700 dark:text-green-300"
+                  : "text-amber-700 dark:text-amber-300",
+              )}
+            >
+              {aiApproved
+                ? "The AI system has approved your changes and they are now live on the article."
+                : "The AI system has flagged your changes for manual review. A moderator will review them shortly."}
+            </AlertDescription>
+          </Alert>
+
+          {aiMessage && (
+            <div className="prose dark:prose-invert max-w-none py-4">
+              <ScrollArea className="h-[50vh]">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {aiMessage}
+                </ReactMarkdown>
+              </ScrollArea>
+            </div>
+          )}
+
           <div className="flex justify-end gap-3 pt-2">
             <Button
               variant="secondary"
@@ -137,7 +208,7 @@ export function EditArticleContent({ article }: EditArticleContentProps) {
                 router.refresh();
               }}
             >
-              Acknowledge and Continue
+              {aiApproved ? "Continue to Article" : "Acknowledge and Continue"}
             </Button>
           </div>
         </DialogContent>
