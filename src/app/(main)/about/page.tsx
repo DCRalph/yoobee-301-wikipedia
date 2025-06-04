@@ -334,7 +334,7 @@ export default function AboutPage() {
           <div>
             <h2 className="mb-4 text-3xl font-bold">Our Story</h2>
             <p className="mb-4 leading-relaxed">
-              Founded in 2024, WikiClone emerged from the collaborative efforts
+              Founded in 2025 BC, WikiClone emerged from the collaborative efforts
               of passionate educators, technologists, and knowledge enthusiasts
               who recognized the need for a more dynamic and accessible
               knowledge platform.

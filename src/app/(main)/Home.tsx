@@ -69,18 +69,40 @@ const ArticleCard = ({
   darkMode?: boolean;
 }) => (
   <div
-    className={`p-4 ${darkMode ? "bg-[#6b4c35] text-white" : "border border-[#d0c0a0] bg-white"}`}
+    className={`group rounded-xl border-2 p-4 transition-all duration-300 hover:scale-105 active:scale-95 ${darkMode
+      ? "border-[#8b6c55]/30 bg-gradient-to-br from-[#6b4c35] to-[#3b2a1a] text-white shadow-xl hover:shadow-2xl"
+      : "border-[#e8e0d6] bg-gradient-to-br from-white to-[#faf7f3] shadow-lg hover:border-[#d4c4b0] hover:shadow-xl"
+      }`}
   >
-    <h4 className="mb-2 font-medium">{title}</h4>
-    {/* <p className="line-clamp-3 text-sm">{excerpt}</p> */}
-    <ReactMarkdown>{excerpt}</ReactMarkdown>
-    <div className="mt-4 text-right">
-      <Link
-        href={readMoreUrl}
-        className={`${darkMode ? "text-white" : "text-[#6b4c35]"} hover:underline`}
-      >
-        Read more
-      </Link>
+    <div className="space-y-3">
+      <h4 className={`text-lg font-bold transition-colors duration-200 ${darkMode
+        ? "text-[#f8f5f1] group-hover:text-white"
+        : "text-[#3b2a1a] group-hover:text-[#6b4c35]"
+        }`}>
+        {title}
+      </h4>
+
+      <div className={`text-sm leading-relaxed ${darkMode ? "text-[#f8f5f1]/90" : "text-[#6b4c35]/80"
+        }`}>
+        <ReactMarkdown>{excerpt}</ReactMarkdown>
+      </div>
+
+      <div className={`mx-auto h-0.5 w-16 bg-gradient-to-r from-transparent to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100 ${darkMode
+        ? "via-[#f8f5f1]"
+        : "via-[#d4c4b0]"
+        }`} />
+
+      <div className="flex justify-end">
+        <Link
+          href={readMoreUrl}
+          className={`inline-flex items-center rounded-full px-4 py-2 text-xs font-medium transition-all duration-200 ${darkMode
+            ? "bg-gradient-to-r from-[#8b6c55] to-[#6b4c35] text-[#f8f5f1] hover:from-[#a67c5a] hover:to-[#8b6c55]"
+            : "bg-gradient-to-r from-[#e8e0d6] to-[#d4c4b0] text-[#6b4c35] hover:from-[#d4c4b0] hover:to-[#c4b4a0]"
+            }`}
+        >
+          Read more →
+        </Link>
+      </div>
     </div>
   </div>
 );
@@ -295,8 +317,8 @@ export default function Home() {
         ) : (
           <div className="mx-auto max-w-5xl">
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-              <div className="flex flex-col items-center rounded-lg border border-[#d0c0a0] bg-white p-6 shadow-sm">
-                <div className="mb-3 text-[#6b4c35]">
+              <div className="group flex flex-col items-center rounded-xl border-2 border-[#e8e0d6] bg-gradient-to-br from-white to-[#faf7f3] p-6 shadow-lg transition-all duration-300 hover:scale-105 hover:border-[#d4c4b0] hover:shadow-xl active:scale-95">
+                <div className="mb-3 text-[#6b4c35] transition-colors duration-200 group-hover:text-[#3b2a1a]">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="h-8 w-8"
@@ -312,16 +334,17 @@ export default function Home() {
                     />
                   </svg>
                 </div>
-                <h3 className="mb-2 text-3xl font-bold">
+                <h3 className="mb-2 text-3xl font-bold text-[#3b2a1a] transition-colors duration-200 group-hover:text-[#6b4c35]">
                   <CountUp end={homeContent?.stats?.totalArticles ?? 0} />
                 </h3>
-                <p className="text-center text-sm text-gray-600">
+                <div className="inline-flex items-center rounded-full bg-gradient-to-r from-[#e8e0d6] to-[#d4c4b0] px-3 py-1 text-xs font-medium text-[#6b4c35] transition-all duration-200 group-hover:from-[#d4c4b0] group-hover:to-[#c4b4a0]">
                   Articles Published
-                </p>
+                </div>
+                <div className="mx-auto mt-2 h-0.5 w-12 bg-gradient-to-r from-transparent via-[#d4c4b0] to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
               </div>
 
-              <div className="flex flex-col items-center rounded-lg border border-[#d0c0a0] bg-white p-6 shadow-sm">
-                <div className="mb-3 text-[#6b4c35]">
+              <div className="group flex flex-col items-center rounded-xl border-2 border-[#e8e0d6] bg-gradient-to-br from-white to-[#faf7f3] p-6 shadow-lg transition-all duration-300 hover:scale-105 hover:border-[#d4c4b0] hover:shadow-xl active:scale-95">
+                <div className="mb-3 text-[#6b4c35] transition-colors duration-200 group-hover:text-[#3b2a1a]">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="h-8 w-8"
@@ -337,16 +360,17 @@ export default function Home() {
                     />
                   </svg>
                 </div>
-                <h3 className="mb-2 text-3xl font-bold">
+                <h3 className="mb-2 text-3xl font-bold text-[#3b2a1a] transition-colors duration-200 group-hover:text-[#6b4c35]">
                   <CountUp end={homeContent?.stats?.totalUsers ?? 0} />
                 </h3>
-                <p className="text-center text-sm text-gray-600">
+                <div className="inline-flex items-center rounded-full bg-gradient-to-r from-[#e8e0d6] to-[#d4c4b0] px-3 py-1 text-xs font-medium text-[#6b4c35] transition-all duration-200 group-hover:from-[#d4c4b0] group-hover:to-[#c4b4a0]">
                   Contributors
-                </p>
+                </div>
+                <div className="mx-auto mt-2 h-0.5 w-12 bg-gradient-to-r from-transparent via-[#d4c4b0] to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
               </div>
 
-              <div className="flex flex-col items-center rounded-lg border border-[#d0c0a0] bg-white p-6 shadow-sm">
-                <div className="mb-3 text-[#6b4c35]">
+              <div className="group flex flex-col items-center rounded-xl border-2 border-[#e8e0d6] bg-gradient-to-br from-white to-[#faf7f3] p-6 shadow-lg transition-all duration-300 hover:scale-105 hover:border-[#d4c4b0] hover:shadow-xl active:scale-95">
+                <div className="mb-3 text-[#6b4c35] transition-colors duration-200 group-hover:text-[#3b2a1a]">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="h-8 w-8"
@@ -362,14 +386,17 @@ export default function Home() {
                     />
                   </svg>
                 </div>
-                <h3 className="mb-2 text-3xl font-bold">
+                <h3 className="mb-2 text-3xl font-bold text-[#3b2a1a] transition-colors duration-200 group-hover:text-[#6b4c35]">
                   <CountUp end={homeContent?.stats?.totalCategories ?? 0} />
                 </h3>
-                <p className="text-center text-sm text-gray-600">Categories</p>
+                <div className="inline-flex items-center rounded-full bg-gradient-to-r from-[#e8e0d6] to-[#d4c4b0] px-3 py-1 text-xs font-medium text-[#6b4c35] transition-all duration-200 group-hover:from-[#d4c4b0] group-hover:to-[#c4b4a0]">
+                  Categories
+                </div>
+                <div className="mx-auto mt-2 h-0.5 w-12 bg-gradient-to-r from-transparent via-[#d4c4b0] to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
               </div>
 
-              <div className="flex flex-col items-center rounded-lg border border-[#d0c0a0] bg-white p-6 shadow-sm">
-                <div className="mb-3 text-[#6b4c35]">
+              <div className="group flex flex-col items-center rounded-xl border-2 border-[#e8e0d6] bg-gradient-to-br from-white to-[#faf7f3] p-6 shadow-lg transition-all duration-300 hover:scale-105 hover:border-[#d4c4b0] hover:shadow-xl active:scale-95">
+                <div className="mb-3 text-[#6b4c35] transition-colors duration-200 group-hover:text-[#3b2a1a]">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="h-8 w-8"
@@ -391,17 +418,22 @@ export default function Home() {
                     />
                   </svg>
                 </div>
-                <h3 className="mb-2 text-3xl font-bold">
+                <h3 className="mb-2 text-3xl font-bold text-[#3b2a1a] transition-colors duration-200 group-hover:text-[#6b4c35]">
                   <CountUp end={homeContent?.stats?.dailyViews ?? 0} />
                 </h3>
-                <p className="text-center text-sm text-gray-600">Daily Views</p>
+                <div className="inline-flex items-center rounded-full bg-gradient-to-r from-[#e8e0d6] to-[#d4c4b0] px-3 py-1 text-xs font-medium text-[#6b4c35] transition-all duration-200 group-hover:from-[#d4c4b0] group-hover:to-[#c4b4a0]">
+                  Daily Views
+                </div>
+                <div className="mx-auto mt-2 h-0.5 w-12 bg-gradient-to-r from-transparent via-[#d4c4b0] to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
               </div>
             </div>
 
             <div className="mt-12 text-center">
-              <p className="text-accent-foreground">
-              WikiClone is growing every day thanks to contributors like you!
-              </p>
+              <div className="inline-flex items-center rounded-full border-2 border-[#e8e0d6] bg-gradient-to-r from-white to-[#faf7f3] px-6 py-3 shadow-lg transition-all duration-300 ">
+                <p className="text-[#6b4c35] font-medium">
+                  WikiClone is growing every day thanks to contributors like you!
+                </p>
+              </div>
             </div>
           </div>
         )}
