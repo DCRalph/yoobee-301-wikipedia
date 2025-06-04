@@ -25,26 +25,26 @@ import { Skeleton } from "~/components/ui/skeleton";
 
 // Loading skeleton for article cards
 const ArticleCardSkeleton = () => (
-  <div className="rounded-lg border p-4">
-    <div className="flex justify-between">
-      <Skeleton className="h-7 w-2/3" />
-      <div className="flex space-x-2">
+  <div className="rounded-lg border p-3 sm:p-4">
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+      <Skeleton className="h-6 w-2/3 sm:h-7" />
+      <div className="flex flex-wrap gap-2 sm:flex-nowrap sm:space-x-2">
         <Skeleton className="h-5 w-16" />
         <Skeleton className="h-5 w-16" />
       </div>
     </div>
-    <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2">
+    <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-4 sm:gap-y-2">
       <div className="flex items-center gap-1">
-        <Skeleton className="h-4 w-4 rounded-full" />
+        <Skeleton className="h-4 w-4 flex-shrink-0 rounded-full" />
         <Skeleton className="h-4 w-24" />
       </div>
       <div className="flex items-center gap-1">
-        <Skeleton className="h-4 w-4 rounded-full" />
-        <Skeleton className="h-4 w-36" />
+        <Skeleton className="h-4 w-4 flex-shrink-0 rounded-full" />
+        <Skeleton className="h-4 w-28 sm:w-36" />
       </div>
     </div>
     <div className="mt-4">
-      <Skeleton className="h-9 w-32" />
+      <Skeleton className="h-9 w-full sm:w-32" />
     </div>
   </div>
 );
@@ -148,9 +148,9 @@ export function WikiArticleList() {
 
     if (!data?.articles || data.articles.length === 0) {
       return (
-        <div className="rounded-lg border p-8 text-center">
+        <div className="rounded-lg border p-4 text-center sm:p-8">
           <h3 className="text-lg font-medium">No articles found</h3>
-          <p className="text-muted-foreground mt-2">
+          <p className="text-muted-foreground mt-2 text-sm sm:text-base">
             {searchTerm
               ? "Try a different search term."
               : "There are no published articles yet."}
@@ -164,39 +164,55 @@ export function WikiArticleList() {
         {data.articles.map((article) => (
           <div
             key={article.id}
-            className="hover:bg-muted/50 rounded-lg border p-4 transition-colors"
+            className="hover:bg-muted/50 rounded-lg border p-3 transition-colors sm:p-4"
           >
-            <div className="flex justify-between">
-              <Link href={`/wiki/${article.slug}`} className="block">
-                <h2 className="text-xl font-semibold hover:underline">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <Link
+                href={`/wiki/${article.slug}`}
+                className="block min-w-0 flex-1"
+              >
+                <h2 className="text-lg font-semibold break-words hover:underline sm:text-xl">
                   {article.title}
                 </h2>
               </Link>
-              <div className="flex space-x-2">
-                <Badge variant="outline" className="flex items-center gap-1">
+              <div className="flex flex-wrap gap-2 sm:flex-nowrap sm:space-y-0 sm:space-x-2">
+                <Badge
+                  variant="outline"
+                  className="flex items-center gap-1 text-xs"
+                >
                   <Eye className="h-3 w-3" />
-                  {article.viewCount}
+                  <span className="sm:inline">{article.viewCount}</span>
                 </Badge>
-                <Badge variant="outline" className="flex items-center gap-1">
+                <Badge
+                  variant="outline"
+                  className="flex items-center gap-1 text-xs"
+                >
                   <BarChart className="h-3 w-3" />
-                  {article.dailyViews}
+                  <span className="sm:inline">{article.dailyViews}</span>
                 </Badge>
               </div>
             </div>
-            <div className="text-muted-foreground mt-2 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+            <div className="text-muted-foreground mt-3 flex flex-col gap-2 text-sm sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-4 sm:gap-y-2">
               <div className="flex items-center gap-1">
-                <User className="h-4 w-4" />
-                <span>{article.author.name ?? "Anonymous"}</span>
+                <User className="h-4 w-4 flex-shrink-0" />
+                <span className="truncate">
+                  {article.author.name ?? "Anonymous"}
+                </span>
               </div>
               <div className="flex items-center gap-1">
-                <Clock className="h-4 w-4" />
-                <span>
+                <Clock className="h-4 w-4 flex-shrink-0" />
+                <span className="text-xs sm:text-sm">
                   Updated {formatDistanceToNow(new Date(article.updatedAt))}
                 </span>
               </div>
             </div>
             <div className="mt-4">
-              <Button variant="outline" size="sm" asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full sm:w-auto"
+                asChild
+              >
                 <Link href={`/wiki/${article.slug}`}>
                   <BookOpen className="mr-2 h-4 w-4" />
                   Read Article
@@ -210,23 +226,29 @@ export function WikiArticleList() {
   };
 
   return (
-    <div className="mx-auto max-w-5xl p-8">
-      <div className="mb-6 flex items-center justify-between">
+    <div className="mx-auto max-w-5xl p-4 sm:p-6 lg:p-8">
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4">
-          <h2 className="text-2xl font-bold tracking-tight">Wiki Articles</h2>
+          <h2 className="text-xl font-bold tracking-tight sm:text-2xl">
+            Wiki Articles
+          </h2>
         </div>
         {session?.user && (
-          <div className="flex items-center gap-2">
-            <Button variant="outline" asChild>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-2">
+            <Button
+              variant="outline"
+              className="w-full text-sm sm:w-auto"
+              asChild
+            >
               <Link href="/wiki/pending">
                 <ClipboardList className="mr-2 h-4 w-4" />
-                Your Pending Edits
+                <span className="sm:inline">Your Pending Edits</span>
               </Link>
             </Button>
-            <Button asChild>
+            <Button className="w-full text-sm sm:w-auto" asChild>
               <Link href="/wiki/create">
                 <FilePlus className="mr-2 h-4 w-4" />
-                Create Article
+                <span className="sm:inline">Create Article</span>
               </Link>
             </Button>
           </div>
@@ -244,7 +266,7 @@ export function WikiArticleList() {
           limit,
           totalPages: data?.pagination.totalPages ?? 1,
         }}
-        searchPlaceholder="Search articles by title or content..."
+        searchPlaceholder="Search articles..."
         isLoading={isLoading}
         initialSearchValue={initialSearch}
         sortOptions={sortOptions}

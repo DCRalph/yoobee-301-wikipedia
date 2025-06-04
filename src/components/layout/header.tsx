@@ -59,7 +59,7 @@ export function Header() {
         <div className="flex items-center">
           <Link href="/" className="flex items-center gap-2 font-bold">
             <Image src="/icon.png" alt="WikiClone" width={32} height={32} />
-            <span className="hidden sm:inline">WikiClone</span>
+            <span className="">WikiClone</span>
           </Link>
         </div>
 

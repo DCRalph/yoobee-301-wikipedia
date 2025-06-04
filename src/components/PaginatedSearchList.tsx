@@ -327,7 +327,7 @@ export const PaginatedSearchList = forwardRef<
   return (
     <div className="flex flex-col gap-4">
       {/* Search Input Area */}
-      <div className="flex gap-2">
+      <div className="flex flex-col gap-2 sm:flex-row">
         <div
           className={cn(
             "relative flex flex-1 items-center rounded-lg border border-gray-300 bg-white px-3 focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500",
@@ -341,14 +341,16 @@ export const PaginatedSearchList = forwardRef<
             {tags.map((tag, index) => (
               <span
                 key={index}
-                className="flex items-center gap-1 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium whitespace-nowrap text-blue-800"
+                className="flex items-center gap-1 rounded-full bg-blue-100 px-2 py-1 text-xs font-medium whitespace-nowrap text-blue-800"
               >
                 <FiTag className="h-3 w-3" />
-                {tag}
+                <span className="max-w-[100px] truncate sm:max-w-none">
+                  {tag}
+                </span>
                 <button
                   type="button"
                   onClick={() => removeTag(index)}
-                  className="ml-0.5 inline-flex h-3.5 w-3.5 items-center justify-center rounded-full text-blue-600 hover:bg-blue-200 hover:text-blue-800 focus:bg-blue-500 focus:text-white focus:outline-hidden"
+                  className="ml-0.5 inline-flex h-4 w-4 touch-manipulation items-center justify-center rounded-full text-blue-600 hover:bg-blue-200 hover:text-blue-800 focus:bg-blue-500 focus:text-white focus:outline-hidden"
                   aria-label={`Remove tag ${tag}`}
                   disabled={isLoading}
                 >
@@ -375,42 +377,48 @@ export const PaginatedSearchList = forwardRef<
                 }
               }}
               className={cn(
-                "min-w-[100px] grow border-0 bg-transparent p-0 py-2 focus:ring-0!",
+                "min-w-[100px] grow border-0 bg-transparent p-0 py-2 text-base focus:ring-0!", // Increased text size for mobile
               )}
               disabled={isLoading}
             />
           </div>
         </div>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={handleSearchClick}
-          disabled={isLoading}
-        >
-          Search
-        </Button>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={handleRefresh}
-          disabled={isLoading}
-          aria-label="Refresh search"
-        >
-          <FiRefreshCw className="h-4 w-4" />
-        </Button>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={handleClearClick}
-          disabled={isLoading || (!textInputValue && tags.length === 0)}
-          aria-label="Clear search"
-        >
-          <FiX className="h-4 w-4" />
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleSearchClick}
+            disabled={isLoading}
+            className="min-h-[44px] touch-manipulation" // Minimum touch target size
+          >
+            <span className="hidden sm:inline">Search</span>
+            <FiSearch className="h-4 w-4 sm:hidden" />
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleRefresh}
+            disabled={isLoading}
+            aria-label="Refresh search"
+            className="min-h-[44px] touch-manipulation"
+          >
+            <FiRefreshCw className="h-4 w-4" />
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleClearClick}
+            disabled={isLoading || (!textInputValue && tags.length === 0)}
+            aria-label="Clear search"
+            className="min-h-[44px] touch-manipulation"
+          >
+            <FiX className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
 
-      {/* Sorting and Pagination Controls */}
-      <div className="flex items-center justify-between px-4">
+      {/* Top Controls - Hidden on mobile to avoid duplication */}
+      <div className="hidden items-center justify-between px-2 sm:px-4 md:flex">
         <div className="text-sm text-gray-500">
           Showing{" "}
           <span className="font-medium">
@@ -479,6 +487,7 @@ export const PaginatedSearchList = forwardRef<
               size="sm"
               onClick={() => handlePageChange(pagination.page - 1)}
               disabled={pagination.page <= 1 || isLoading}
+              className="touch-manipulation"
             >
               <FiChevronLeft className="h-4 w-4" />
             </Button>
@@ -488,7 +497,7 @@ export const PaginatedSearchList = forwardRef<
               className="flex items-center space-x-1"
             >
               <Input
-                className="h-8 w-16 text-center"
+                className="h-8 w-16 touch-manipulation text-center"
                 value={pageInputValue}
                 onChange={handlePageInputChange}
                 onBlur={handlePageInputSubmit}
@@ -505,6 +514,7 @@ export const PaginatedSearchList = forwardRef<
               size="sm"
               onClick={() => handlePageChange(pagination.page + 1)}
               disabled={pagination.page >= pagination.totalPages || isLoading}
+              className="touch-manipulation"
             >
               <FiChevronRight className="h-4 w-4" />
             </Button>
@@ -517,15 +527,16 @@ export const PaginatedSearchList = forwardRef<
         className={cn(
           tableWrapperStyles.base,
           tableWrapperStyles.elevated,
-          "overflow-y-hidden",
+          "overflow-x-auto overflow-y-hidden", // Enable horizontal scrolling on mobile
         )}
       >
         {children}
       </div>
 
-      {/* Pagination Controls */}
-      <div className="mt-4 flex items-center justify-between px-4">
-        <div className="text-sm text-gray-500">
+      {/* Bottom Pagination Controls - Responsive layout */}
+      <div className="flex flex-col gap-4 px-2 sm:px-4 md:flex-row md:items-center md:justify-between">
+        {/* Results info */}
+        <div className="text-center text-sm text-gray-500 md:text-left">
           Showing{" "}
           <span className="font-medium">
             {pagination.total === 0
@@ -548,11 +559,13 @@ export const PaginatedSearchList = forwardRef<
           )}
         </div>
 
-        <div className="flex items-center space-x-4">
-          {/* Sort dropdown (bottom) */}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:space-x-4">
+          {/* Sort dropdown - Full width on mobile */}
           {sortOptions.length > 0 && (
             <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-500">Sort by:</span>
+              <span className="text-sm whitespace-nowrap text-gray-500">
+                Sort by:
+              </span>
               <Select
                 value={
                   currentSort
@@ -562,7 +575,7 @@ export const PaginatedSearchList = forwardRef<
                 onValueChange={handleSortChange}
                 disabled={isLoading}
               >
-                <SelectTrigger className="h-8 w-[180px]">
+                <SelectTrigger className="h-10 w-full touch-manipulation sm:w-[180px]">
                   <SelectValue placeholder="Select sort" />
                 </SelectTrigger>
                 <SelectContent>
@@ -586,13 +599,14 @@ export const PaginatedSearchList = forwardRef<
             </div>
           )}
 
-          {/* Page navigation */}
-          <div className="flex items-center space-x-2">
+          {/* Page navigation - Centered on mobile */}
+          <div className="flex items-center justify-center space-x-2">
             <Button
               variant="outline"
               size="sm"
               onClick={() => handlePageChange(pagination.page - 1)}
               disabled={pagination.page <= 1 || isLoading}
+              className="min-h-[44px] min-w-[44px] touch-manipulation"
             >
               <FiChevronLeft className="h-4 w-4" />
             </Button>
@@ -602,14 +616,14 @@ export const PaginatedSearchList = forwardRef<
               className="flex items-center space-x-1"
             >
               <Input
-                className="h-8 w-16 text-center"
+                className="h-10 w-16 touch-manipulation text-center text-base"
                 value={pageInputValue}
                 onChange={handlePageInputChange}
                 onBlur={handlePageInputSubmit}
                 disabled={isLoading}
                 aria-label="Page number"
               />
-              <span className="text-sm text-gray-500">
+              <span className="text-sm whitespace-nowrap text-gray-500">
                 of {pagination.totalPages}
               </span>
             </form>
@@ -619,6 +633,7 @@ export const PaginatedSearchList = forwardRef<
               size="sm"
               onClick={() => handlePageChange(pagination.page + 1)}
               disabled={pagination.page >= pagination.totalPages || isLoading}
+              className="min-h-[44px] min-w-[44px] touch-manipulation"
             >
               <FiChevronRight className="h-4 w-4" />
             </Button>
