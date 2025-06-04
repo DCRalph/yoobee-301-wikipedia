@@ -91,7 +91,7 @@ export function WikiArticleContent({
     >
       <div className="flex flex-1 overflow-x-hidden">
         {/* Sidebar and content wrapper */}
-        <SidebarProvider defaultOpen={false}>
+        <SidebarProvider defaultOpen={true}>
           {/* Left Sidebar */}
           <WikiArticleContents content={currentContent} />
 
