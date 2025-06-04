@@ -1,11 +1,17 @@
-
 import { createTRPCRouter, protectedProcedure } from "../../trpc";
 
 export const userDashboardRouter = createTRPCRouter({
   // Get suggested edits/topics for the user
-  getSuggestedTopics: protectedProcedure.query(async ({ ctx }) => {
+  getSuggestedTopics: protectedProcedure.query(async ({}) => {
     return {
-      topics: ["Culture", "Arts", "Technology", "Science", "History", "Geography"]
+      topics: [
+        "Culture",
+        "Arts",
+        "Technology",
+        "Science",
+        "History",
+        "Geography",
+      ],
     };
   }),
 
@@ -15,7 +21,13 @@ export const userDashboardRouter = createTRPCRouter({
       where: { authorId: ctx.session.user.id },
       orderBy: { updatedAt: "desc" },
       take: 5,
-      select: { id: true, title: true, slug: true, updatedAt: true, published: true },
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        updatedAt: true,
+        published: true,
+      },
     });
 
     return {
@@ -162,4 +174,4 @@ export const userDashboardRouter = createTRPCRouter({
       },
     };
   }),
-}); 
+});

@@ -172,7 +172,7 @@ export function WikiArticleContents({
                     <span>Top</span>
                   </SidebarMenuButton>
                 </TooltipTrigger>
-                <TooltipContent side="right">
+                <TooltipContent side="top">
                   <p>Jump to top of article</p>
                 </TooltipContent>
               </Tooltip>
@@ -196,7 +196,7 @@ export function WikiArticleContents({
                       </Link>
                     </SidebarMenuButton>
                   </TooltipTrigger>
-                  <TooltipContent side="right">
+                  <TooltipContent side="top">
                     <p>Jump to {section.text}</p>
                   </TooltipContent>
                 </Tooltip>

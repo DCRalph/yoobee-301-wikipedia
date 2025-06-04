@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 import { TRPCError } from "@trpc/server";
+import { vectorSearch, findSimilarArticles } from "~/lib/vector-search";
 
 export const articleRouter = createTRPCRouter({
   // Get home page data
@@ -231,5 +232,133 @@ export const articleRouter = createTRPCRouter({
       });
 
       return { success: true };
+    }),
+
+  // Vector search with execution timing
+  vectorSearch: publicProcedure
+    .input(
+      z.object({
+        searchTerm: z.string().min(1, "Search term is required"),
+        itemsPerPage: z.number().min(1).max(40).default(10),
+        searchType: z.enum(["title", "content", "hybrid"]).default("title"),
+        page: z.number().min(1).default(1),
+        maxDistance: z.number().min(0).max(2).default(1.0),
+        titleWeight: z.number().min(0).max(1).default(0.3),
+        contentWeight: z.number().min(0).max(1).default(0.7),
+      }),
+    )
+    .query(async ({ input }) => {
+      const startTime = Date.now();
+
+      try {
+        const response = await vectorSearch({
+          searchTerm: input.searchTerm,
+          itemsPerPage: Math.min(input.itemsPerPage, 10), // Force limit to 10
+          searchType: input.searchType,
+          page: input.page,
+          maxDistance: input.maxDistance,
+          maxQueryLimit: 10, // Internal query limit
+          titleWeight: input.titleWeight,
+          contentWeight: input.contentWeight,
+        });
+
+        const executionTime = Date.now() - startTime;
+
+        // Transform results to match SearchDialog expectations
+        const articles = response.results.map((result) => {
+          const numWords = result.content.split(" ").length;
+          const readTime = Math.ceil(numWords / 200);
+
+          return {
+            id: result.id,
+            title: result.title,
+            slug: result.slug,
+            author: { name: result.author.name },
+            updatedAt: result.updatedAt,
+            category: "Article", // Default category since we don't have this in vector search
+            readTime: `${readTime} min read`,
+            similarity: result.similarity,
+            distance: result.distance,
+          };
+        });
+
+        return {
+          articles,
+          totalFound: response.totalFound,
+          executionTime,
+          searchType: response.searchType,
+          page: response.page,
+          itemsPerPage: response.itemsPerPage,
+          totalPages: response.totalPages,
+        };
+      } catch (error) {
+        console.error("Vector search error:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to perform vector search",
+        });
+      }
+    }),
+
+  // Get similar articles
+  getSimilarArticles: publicProcedure
+    .input(
+      z.object({
+        articleId: z.string(),
+        itemsPerPage: z.number().min(1).max(10).default(5),
+        maxDistance: z.number().min(0).max(2).default(1.0),
+        searchType: z.enum(["title", "content", "hybrid"]).default("title"),
+        titleWeight: z.number().min(0).max(1).default(0.3),
+        contentWeight: z.number().min(0).max(1).default(0.7),
+      }),
+    )
+    .query(async ({ input }) => {
+      const startTime = Date.now();
+
+      try {
+        const response = await findSimilarArticles(
+          input.articleId,
+          input.itemsPerPage,
+          input.maxDistance,
+          input.searchType,
+          input.titleWeight,
+          input.contentWeight,
+        );
+
+        const executionTime = Date.now() - startTime;
+
+        // Transform results to match expected format
+        const articles = response.results.map((result) => {
+          const numWords = result.content.split(" ").length;
+          const readTime = Math.ceil(numWords / 200);
+
+          return {
+            id: result.id,
+            title: result.title,
+            slug: result.slug,
+            author: { name: result.author.name },
+            updatedAt: result.updatedAt,
+            readTime: `${readTime} min read`,
+            similarity: result.similarity,
+            distance: result.distance,
+            content: result.content.substring(0, 200) + "...", // Truncate for preview
+            titleDistance: result.titleDistance,
+            contentDistance: result.contentDistance,
+          };
+        });
+
+        return {
+          articles,
+          totalFound: response.totalFound,
+          executionTime,
+          searchType: response.searchType,
+        };
+      } catch (error) {
+        console.error("Similar articles search error:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to find similar articles",
+        });
+      }
     }),
 });

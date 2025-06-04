@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Card,
   CardContent,
@@ -43,6 +44,65 @@ export default function DonatePage() {
   const animationRef = useRef<number | null>(null);
   const startTimeRef = useRef<number | null>(null);
   const duration = 2000; // 2 seconds
+
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        delayChildren: 0.3,
+        staggerChildren: 0.2,
+      },
+    },
+  };
+
+  const scaleVariants = {
+    hidden: { scale: 0.8, opacity: 0 },
+    visible: {
+      scale: 1,
+      opacity: 1,
+      transition: {
+        duration: 0.5,
+        ease: "easeOut",
+      },
+    },
+  };
+
+  const slideInVariants = {
+    hidden: { x: -50, opacity: 0 },
+    visible: {
+      x: 0,
+      opacity: 1,
+      transition: {
+        duration: 0.8,
+        ease: "easeOut",
+      },
+    },
+  };
+
+  const staggerContainerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.2,
+      },
+    },
+  };
+
+  const fadeInUpVariants = {
+    hidden: { y: 30, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: {
+        duration: 0.6,
+        ease: "easeOut",
+      },
+    },
+  };
 
   // Count-up animation
   useEffect(() => {
@@ -113,258 +173,591 @@ export default function DonatePage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-gradient-to-br from-blue-50 via-white to-blue-100">
+    <motion.div
+      className="flex min-h-screen flex-col bg-gradient-to-br from-blue-50 via-white to-blue-100"
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+    >
       {/* Header */}
-      <header className="border-border/40 sticky top-0 z-10 border-b bg-white/80 py-3 shadow-sm backdrop-blur">
+      <motion.header
+        className="border-border/40 sticky top-0 z-10 border-b bg-white/80 py-3 shadow-sm backdrop-blur"
+        variants={slideInVariants}
+      >
         <div className="container flex items-center justify-between px-4">
           <Link href="/" className="flex items-center">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-muted-foreground hover:text-foreground gap-2 transition-colors"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              <span>Back to WikiClone</span>
-            </Button>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-muted-foreground hover:text-foreground gap-2 transition-colors"
+              >
+                <motion.div
+                  animate={{ x: [-2, 2, -2] }}
+                  transition={{
+                    repeat: Infinity,
+                    duration: 2,
+                    ease: "easeInOut",
+                  }}
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                </motion.div>
+                <span>Back to WikiClone</span>
+              </Button>
+            </motion.div>
           </Link>
-          <div className="flex items-center gap-2">
-            <HeartIcon className="text-primary h-5 w-5" />
+          <motion.div
+            className="flex items-center gap-2"
+            animate={{
+              scale: [1, 1.05, 1],
+            }}
+            transition={{
+              repeat: Infinity,
+              duration: 3,
+              ease: "easeInOut",
+            }}
+          >
+            <motion.div
+              animate={{
+                scale: [1, 1.2, 1],
+                rotate: [0, 5, -5, 0],
+              }}
+              transition={{
+                repeat: Infinity,
+                duration: 2,
+                ease: "easeInOut",
+              }}
+            >
+              <HeartIcon className="text-primary h-5 w-5" />
+            </motion.div>
             <span className="text-lg font-semibold">Donation Portal</span>
-          </div>
+          </motion.div>
         </div>
-      </header>
+      </motion.header>
 
       {/* Main Content */}
       <main className="flex-1">
         <div className="flex justify-center py-4 md:py-8">
           <div className="container max-w-2xl px-4">
             {/* Impact Stats */}
-            <div className="mb-8 flex flex-col justify-center gap-4 sm:flex-row">
-              <div className="flex items-center gap-2 rounded-lg bg-white/80 px-4 py-2 shadow">
-                <TrendingUp className="h-5 w-5 text-green-600" />
-                <span className="text-lg font-semibold">
+            <motion.div
+              className="mb-8 flex flex-col justify-center gap-4 sm:flex-row"
+              variants={staggerContainerVariants}
+              initial="hidden"
+              animate="visible"
+            >
+              <motion.div
+                className="flex items-center gap-2 rounded-lg bg-white/80 px-4 py-2 shadow"
+                variants={fadeInUpVariants}
+                whileHover={{
+                  scale: 1.05,
+                  boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
+                  transition: { duration: 0.2 },
+                }}
+              >
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                >
+                  <TrendingUp className="h-5 w-5 text-green-600" />
+                </motion.div>
+                <motion.span
+                  className="text-lg font-semibold"
+                  key={displayedAmount}
+                  initial={{ scale: 1.2, color: "#16a34a" }}
+                  animate={{ scale: 1, color: "#000000" }}
+                  transition={{ duration: 0.3 }}
+                >
                   $
                   {displayedAmount.toLocaleString(undefined, {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
                   })}
-                </span>
+                </motion.span>
                 <span className="text-muted-foreground text-sm">
                   raised this month
                 </span>
-              </div>
-              <div className="flex items-center gap-2 rounded-lg bg-white/80 px-4 py-2 shadow">
-                <Users className="h-5 w-5 text-blue-600" />
+              </motion.div>
+              <motion.div
+                className="flex items-center gap-2 rounded-lg bg-white/80 px-4 py-2 shadow"
+                variants={fadeInUpVariants}
+                whileHover={{
+                  scale: 1.05,
+                  boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
+                  transition: { duration: 0.2 },
+                }}
+              >
+                <motion.div
+                  animate={{
+                    scale: [1, 1.2, 1],
+                    rotate: [0, 10, -10, 0],
+                  }}
+                  transition={{
+                    repeat: Infinity,
+                    duration: 3,
+                    ease: "easeInOut",
+                  }}
+                >
+                  <Users className="h-5 w-5 text-blue-600" />
+                </motion.div>
                 <span className="text-lg font-semibold">{totalDonors}</span>
                 <span className="text-muted-foreground text-sm">donors</span>
-              </div>
-            </div>
+              </motion.div>
+            </motion.div>
 
             {/* Main Card */}
-            <Card className="mx-auto w-full overflow-hidden rounded-2xl border-0 pt-0 shadow-xl">
-              <CardHeader className="bg-primary/10 py-4">
-                <CardTitle className="flex items-center justify-center text-2xl font-bold">
-                  <DollarSign className="mr-2 h-6 w-6" />
-                  Make a Donation
-                </CardTitle>
-              </CardHeader>
+            <motion.div
+              variants={scaleVariants}
+              initial="hidden"
+              animate="visible"
+            >
+              <Card className="mx-auto w-full overflow-hidden rounded-2xl border-0 pt-0 shadow-xl">
+                <motion.div
+                  initial={{ y: -20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.8, duration: 0.6 }}
+                >
+                  <CardHeader className="bg-primary/10 py-4">
+                    <CardTitle className="flex items-center justify-center text-2xl font-bold">
+                      <motion.div
+                        animate={{ rotate: [0, 5, -5, 0] }}
+                        transition={{ repeat: Infinity, duration: 2 }}
+                      >
+                        <DollarSign className="mr-2 h-6 w-6" />
+                      </motion.div>
+                      Make a Donation
+                    </CardTitle>
+                  </CardHeader>
+                </motion.div>
 
-              <CardContent className="p-8 pt-0">
-                <div className="mb-6 text-center">
-                  <div className="mb-4 flex justify-center">
-                    <div className="bg-primary/20 rounded-full p-4 shadow">
-                      <HeartIcon className="text-primary h-10 w-10" />
-                    </div>
-                  </div>
-                  <h1 className="mb-2 text-3xl font-bold tracking-tight">
-                    Support WikiClone
-                  </h1>
-                  <p className="text-muted-foreground mx-auto max-w-xl text-base">
-                    Your donation helps us keep knowledge free and accessible
-                    for everyone. Every dollar goes directly to maintaining and
-                    improving this platform.
-                  </p>
-                </div>
-
-                {/* Why Donate */}
-                <div className="mb-6 rounded-lg border border-blue-100 bg-blue-50 p-4">
-                  <div className="mb-2 flex items-center gap-2">
-                    <Info className="h-5 w-5 text-blue-500" />
-                    <span className="font-semibold">Why donate?</span>
-                  </div>
-                  <ul className="list-inside list-disc space-y-1 text-sm text-blue-900">
-                    <li>No ads, ever. 100% user-supported.</li>
-                    <li>Help us cover server and development costs.</li>
-                    <li>Enable new features and better content.</li>
-                    <li>Every donation, big or small, makes a difference!</li>
-                  </ul>
-                </div>
-
-                {/* Donation Amount */}
-                <div className="space-y-6">
-                  <RadioGroup
-                    value={
-                      donationOption === "preset" ? amount.toString() : "custom"
-                    }
-                    onValueChange={handleAmountChange}
-                    className="grid grid-cols-2 gap-3 sm:grid-cols-3"
+                <CardContent className="p-8 pt-0">
+                  <motion.div
+                    className="mb-6 text-center"
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 1, duration: 0.8 }}
                   >
-                    {DONATION_AMOUNTS.map((option) => (
-                      <div key={option.value} className="relative">
+                    <div className="mb-4 flex justify-center">
+                      <motion.div
+                        className="bg-primary/20 rounded-full p-4 shadow"
+                        whileHover={{
+                          scale: 1.1,
+                          rotate: 360,
+                          transition: { duration: 0.6 },
+                        }}
+                        animate={{
+                          boxShadow: [
+                            "0 0 0 0 rgba(59, 130, 246, 0.4)",
+                            "0 0 0 20px rgba(59, 130, 246, 0)",
+                          ],
+                        }}
+                        transition={{
+                          repeat: Infinity,
+                          duration: 2,
+                          ease: "easeInOut",
+                        }}
+                      >
+                        <motion.div
+                          animate={{
+                            scale: [1, 1.2, 1],
+                            rotate: [0, 10, -10, 0],
+                          }}
+                          transition={{
+                            repeat: Infinity,
+                            duration: 3,
+                            ease: "easeInOut",
+                          }}
+                        >
+                          <HeartIcon className="text-primary h-10 w-10" />
+                        </motion.div>
+                      </motion.div>
+                    </div>
+                    <motion.h1
+                      className="mb-2 text-3xl font-bold tracking-tight"
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ delay: 1.2, duration: 0.6, type: "spring" }}
+                    >
+                      Support WikiClone
+                    </motion.h1>
+                    <motion.p
+                      className="text-muted-foreground mx-auto max-w-xl text-base"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 1.4, duration: 0.8 }}
+                    >
+                      Your donation helps us keep knowledge free and accessible
+                      for everyone. Every dollar goes directly to maintaining
+                      and improving this platform.
+                    </motion.p>
+                  </motion.div>
+
+                  {/* Why Donate */}
+                  <motion.div
+                    className="mb-6 rounded-lg border border-blue-100 bg-blue-50 p-4"
+                    initial={{ x: -50, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    transition={{ delay: 1.6, duration: 0.8 }}
+                    whileHover={{
+                      scale: 1.02,
+                      boxShadow: "0 10px 25px rgba(59, 130, 246, 0.1)",
+                    }}
+                  >
+                    <div className="mb-2 flex items-center gap-2">
+                      <motion.div
+                        animate={{ rotate: [0, 10, -10, 0] }}
+                        transition={{ repeat: Infinity, duration: 3 }}
+                      >
+                        <Info className="h-5 w-5 text-blue-500" />
+                      </motion.div>
+                      <span className="font-semibold">Why donate?</span>
+                    </div>
+                    <motion.ul
+                      className="list-inside list-disc space-y-1 text-sm text-blue-900"
+                      variants={staggerContainerVariants}
+                      initial="hidden"
+                      animate="visible"
+                    >
+                      {[
+                        "No ads, ever. 100% user-supported.",
+                        "Help us cover server and development costs.",
+                        "Enable new features and better content.",
+                        "Every donation, big or small, makes a difference!",
+                      ].map((item, index) => (
+                        <motion.li
+                          key={index}
+                          variants={fadeInUpVariants}
+                          whileHover={{ x: 5, transition: { duration: 0.2 } }}
+                        >
+                          {item}
+                        </motion.li>
+                      ))}
+                    </motion.ul>
+                  </motion.div>
+
+                  {/* Donation Amount */}
+                  <motion.div
+                    className="space-y-6"
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 1.8, duration: 0.8 }}
+                  >
+                    <RadioGroup
+                      value={
+                        donationOption === "preset"
+                          ? amount.toString()
+                          : "custom"
+                      }
+                      onValueChange={handleAmountChange}
+                      className="grid grid-cols-2 gap-3 sm:grid-cols-3"
+                    >
+                      {DONATION_AMOUNTS.map((option, index) => (
+                        <motion.div
+                          key={option.value}
+                          className="relative"
+                          initial={{ scale: 0.8, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          transition={{
+                            delay: 2 + index * 0.1,
+                            duration: 0.5,
+                            type: "spring",
+                          }}
+                        >
+                          <RadioGroupItem
+                            value={option.value.toString()}
+                            id={`amount-${option.value}`}
+                            className="peer sr-only"
+                          />
+                          <motion.div
+                            whileHover={{
+                              scale: 1.05,
+                              boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
+                            }}
+                            whileTap={{ scale: 0.95 }}
+                          >
+                            <Label
+                              htmlFor={`amount-${option.value}`}
+                              className="border-muted hover:border-primary/50 peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 peer-data-[state=checked]:text-primary flex h-16 cursor-pointer items-center justify-center rounded-xl border-2 bg-white text-lg font-semibold shadow-sm transition-all"
+                            >
+                              {option.label}
+                            </Label>
+                          </motion.div>
+                        </motion.div>
+                      ))}
+
+                      <motion.div
+                        className="col-span-2 mt-2 sm:col-span-3"
+                        initial={{ scale: 0.8, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{
+                          delay: 2.6,
+                          duration: 0.5,
+                          type: "spring",
+                        }}
+                      >
                         <RadioGroupItem
-                          value={option.value.toString()}
-                          id={`amount-${option.value}`}
+                          value="custom"
+                          id="amount-custom"
+                          checked={donationOption === "custom"}
                           className="peer sr-only"
                         />
-                        <Label
-                          htmlFor={`amount-${option.value}`}
-                          className="border-muted hover:border-primary/50 peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 peer-data-[state=checked]:text-primary flex h-16 cursor-pointer items-center justify-center rounded-xl border-2 bg-white text-lg font-semibold shadow-sm transition-all"
+                        <motion.div
+                          whileHover={{
+                            scale: 1.02,
+                            boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
+                          }}
+                          whileTap={{ scale: 0.98 }}
                         >
-                          {option.label}
-                        </Label>
-                      </div>
-                    ))}
+                          <Label
+                            htmlFor="amount-custom"
+                            className="border-muted hover:border-primary/50 peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 flex cursor-pointer items-center rounded-xl border-2 bg-white px-4 py-3 shadow-sm transition-all"
+                          >
+                            <div className="flex w-full items-center justify-center">
+                              <span className="text-muted-foreground mr-3 text-lg font-medium">
+                                $
+                              </span>
+                              <Input
+                                type="number"
+                                min="1"
+                                step="1"
+                                placeholder="Custom amount"
+                                value={customAmount}
+                                onChange={handleCustomAmountChange}
+                                onClick={() => setDonationOption("custom")}
+                                className="max-w-[150px] border-0 bg-transparent p-0 text-center text-lg font-semibold focus-visible:ring-0"
+                                aria-label="Custom donation amount"
+                              />
+                            </div>
+                          </Label>
+                        </motion.div>
+                      </motion.div>
+                    </RadioGroup>
+                  </motion.div>
 
-                    <div className="col-span-2 mt-2 sm:col-span-3">
-                      <RadioGroupItem
-                        value="custom"
-                        id="amount-custom"
-                        checked={donationOption === "custom"}
-                        className="peer sr-only"
-                      />
-                      <Label
-                        htmlFor="amount-custom"
-                        className="border-muted hover:border-primary/50 peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 flex cursor-pointer items-center rounded-xl border-2 bg-white px-4 py-3 shadow-sm transition-all"
-                      >
-                        <div className="flex w-full items-center justify-center">
-                          <span className="text-muted-foreground mr-3 text-lg font-medium">
-                            $
-                          </span>
-                          <Input
-                            type="number"
-                            min="1"
-                            step="1"
-                            placeholder="Custom amount"
-                            value={customAmount}
-                            onChange={handleCustomAmountChange}
-                            onClick={() => setDonationOption("custom")}
-                            className="max-w-[150px] border-0 bg-transparent p-0 text-center text-lg font-semibold focus-visible:ring-0"
-                            aria-label="Custom donation amount"
-                          />
-                        </div>
-                      </Label>
-                    </div>
-                  </RadioGroup>
-                </div>
+                  {/* How Your Donation Helps */}
+                  <motion.div
+                    className="mt-8 rounded-lg border border-green-100 bg-green-50 p-4 text-center"
+                    initial={{ scale: 0.9, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ delay: 2.8, duration: 0.8 }}
+                    whileHover={{
+                      scale: 1.02,
+                      boxShadow: "0 10px 25px rgba(34, 197, 94, 0.1)",
+                    }}
+                  >
+                    <h3 className="mb-2 font-semibold text-green-900">
+                      How your donation helps
+                    </h3>
+                    <motion.ul
+                      className="space-y-1 text-sm text-green-900"
+                      variants={staggerContainerVariants}
+                      initial="hidden"
+                      animate="visible"
+                    >
+                      {[
+                        "💡 Keeps the site online and ad-free",
+                        "🔒 Funds security and privacy improvements",
+                        "🌍 Expands access to more users globally",
+                      ].map((item, index) => (
+                        <motion.li
+                          key={index}
+                          variants={fadeInUpVariants}
+                          whileHover={{
+                            scale: 1.05,
+                            x: 5,
+                            transition: { duration: 0.2 },
+                          }}
+                        >
+                          {item}
+                        </motion.li>
+                      ))}
+                    </motion.ul>
+                  </motion.div>
 
-                {/* How Your Donation Helps */}
-                <div className="mt-8 rounded-lg border border-green-100 bg-green-50 p-4 text-center">
-                  <h3 className="mb-2 font-semibold text-green-900">
-                    How your donation helps
-                  </h3>
-                  <ul className="space-y-1 text-sm text-green-900">
-                    <li>💡 Keeps the site online and ad-free</li>
-                    <li>🔒 Funds security and privacy improvements</li>
-                    <li>🌍 Expands access to more users globally</li>
-                  </ul>
-                </div>
+                  {/* Testimonial */}
+                  <motion.div
+                    className="text-muted-foreground mt-6 text-center text-sm italic"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 3, duration: 0.8 }}
+                    whileHover={{ scale: 1.02 }}
+                  >
+                    {`"I use this site every day for research. Donating was an easy choice!"`}
+                    <br />
+                    <span className="font-semibold not-italic">
+                      - Recent Donor
+                    </span>
+                  </motion.div>
+                </CardContent>
 
-                {/* Testimonial */}
-                <div className="text-muted-foreground mt-6 text-center text-sm italic">
-                  {`"I use this site every day for research. Donating was an easy choice!"`}
-                  <br />
-                  <span className="font-semibold not-italic">
-                    - Recent Donor
-                  </span>
-                </div>
-              </CardContent>
-
-              <CardFooter className="bg-muted/20 flex flex-col gap-3 border-t px-8 py-6">
-                <Button
-                  onClick={handleDonate}
-                  disabled={
-                    isLoading || createCheckout.isPending || amount <= 0
-                  }
-                  className="from-primary to-primary/80 hover:text-primary-foreground w-full rounded-xl bg-gradient-to-r py-4 text-lg font-bold shadow-lg transition-all duration-300 hover:scale-[1.02]"
-                  size="lg"
+                <motion.div
+                  initial={{ y: 50, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 3.2, duration: 0.8 }}
                 >
-                  {isLoading || createCheckout.isPending ? (
-                    <span className="flex items-center justify-center">
-                      <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
-                      Processing...
-                    </span>
-                  ) : (
-                    <span className="flex items-center justify-center">
-                      <CreditCard className="mr-2 h-5 w-5" />
-                      Donate {amount > 0 ? `$${(amount / 100).toFixed(2)}` : ""}
-                    </span>
-                  )}
-                </Button>
-                <div className="mt-2 flex justify-center gap-4">
-                  <Image
-                    src="/stripe.svg"
-                    alt="Stripe"
-                    width={100}
-                    height={100}
-                    className="h-8 w-auto"
-                  />
-                  <Image
-                    src="/visa.svg"
-                    alt="Visa"
-                    width={100}
-                    height={100}
-                    className="h-8 w-auto"
-                  />
-                  <Image
-                    src="/mastercard.svg"
-                    alt="Mastercard"
-                    width={100}
-                    height={100}
-                    className="h-8 w-auto"
-                  />
-                  {/* Add more payment icons as needed */}
-                </div>
-                <div className="text-muted-foreground mt-2 text-center text-xs">
-                  100% Secure Payments. No card info is stored on our servers.
-                </div>
-              </CardFooter>
-            </Card>
+                  <CardFooter className="bg-muted/20 flex flex-col gap-3 border-t px-8 py-6">
+                    <motion.div
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      <Button
+                        onClick={handleDonate}
+                        disabled={
+                          isLoading || createCheckout.isPending || amount <= 0
+                        }
+                        className="from-primary to-primary/80 hover:text-primary-foreground w-full rounded-xl bg-gradient-to-r py-4 text-lg font-bold shadow-lg transition-all duration-300 hover:scale-[1.02]"
+                        size="lg"
+                      >
+                        <AnimatePresence mode="wait">
+                          {isLoading || createCheckout.isPending ? (
+                            <motion.span
+                              className="flex items-center justify-center"
+                              key="loading"
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              exit={{ opacity: 0 }}
+                            >
+                              <motion.div
+                                className="mr-2 h-4 w-4 rounded-full border-2 border-current border-t-transparent"
+                                animate={{ rotate: 360 }}
+                                transition={{
+                                  duration: 1,
+                                  repeat: Infinity,
+                                  ease: "linear",
+                                }}
+                              />
+                              Processing...
+                            </motion.span>
+                          ) : (
+                            <motion.span
+                              className="flex items-center justify-center"
+                              key="donate"
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              exit={{ opacity: 0 }}
+                            >
+                              <motion.div
+                                animate={{ scale: [1, 1.1, 1] }}
+                                transition={{ repeat: Infinity, duration: 2 }}
+                              >
+                                <CreditCard className="mr-2 h-5 w-5" />
+                              </motion.div>
+                              Donate{" "}
+                              {amount > 0
+                                ? `$${(amount / 100).toFixed(2)}`
+                                : ""}
+                            </motion.span>
+                          )}
+                        </AnimatePresence>
+                      </Button>
+                    </motion.div>
+                    <motion.div
+                      className="mt-2 flex justify-center gap-4"
+                      variants={staggerContainerVariants}
+                      initial="hidden"
+                      animate="visible"
+                    >
+                      {[
+                        { src: "/stripe.svg", alt: "Stripe" },
+                        { src: "/visa.svg", alt: "Visa" },
+                        { src: "/mastercard.svg", alt: "Mastercard" },
+                      ].map((payment) => (
+                        <motion.div
+                          key={payment.alt}
+                          variants={fadeInUpVariants}
+                          whileHover={{
+                            scale: 1.1,
+                            y: -5,
+                            transition: { duration: 0.2 },
+                          }}
+                        >
+                          <Image
+                            src={payment.src}
+                            alt={payment.alt}
+                            width={100}
+                            height={100}
+                            className="h-8 w-auto"
+                          />
+                        </motion.div>
+                      ))}
+                    </motion.div>
+                    <motion.div
+                      className="text-muted-foreground mt-2 text-center text-xs"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 3.8, duration: 0.8 }}
+                    >
+                      100% Secure Payments. No card info is stored on our
+                      servers.
+                    </motion.div>
+                  </CardFooter>
+                </motion.div>
+              </Card>
+            </motion.div>
           </div>
         </div>
       </main>
 
       {/* Footer */}
-      <footer className="border-border/40 bg-muted/20 flex justify-center border-t py-8">
+      <motion.footer
+        className="border-border/40 bg-muted/20 flex justify-center border-t py-8"
+        initial={{ y: 50, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 4, duration: 0.8 }}
+      >
         <div className="container flex justify-center px-4">
           <div className="flex flex-col items-center text-center">
-            <div className="mb-4 flex items-center gap-2">
-              <ShieldCheck className="text-primary h-5 w-5" />
+            <motion.div
+              className="mb-4 flex items-center gap-2"
+              whileHover={{ scale: 1.05 }}
+            >
+              <motion.div
+                animate={{
+                  rotate: [0, 10, -10, 0],
+                  scale: [1, 1.1, 1],
+                }}
+                transition={{
+                  repeat: Infinity,
+                  duration: 3,
+                  ease: "easeInOut",
+                }}
+              >
+                <ShieldCheck className="text-primary h-5 w-5" />
+              </motion.div>
               <span className="font-medium">Secure Payments via Stripe</span>
-            </div>
-            <div className="text-muted-foreground text-sm">
+            </motion.div>
+            <motion.div
+              className="text-muted-foreground text-sm"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 4.2, duration: 0.8 }}
+            >
               <p>
                 WikiClone &copy; {new Date().getFullYear()} • All donations
                 securely processed
               </p>
               <p className="mt-1">
-                <a
+                <motion.a
                   href="mailto:support@dcralph.com"
                   className="hover:text-foreground underline"
+                  whileHover={{ scale: 1.05 }}
                 >
                   support@dcralph.com
-                </a>
+                </motion.a>
                 {" • "}
-                <Link
-                  href="/privacy"
-                  className="hover:text-foreground underline"
-                >
-                  Privacy Policy
-                </Link>
+                <motion.div className="inline" whileHover={{ scale: 1.05 }}>
+                  <Link
+                    href="/privacy"
+                    className="hover:text-foreground underline"
+                  >
+                    Privacy Policy
+                  </Link>
+                </motion.div>
               </p>
-            </div>
+            </motion.div>
           </div>
         </div>
-      </footer>
-    </div>
+      </motion.footer>
+    </motion.div>
   );
 }

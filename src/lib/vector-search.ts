@@ -77,8 +77,8 @@ interface DatabaseQueryResult {
 }
 
 interface SourceArticleQueryResult {
-  titleVector: number[];
-  contentVector: number[];
+  titleVector?: string;
+  contentVector?: string;
 }
 
 // Singletons
@@ -247,7 +247,7 @@ export async function vectorSearch(
       results = await db.$queryRaw<DatabaseQueryResult[]>`
         SELECT 
           "Article".id, "Article".title, 
-          CASE WHEN LENGTH("Article".content) > 500 THEN LEFT("Article".content, 500) || '...' ELSE "Article".content END as content,
+          "Article".content,
           "Article"."authorId", "User".name as "authorName", "Article".slug, "Article".published, "Article".approved, "Article"."needsApproval",
           "Article"."createdAt", "Article"."updatedAt", "Article"."viewCount", "Article"."dailyViews",
           ("Article"."titleVector" <=> ${vectorString}::vector) as distance
@@ -325,8 +325,7 @@ export async function vectorSearch(
           CASE WHEN LENGTH("Article".content) > 500 THEN LEFT("Article".content, 500) || '...' ELSE "Article".content END as content,
           "Article"."authorId", "User".name as "authorName", "Article".slug, "Article".published, "Article".approved, "Article"."needsApproval",
           "Article"."createdAt", "Article"."updatedAt", "Article"."viewCount", "Article"."dailyViews",
-          (("Article"."titleVector" <=> ${vectorString}::vector) * ${titleWeight} + 
-           ("Article"."contentVector" <=> ${vectorString}::vector) * ${contentWeight}) as distance,
+          (("Article"."titleVector" <=> ${vectorString}::vector) * ${titleWeight} + ("Article"."contentVector" <=> ${vectorString}::vector) * ${contentWeight}) as distance,
           ("Article"."titleVector" <=> ${vectorString}::vector) as title_distance,
           ("Article"."contentVector" <=> ${vectorString}::vector) as content_distance
         FROM "Article" 
@@ -394,17 +393,39 @@ export async function findSimilarArticles(
   articleId: string,
   itemsPerPage = 5,
   maxDistance = 1.0,
+  searchType: "title" | "content" | "hybrid" = "title",
+  titleWeight = 0.3,
+  contentWeight = 0.7,
 ): Promise<VectorSearchResponse> {
   const startTime = Date.now();
 
-  // Get source article vectors
-  const sourceResult = await db.$queryRaw<SourceArticleQueryResult[]>`
-    SELECT "titleVector", "contentVector"
-    FROM "Article" 
-    WHERE id = ${articleId} 
-      AND "titleVector" IS NOT NULL 
-      AND "contentVector" IS NOT NULL
-  `;
+  // Get source article vectors based on search type
+  let sourceResult: SourceArticleQueryResult[] = [];
+
+  if (searchType === "title") {
+    sourceResult = await db.$queryRaw<SourceArticleQueryResult[]>`
+      SELECT "titleVector"::text as "titleVector"
+      FROM "Article" 
+      WHERE id = ${articleId} 
+        AND "titleVector" IS NOT NULL
+    `;
+  } else if (searchType === "content") {
+    sourceResult = await db.$queryRaw<SourceArticleQueryResult[]>`
+      SELECT "contentVector"::text as "contentVector"
+      FROM "Article" 
+      WHERE id = ${articleId} 
+        AND "contentVector" IS NOT NULL
+    `;
+  } else {
+    // hybrid mode
+    sourceResult = await db.$queryRaw<SourceArticleQueryResult[]>`
+      SELECT "titleVector"::text as "titleVector", "contentVector"::text as "contentVector"
+      FROM "Article" 
+      WHERE id = ${articleId} 
+        AND "titleVector" IS NOT NULL 
+        AND "contentVector" IS NOT NULL
+    `;
+  }
 
   if (sourceResult.length === 0) {
     const stats = await getVectorStats();
@@ -412,7 +433,7 @@ export async function findSimilarArticles(
       results: [],
       totalFound: 0,
       executionTime: Date.now() - startTime,
-      searchType: "hybrid",
+      searchType,
       stats,
       page: 1,
       itemsPerPage,
@@ -427,7 +448,7 @@ export async function findSimilarArticles(
       results: [],
       totalFound: 0,
       executionTime: Date.now() - startTime,
-      searchType: "hybrid",
+      searchType,
       stats,
       page: 1,
       itemsPerPage,
@@ -435,33 +456,90 @@ export async function findSimilarArticles(
     };
   }
 
-  const titleVectorString = `[${sourceArticle.titleVector.join(",")}]`;
-  const contentVectorString = `[${sourceArticle.contentVector.join(",")}]`;
+  // Parse the vector strings and create vector query strings
+  let titleVectorString = "";
+  let contentVectorString = "";
 
-  // Find similar articles
-  const results = await db.$queryRaw<DatabaseQueryResult[]>`
-    SELECT 
-      "Article".id, "Article".title,
-      CASE WHEN LENGTH("Article".content) > 500 THEN LEFT("Article".content, 500) || '...' ELSE "Article".content END as content,
-      "Article"."authorId", "User".name as "authorName", "Article".slug, "Article".published, "Article".approved, "Article"."needsApproval",
-      "Article"."createdAt", "Article"."updatedAt", "Article"."viewCount", "Article"."dailyViews",
-      (("Article"."titleVector" <=> ${titleVectorString}::vector) * 0.3 + 
-       ("Article"."contentVector" <=> ${contentVectorString}::vector) * 0.7) as distance,
-      ("Article"."titleVector" <=> ${titleVectorString}::vector) as title_distance,
-      ("Article"."contentVector" <=> ${contentVectorString}::vector) as content_distance
-    FROM "Article" 
-    JOIN "User" ON "Article"."authorId" = "User"."id"
-    WHERE "Article"."titleVector" IS NOT NULL 
-      AND "Article"."contentVector" IS NOT NULL 
-      AND "Article".id != ${articleId}
-      AND "Article".published = true 
-      AND "Article".approved = true 
-      AND "Article"."needsApproval" = false
-      AND (("Article"."titleVector" <=> ${titleVectorString}::vector) * 0.3 + 
-           ("Article"."contentVector" <=> ${contentVectorString}::vector) * 0.7) <= ${maxDistance}
-    ORDER BY distance
-    LIMIT ${itemsPerPage}
-  `;
+  if (sourceArticle.titleVector) {
+    const titleVector = JSON.parse(sourceArticle.titleVector) as number[];
+    titleVectorString = `[${titleVector.join(",")}]`;
+  }
+
+  if (sourceArticle.contentVector) {
+    const contentVector = JSON.parse(sourceArticle.contentVector) as number[];
+    contentVectorString = `[${contentVector.join(",")}]`;
+  }
+
+  console.log("article has vector and am now searching");
+  console.log("type", searchType);
+
+  // Find similar articles based on search type
+  let results: DatabaseQueryResult[] = [];
+
+  if (searchType === "title") {
+    results = await db.$queryRaw<DatabaseQueryResult[]>`
+      SELECT 
+        "Article".id, "Article".title,
+        "Article".content,
+        "Article"."authorId", "User".name as "authorName", "Article".slug, "Article".published, "Article".approved, "Article"."needsApproval",
+        "Article"."createdAt", "Article"."updatedAt", "Article"."viewCount", "Article"."dailyViews",
+        ("Article"."titleVector" <=> ${titleVectorString}::vector) as distance,
+        ("Article"."titleVector" <=> ${titleVectorString}::vector) as title_distance
+      FROM "Article" 
+      JOIN "User" ON "Article"."authorId" = "User"."id"
+      WHERE "Article".id != ${articleId}
+        AND "Article".published = true 
+        AND "Article".approved = true 
+        AND "Article"."needsApproval" = false
+        AND "Article"."titleVector" IS NOT NULL
+        AND ("Article"."titleVector" <=> ${titleVectorString}::vector) <= ${maxDistance}
+      ORDER BY ("Article"."titleVector" <=> ${titleVectorString}::vector)
+      LIMIT ${itemsPerPage}
+    `;
+  } else if (searchType === "content") {
+    results = await db.$queryRaw<DatabaseQueryResult[]>`
+      SELECT 
+        "Article".id, "Article".title,
+        CASE WHEN LENGTH("Article".content) > 500 THEN LEFT("Article".content, 500) || '...' ELSE "Article".content END as content,
+        "Article"."authorId", "User".name as "authorName", "Article".slug, "Article".published, "Article".approved, "Article"."needsApproval",
+        "Article"."createdAt", "Article"."updatedAt", "Article"."viewCount", "Article"."dailyViews",
+        ("Article"."contentVector" <=> ${contentVectorString}::vector) as distance,
+        ("Article"."contentVector" <=> ${contentVectorString}::vector) as content_distance
+      FROM "Article" 
+      JOIN "User" ON "Article"."authorId" = "User"."id"
+      WHERE "Article".id != ${articleId}
+        AND "Article".published = true 
+        AND "Article".approved = true 
+        AND "Article"."needsApproval" = false
+        AND "Article"."contentVector" IS NOT NULL
+        AND ("Article"."contentVector" <=> ${contentVectorString}::vector) <= ${maxDistance}
+      ORDER BY distance
+      LIMIT ${itemsPerPage}
+    `;
+  } else {
+    // hybrid mode
+    results = await db.$queryRaw<DatabaseQueryResult[]>`
+      SELECT 
+        "Article".id, "Article".title,
+        CASE WHEN LENGTH("Article".content) > 500 THEN LEFT("Article".content, 500) || '...' ELSE "Article".content END as content,
+        "Article"."authorId", "User".name as "authorName", "Article".slug, "Article".published, "Article".approved, "Article"."needsApproval",
+        "Article"."createdAt", "Article"."updatedAt", "Article"."viewCount", "Article"."dailyViews",
+        (("Article"."titleVector" <=> ${titleVectorString}::vector) * ${titleWeight} + ("Article"."contentVector" <=> ${contentVectorString}::vector) * ${contentWeight}) as distance,
+        ("Article"."titleVector" <=> ${titleVectorString}::vector) as title_distance,
+        ("Article"."contentVector" <=> ${contentVectorString}::vector) as content_distance
+      FROM "Article" 
+      JOIN "User" ON "Article"."authorId" = "User"."id"
+      WHERE "Article".id != ${articleId}
+        AND "Article".published = true 
+        AND "Article".approved = true 
+        AND "Article"."needsApproval" = false
+        AND "Article"."titleVector" IS NOT NULL
+        AND "Article"."contentVector" IS NOT NULL
+        AND (("Article"."titleVector" <=> ${titleVectorString}::vector) * ${titleWeight} + ("Article"."contentVector" <=> ${contentVectorString}::vector) * ${contentWeight}) <= ${maxDistance}
+      ORDER BY distance
+      LIMIT ${itemsPerPage}
+    `;
+  }
 
   const stats = await getVectorStats();
   const executionTime = Date.now() - startTime;
@@ -482,8 +560,12 @@ export async function findSimilarArticles(
     updatedAt: new Date(row.updatedAt),
     distance: parseFloat(String(row.distance)),
     similarity: 1 - parseFloat(String(row.distance)),
-    titleDistance: parseFloat(String(row.title_distance)),
-    contentDistance: parseFloat(String(row.content_distance)),
+    titleDistance: row.title_distance
+      ? parseFloat(String(row.title_distance))
+      : undefined,
+    contentDistance: row.content_distance
+      ? parseFloat(String(row.content_distance))
+      : undefined,
     viewCount: row.viewCount,
     dailyViews: row.dailyViews,
   }));
@@ -492,7 +574,7 @@ export async function findSimilarArticles(
     results: transformedResults,
     totalFound: transformedResults.length,
     executionTime,
-    searchType: "hybrid",
+    searchType,
     stats,
     page: 1,
     itemsPerPage,
