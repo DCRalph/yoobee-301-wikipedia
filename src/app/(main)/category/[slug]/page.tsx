@@ -5,12 +5,29 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { api } from "~/trpc/react";
-import { ChevronLeft, ChevronRight, Grid, List, User, Calendar, Eye, SortAsc } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Grid,
+  List,
+  User,
+  Calendar,
+  Eye,
+  SortAsc,
+  ArrowRight,
+} from "lucide-react";
 import { type RouterOutputs } from "~/trpc/react";
 import { use } from "react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
 
-type Article = RouterOutputs["category"]["getArticlesBySlug"]["articles"][number];
+type Article =
+  RouterOutputs["category"]["getArticlesBySlug"]["articles"][number];
 
 interface CategoryPageProps {
   params: Promise<{
@@ -18,18 +35,24 @@ interface CategoryPageProps {
   }>;
 }
 
-const ArticleCard = ({ article, viewMode }: { article: Article; viewMode: 'grid' | 'list' }) => {
+const ArticleCard = ({
+  article,
+  viewMode,
+}: {
+  article: Article;
+  viewMode: "grid" | "list";
+}) => {
   const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
+    return new Intl.DateTimeFormat("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
     }).format(new Date(date));
   };
 
-  if (viewMode === 'list') {
+  if (viewMode === "list") {
     return (
-      <div className="flex gap-4 border border-[#d0c0a0] bg-white p-4 hover:shadow-md transition-shadow">
+      <div className="flex gap-4 border border-[#d0c0a0] bg-white p-4 transition-shadow hover:shadow-md">
         {article.imageUrl && (
           <div className="flex-shrink-0">
             <Image
@@ -37,32 +60,37 @@ const ArticleCard = ({ article, viewMode }: { article: Article; viewMode: 'grid'
               alt={article.title}
               width={120}
               height={80}
-              className="h-20 w-30 object-cover rounded"
+              className="h-20 w-30 rounded object-cover"
             />
           </div>
         )}
-        <div className="flex-1">
-          <h3 className="font-medium text-[#6b4c35] hover:text-[#8b6c55] mb-2">
-            <Link href={`/wiki/${article.slug}`}>
-              {article.title}
-            </Link>
-          </h3>
-          <p className="text-sm text-gray-600 line-clamp-2 mb-3">
+        <div className="flex flex-1 flex-col">
+          <h3 className="mb-2 font-medium text-[#6b4c35]">{article.title}</h3>
+          <p className="mb-3 line-clamp-2 flex-1 text-sm text-gray-600">
             {article.content.slice(0, 100)}
           </p>
-          <div className="flex items-center gap-4 text-xs text-gray-500">
-            <div className="flex items-center gap-1">
-              <User className="h-3 w-3" />
-              {article.author.name}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4 text-xs text-gray-500">
+              <div className="flex items-center gap-1">
+                <User className="h-3 w-3" />
+                {article.author.name}
+              </div>
+              <div className="flex items-center gap-1">
+                <Calendar className="h-3 w-3" />
+                {formatDate(article.createdAt)}
+              </div>
+              <div className="flex items-center gap-1">
+                <Eye className="h-3 w-3" />
+                {article.viewCount.toLocaleString()}
+              </div>
             </div>
-            <div className="flex items-center gap-1">
-              <Calendar className="h-3 w-3" />
-              {formatDate(article.createdAt)}
-            </div>
-            <div className="flex items-center gap-1">
-              <Eye className="h-3 w-3" />
-              {article.viewCount.toLocaleString()}
-            </div>
+            <Link
+              href={`/wiki/${article.slug}`}
+              className="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium text-[#6b4c35] transition-colors hover:text-[#8b6c55] hover:underline"
+            >
+              Read More
+              <ArrowRight className="h-3 w-3" />
+            </Link>
           </div>
         </div>
       </div>
@@ -70,7 +98,7 @@ const ArticleCard = ({ article, viewMode }: { article: Article; viewMode: 'grid'
   }
 
   return (
-    <div className="border border-[#d0c0a0] bg-white hover:shadow-md transition-shadow overflow-hidden">
+    <div className="flex flex-col overflow-hidden border border-[#d0c0a0] bg-white transition-shadow hover:shadow-md">
       {article.imageUrl && (
         <div className="aspect-video overflow-hidden">
           <Image
@@ -82,16 +110,12 @@ const ArticleCard = ({ article, viewMode }: { article: Article; viewMode: 'grid'
           />
         </div>
       )}
-      <div className="p-4">
-        <h3 className="font-medium text-[#6b4c35] hover:text-[#8b6c55] mb-2">
-          <Link href={`/wiki/${article.slug}`}>
-            {article.title}
-          </Link>
-        </h3>
-        <p className="text-sm text-gray-600 line-clamp-3 mb-3">
+      <div className="flex flex-1 flex-col p-4">
+        <h3 className="mb-2 font-medium text-[#6b4c35]">{article.title}</h3>
+        <p className="mb-3 line-clamp-3 flex-1 text-sm text-gray-600">
           {article.content.slice(0, 100)}
         </p>
-        <div className="flex items-center justify-between text-xs text-gray-500">
+        <div className="mb-3 flex items-center justify-between text-xs text-gray-500">
           <div className="flex items-center gap-1">
             <User className="h-3 w-3" />
             {article.author.name}
@@ -103,8 +127,17 @@ const ArticleCard = ({ article, viewMode }: { article: Article; viewMode: 'grid'
             </div>
           </div>
         </div>
-        <div className="mt-2 text-xs text-gray-400">
-          {formatDate(article.createdAt)}
+        <div className="flex items-center justify-between">
+          <div className="text-xs text-gray-400">
+            {formatDate(article.createdAt)}
+          </div>
+          <Link
+            href={`/wiki/${article.slug}`}
+            className="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium text-[#6b4c35] transition-colors hover:text-[#8b6c55] hover:underline"
+          >
+            Read More
+            <ArrowRight className="h-3 w-3" />
+          </Link>
         </div>
       </div>
     </div>
@@ -114,7 +147,7 @@ const ArticleCard = ({ article, viewMode }: { article: Article; viewMode: 'grid'
 const Pagination = ({
   currentPage,
   totalPages,
-  onPageChange
+  onPageChange,
 }: {
   currentPage: number;
   totalPages: number;
@@ -134,24 +167,25 @@ const Pagination = ({
   if (totalPages <= 1) return null;
 
   return (
-    <div className="flex items-center justify-center gap-2 mt-8">
+    <div className="mt-8 flex items-center justify-center gap-2">
       <button
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage <= 1}
-        className="flex items-center gap-1 px-3 py-2 border border-[#d0c0a0] bg-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+        className="flex items-center gap-1 border border-[#d0c0a0] bg-white px-3 py-2 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
       >
         <ChevronLeft className="h-4 w-4" />
         Previous
       </button>
 
-      {getPageNumbers().map(page => (
+      {getPageNumbers().map((page) => (
         <button
           key={page}
           onClick={() => onPageChange(page)}
-          className={`px-3 py-2 border ${page === currentPage
-            ? 'bg-[#6b4c35] text-white border-[#6b4c35]'
-            : 'bg-white border-[#d0c0a0] hover:bg-gray-50'
-            }`}
+          className={`border px-3 py-2 ${
+            page === currentPage
+              ? "border-[#6b4c35] bg-[#6b4c35] text-white"
+              : "border-[#d0c0a0] bg-white hover:bg-gray-50"
+          }`}
         >
           {page}
         </button>
@@ -160,7 +194,7 @@ const Pagination = ({
       <button
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage >= totalPages}
-        className="flex items-center gap-1 px-3 py-2 border border-[#d0c0a0] bg-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+        className="flex items-center gap-1 border border-[#d0c0a0] bg-white px-3 py-2 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
       >
         Next
         <ChevronRight className="h-4 w-4" />
@@ -171,8 +205,10 @@ const Pagination = ({
 
 export default function CategoryPage({ params }: CategoryPageProps) {
   const [page, setPage] = useState(1);
-  const [sortBy, setSortBy] = useState<'recent' | 'popular' | 'title'>('recent');
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [sortBy, setSortBy] = useState<"recent" | "popular" | "title">(
+    "recent",
+  );
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const router = useRouter();
 
   const { slug } = use(params);
@@ -181,23 +217,27 @@ export default function CategoryPage({ params }: CategoryPageProps) {
     slug,
     page,
     limit: 12,
-    sortBy
+    sortBy,
   });
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   if (error) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <div className="text-center py-20">
-          <h1 className="text-2xl font-bold text-gray-800 mb-4">Category Not Found</h1>
-          <p className="text-gray-600 mb-6">{"The category you're looking for doesn't exist."}</p>
+        <div className="py-20 text-center">
+          <h1 className="mb-4 text-2xl font-bold text-gray-800">
+            Category Not Found
+          </h1>
+          <p className="mb-6 text-gray-600">
+            {"The category you're looking for doesn't exist."}
+          </p>
           <button
-            onClick={() => router.push('/')}
-            className="px-6 py-2 bg-[#6b4c35] text-white hover:bg-[#8b6c55] transition-colors"
+            onClick={() => router.push("/")}
+            className="bg-[#6b4c35] px-6 py-2 text-white transition-colors hover:bg-[#8b6c55]"
           >
             Go Home
           </button>
@@ -216,27 +256,29 @@ export default function CategoryPage({ params }: CategoryPageProps) {
       {/* Header */}
       <div className="mb-8">
         <div className="mb-4">
-          <Link href="/" className="text-[#6b4c35] hover:underline text-sm">
+          <Link href="/" className="text-sm text-[#6b4c35] hover:underline">
             ← Back to Home
           </Link>
         </div>
         {!category ? (
           <>
-            <div className="h-8 bg-gray-200 rounded animate-pulse mb-2 w-48"></div>
-            <div className="h-4 bg-gray-200 rounded animate-pulse mb-4 w-96"></div>
-            <div className="h-4 bg-gray-200 rounded animate-pulse w-32"></div>
+            <div className="mb-2 h-8 w-48 animate-pulse rounded bg-gray-200"></div>
+            <div className="mb-4 h-4 w-96 animate-pulse rounded bg-gray-200"></div>
+            <div className="h-4 w-32 animate-pulse rounded bg-gray-200"></div>
           </>
         ) : (
           <>
-            <h1 className="text-3xl font-bold text-[#6b4c35] mb-2">{category.name}</h1>
+            <h1 className="mb-2 text-3xl font-bold text-[#6b4c35]">
+              {category.name}
+            </h1>
             {category.description && (
-              <p className="text-gray-600 max-w-3xl">{category.description}</p>
+              <p className="max-w-3xl text-gray-600">{category.description}</p>
             )}
             <div className="mt-4 text-sm text-gray-500">
               {isLoading ? (
-                <div className="h-4 bg-gray-200 rounded animate-pulse w-32"></div>
+                <div className="h-4 w-32 animate-pulse rounded bg-gray-200"></div>
               ) : (
-                `${pagination?.totalCount} ${pagination?.totalCount === 1 ? 'article' : 'articles'} found`
+                `${pagination?.totalCount} ${pagination?.totalCount === 1 ? "article" : "articles"} found`
               )}
             </div>
           </>
@@ -244,8 +286,8 @@ export default function CategoryPage({ params }: CategoryPageProps) {
       </div>
 
       {/* Controls */}
-      <div className="bg-white border border-[#d0c0a0] rounded-lg p-4 mb-6 shadow-sm">
-        <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
+      <div className="mb-6 rounded-lg border border-[#d0c0a0] bg-white p-4 shadow-sm">
+        <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2 text-sm text-gray-600">
               <SortAsc className="h-4 w-4" />
@@ -253,13 +295,13 @@ export default function CategoryPage({ params }: CategoryPageProps) {
             </div>
             <Select
               value={sortBy}
-              onValueChange={(value: 'recent' | 'popular' | 'title') => {
+              onValueChange={(value: "recent" | "popular" | "title") => {
                 setSortBy(value);
                 setPage(1);
               }}
               disabled={isLoading}
             >
-              <SelectTrigger className="w-[180px] border-[#d0c0a0] focus:ring-[#6b4c35] focus:border-[#6b4c35]">
+              <SelectTrigger className="w-[180px] border-[#d0c0a0] focus:border-[#6b4c35] focus:ring-[#6b4c35]">
                 <SelectValue placeholder="Select sorting option" />
               </SelectTrigger>
               <SelectContent>
@@ -271,26 +313,28 @@ export default function CategoryPage({ params }: CategoryPageProps) {
           </div>
 
           <div className="flex items-center gap-3">
-            <span className="text-sm text-gray-600 font-medium">View:</span>
-            <div className="flex gap-1 border border-[#d0c0a0] rounded-md overflow-hidden">
+            <span className="text-sm font-medium text-gray-600">View:</span>
+            <div className="flex gap-1 overflow-hidden rounded-md border border-[#d0c0a0]">
               <button
-                onClick={() => setViewMode('grid')}
+                onClick={() => setViewMode("grid")}
                 disabled={isLoading}
-                className={`p-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${viewMode === 'grid'
-                  ? 'bg-[#6b4c35] text-white'
-                  : 'bg-white text-gray-600 hover:bg-gray-50'
-                  }`}
+                className={`p-2 transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+                  viewMode === "grid"
+                    ? "bg-[#6b4c35] text-white"
+                    : "bg-white text-gray-600 hover:bg-gray-50"
+                }`}
                 title="Grid view"
               >
                 <Grid className="h-4 w-4" />
               </button>
               <button
-                onClick={() => setViewMode('list')}
+                onClick={() => setViewMode("list")}
                 disabled={isLoading}
-                className={`p-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${viewMode === 'list'
-                  ? 'bg-[#6b4c35] text-white'
-                  : 'bg-white text-gray-600 hover:bg-gray-50'
-                  }`}
+                className={`p-2 transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+                  viewMode === "list"
+                    ? "bg-[#6b4c35] text-white"
+                    : "bg-white text-gray-600 hover:bg-gray-50"
+                }`}
                 title="List view"
               >
                 <List className="h-4 w-4" />
@@ -302,21 +346,27 @@ export default function CategoryPage({ params }: CategoryPageProps) {
 
       {/* Articles */}
       {isLoading ? (
-        <div className="flex justify-center items-center min-h-[400px]">
+        <div className="flex min-h-[400px] items-center justify-center">
           <div className="text-center">
-            <div className="h-12 w-12 animate-spin rounded-full border-t-2 border-b-2 border-[#6b4c35] mx-auto mb-4"></div>
+            <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-t-2 border-b-2 border-[#6b4c35]"></div>
             <p className="text-gray-600">Loading articles...</p>
           </div>
         </div>
       ) : articles.length > 0 ? (
         <>
-          <div className={
-            viewMode === 'grid'
-              ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'
-              : 'space-y-4'
-          }>
+          <div
+            className={
+              viewMode === "grid"
+                ? "grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
+                : "space-y-4"
+            }
+          >
             {articles.map((article) => (
-              <ArticleCard key={article.id} article={article} viewMode={viewMode} />
+              <ArticleCard
+                key={article.id}
+                article={article}
+                viewMode={viewMode}
+              />
             ))}
           </div>
 
@@ -327,8 +377,10 @@ export default function CategoryPage({ params }: CategoryPageProps) {
           />
         </>
       ) : (
-        <div className="text-center py-20">
-          <h2 className="text-xl font-medium text-gray-800 mb-4">No Articles Found</h2>
+        <div className="py-20 text-center">
+          <h2 className="mb-4 text-xl font-medium text-gray-800">
+            No Articles Found
+          </h2>
           <p className="text-gray-600">
             There are no articles in this category yet. Check back later!
           </p>
@@ -336,4 +388,4 @@ export default function CategoryPage({ params }: CategoryPageProps) {
       )}
     </div>
   );
-} 
+}

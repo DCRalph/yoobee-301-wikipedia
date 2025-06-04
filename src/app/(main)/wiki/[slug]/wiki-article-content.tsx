@@ -105,7 +105,7 @@ export function WikiArticleContent({
             {/* AI Features Alert */}
             {!UseAi && <AIDisabledMessage />}
 
-            <div className="mx-auto flex w-full max-w-4xl flex-col px-2 sm:px-4 md:flex-row lg:px-6">
+            <div className="mx-auto flex flex-col px-2 sm:px-4 md:flex-row lg:px-6">
               {/* Large Image on the Left */}
               <div className="hidden p-4 md:sticky md:top-0 md:h-screen md:w-80 md:flex-shrink-0">
                 <motion.div className="h-full" variants={itemVariants}>
@@ -125,9 +125,9 @@ export function WikiArticleContent({
               </div>
 
               {/* Main Article Content */}
-              <main className="min-w-0 flex-1 sm:p-4 md:pl-6">
+              <main className="flex flex-1 flex-col items-center sm:p-4 md:pl-6">
                 <motion.div
-                  className="rounded-lg border border-[#d4bc8b] bg-[#f9f5eb] p-3 shadow-sm sm:p-6"
+                  className="max-w-[65ch] rounded-lg border border-[#d4bc8b] bg-[#f9f5eb] p-3 shadow-sm sm:p-6"
                   variants={itemVariants}
                 >
                   {/* Reading Level Slider */}
@@ -282,7 +282,7 @@ export function WikiArticleContent({
 
                         {/* Article Content */}
                         <motion.div
-                          className="prose prose-sm sm:prose max-w-none overflow-x-hidden font-serif [&_*]:max-w-full [&_code]:break-words [&_pre]:overflow-x-auto [&_table]:overflow-x-auto [&>:where(h1,h2,h3,h4,h5,h6)]:scroll-mt-24"
+                          className="prose prose-sm sm:prose overflow-x-hidden font-serif [&_code]:break-words [&_pre]:overflow-x-auto [&_table]:overflow-x-auto [&>:where(h1,h2,h3,h4,h5,h6)]:scroll-mt-24"
                           variants={itemVariants}
                         >
                           <ReactMarkdown
@@ -357,7 +357,7 @@ export function WikiArticleContent({
                       <TabsContent value="talk" className="mt-4">
                         <div className="overflow-x-hidden p-2 text-[#5c3c10] sm:p-4">
                           {article.talkContent ? (
-                            <div className="prose prose-sm sm:prose max-w-none overflow-x-hidden text-[#3a2a14] [&_*]:max-w-full [&_code]:break-words [&_pre]:overflow-x-auto [&_table]:overflow-x-auto">
+                            <div className="prose prose-sm sm:prose overflow-x-hidden text-[#3a2a14] [&_code]:break-words [&_pre]:overflow-x-auto [&_table]:overflow-x-auto">
                               <ReactMarkdown
                                 remarkPlugins={[remarkGfm]}
                                 components={markdownComponents}
@@ -392,7 +392,7 @@ export function WikiArticleContent({
                       <TabsContent value="sources" className="mt-4">
                         <div className="overflow-x-hidden p-2 text-[#5c3c10] sm:p-4">
                           {article.sources ? (
-                            <div className="prose prose-sm sm:prose max-w-none overflow-x-hidden text-[#3a2a14] [&_*]:max-w-full [&_code]:break-words [&_pre]:overflow-x-auto [&_table]:overflow-x-auto">
+                            <div className="prose prose-sm sm:prose overflow-x-hidden text-[#3a2a14] [&_code]:break-words [&_pre]:overflow-x-auto [&_table]:overflow-x-auto">
                               <ReactMarkdown
                                 remarkPlugins={[remarkGfm]}
                                 components={markdownComponents}
@@ -428,13 +428,13 @@ export function WikiArticleContent({
 
                 {/* Similar Articles Section */}
                 <motion.div
-                  className="mt-6 overflow-x-hidden"
+                  className="mt-6 overflow-x-hidden w-full"
                   variants={itemVariants}
                 >
                   <SimilarArticles
                     articleId={article.id}
                     maxItems={5}
-                    searchType="title"
+                    searchType="content"
                     titleWeight={0.3}
                     contentWeight={0.7}
                   />

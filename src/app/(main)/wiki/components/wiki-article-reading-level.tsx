@@ -3,7 +3,6 @@
 import { BookOpen } from "lucide-react";
 import { api } from "~/trpc/react";
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { Skeleton } from "~/components/ui/skeleton";
 
 interface WikiArticleReadingLevelProps {
@@ -29,10 +28,11 @@ export function WikiArticleReadingLevel({
   const [isTransitioning, setIsTransitioning] = useState(false);
 
   // Query for article summaries
-  const { data: summaries, isLoading: isSummariesLoading } = api.summaries.getByArticleId.useQuery(
-    { articleId },
-    { enabled: !!articleId }
-  );
+  const { data: summaries, isLoading: isSummariesLoading } =
+    api.summaries.getByArticleId.useQuery(
+      { articleId },
+      { enabled: !!articleId },
+    );
 
   // Mutation for generating summaries
   const generateSummary = api.summaries.generate.useMutation({
@@ -64,7 +64,9 @@ export function WikiArticleReadingLevel({
 
     if (level === "original") {
       // Reset to original content
-      const originalSummary = summaries?.find((s: Summary) => s.level === "original");
+      const originalSummary = summaries?.find(
+        (s: Summary) => s.level === "original",
+      );
       if (originalSummary) {
         // Add a small delay to show the transition
         setTimeout(() => {
@@ -94,89 +96,104 @@ export function WikiArticleReadingLevel({
   };
 
   if (isSummariesLoading) {
-    return <Skeleton className="h-10 w-full mb-4" />;
+    return <Skeleton className="mb-4 h-16 w-full sm:h-10" />;
   }
 
   const isLoading = generateSummary.isPending || isTransitioning;
   const level = levelMap[currentLevel];
 
   return (
-    <div className="flex items-center justify-between rounded-md bg-[#f0e6d2] p-3 mb-4 shadow-sm">
-      <div className="flex items-center gap-2">
-        <motion.div
-          animate={isLoading ? { rotate: 360 } : { rotate: 0 }}
-          transition={{ duration: 1, repeat: isLoading ? Infinity : 0, ease: "linear" }}
-        >
-          <BookOpen className="h-4 w-4 text-[#5c3c10]" />
-        </motion.div>
-        <span className="text-xs font-medium text-[#5c3c10]">
+    <div className="relative mb-4 rounded-md bg-[#f0e6d2] p-3 shadow-sm sm:p-4">
+      {/* Header with icon and title */}
+      <div className="mb-3 flex items-center gap-2 sm:mb-2">
+        <div>
+          <BookOpen className="h-4 w-4 text-[#5c3c10] sm:h-5 sm:w-5" />
+        </div>
+        <span className="text-sm font-medium text-[#5c3c10] sm:text-xs">
           Reading Level
         </span>
       </div>
-      <div className="flex flex-1 items-center px-4">
-        <div
-          className="h-1.5 w-full rounded-full bg-[#d4bc8b] overflow-hidden"
-          role="progressbar"
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-valuenow={level.percent}
-        >
-          <motion.div
-            className="h-1.5 rounded-full bg-[#5c3c10]"
-            initial={{ width: "0%" }}
-            animate={{
-              width: level.percent + '%',
-              transition: { duration: 0.3, ease: "easeInOut" }
-            }}
-          />
+
+      {/* Mobile Layout */}
+      <div className="block space-y-3 sm:hidden">
+        {/* Progress Bar */}
+        <div className="flex items-center gap-3">
+          <span className="min-w-[60px] text-xs font-medium text-[#5c3c10]">
+            {level.label}
+          </span>
+          <div
+            className="h-2 flex-1 overflow-hidden rounded-full bg-[#d4bc8b]"
+            role="progressbar"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={level.percent}
+          >
+            <div
+              className="h-2 rounded-full bg-[#5c3c10] transition-all duration-300 ease-in-out"
+              style={{ width: level.percent + "%" }}
+            />
+          </div>
+        </div>
+
+        {/* Level Buttons - 2x2 Grid on Mobile */}
+        <div className="grid grid-cols-2 gap-2">
+          {Object.entries(levelMap).map(([key, value]) => (
+            <button
+              key={key}
+              onClick={() => handleLevelChange(key as ReadingLevel)}
+              disabled={isLoading}
+              className={`rounded-md px-3 py-2 text-sm transition-all duration-200 ${
+                currentLevel === key
+                  ? "bg-[#5c3c10] font-semibold text-[#f0e6d2] shadow-md"
+                  : "border border-[#d4bc8b] text-[#6b5c45] hover:bg-[#e8dcc0] hover:text-[#5c3c10]"
+              }`}
+            >
+              {value.label}
+            </button>
+          ))}
         </div>
       </div>
-      <div className="flex items-center gap-2">
-        {Object.entries(levelMap).map(([key, value]) => (
-          <motion.button
-            key={key}
-            onClick={() => handleLevelChange(key as ReadingLevel)}
-            disabled={isLoading}
-            className={`text-xs transition-colors ${currentLevel === key
-              ? "font-semibold underline text-[#5c3c10]"
-              : "text-[#6b5c45] hover:text-[#5c3c10]"
-              }`}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            animate={currentLevel === key ? {
-              scale: [1, 1.05, 1],
-              transition: { duration: 0.3 }
-            } : {}}
+
+      {/* Desktop Layout */}
+      <div className="hidden sm:flex sm:items-center sm:justify-between">
+        <div className="flex flex-1 items-center px-4">
+          <div
+            className="h-1.5 w-full overflow-hidden rounded-full bg-[#d4bc8b]"
+            role="progressbar"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={level.percent}
           >
-            {value.label}
-          </motion.button>
-        ))}
+            <div
+              className="h-1.5 rounded-full bg-[#5c3c10] transition-all duration-300 ease-in-out"
+              style={{ width: level.percent + "%" }}
+            />
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          {Object.entries(levelMap).map(([key, value]) => (
+            <button
+              key={key}
+              onClick={() => handleLevelChange(key as ReadingLevel)}
+              disabled={isLoading}
+              className={`rounded px-2 py-1 text-xs transition-colors ${
+                currentLevel === key
+                  ? "bg-[#e8dcc0] font-semibold text-[#5c3c10] underline"
+                  : "text-[#6b5c45] hover:bg-[#e8dcc0] hover:text-[#5c3c10]"
+              }`}
+            >
+              {value.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Loading Overlay */}
-      <AnimatePresence>
-        {isLoading && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-[#f0e6d2]/50 backdrop-blur-sm rounded-md flex items-center justify-center"
-          >
-            <motion.div
-              animate={{
-                scale: [1, 1.2, 1],
-                rotate: [0, 180, 360],
-              }}
-              transition={{
-                duration: 2,
-                repeat: Infinity,
-                ease: "linear"
-              }}
-              className="w-6 h-6 border-2 border-[#5c3c10] border-t-transparent rounded-full"
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {isLoading && (
+        <div className="absolute inset-0 flex items-center justify-center rounded-md bg-[#f0e6d2]/80 backdrop-blur-sm">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#5c3c10] border-t-transparent sm:h-6 sm:w-6" />
+        </div>
+      )}
     </div>
   );
 }

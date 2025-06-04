@@ -100,7 +100,7 @@ export function SimilarArticles({
 
   return (
     <motion.div
-      className="mt-8 rounded-lg border border-[#d4bc8b] bg-[#f9f5eb] p-2 lg:p-6 shadow-sm"
+      className="mt-8 w-full rounded-lg border border-[#d4bc8b] bg-[#f9f5eb] p-2 shadow-sm lg:p-6"
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, amount: 0.2 }}
@@ -121,70 +121,73 @@ export function SimilarArticles({
         </Badge>
       </div>
 
-      <div className="grid gap-4 grid-cols-1">
+      <div className="grid grid-cols-1 gap-4">
         {data.articles.map((article) => (
           <motion.div key={article.id} variants={itemVariants}>
-            <Link href={`/wiki/${article.slug}`} className="block">
-              <Card className="group cursor-pointer border-[#d4bc8b] bg-[#fefcf6] transition-all duration-200 hover:border-[#5c3c10] hover:shadow-md">
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between gap-2">
-                    <CardTitle className="line-clamp-2 font-serif text-base text-[#3a2a14] group-hover:text-[#5c3c10]">
-                      {article.title}
-                    </CardTitle>
-                    <div className="flex shrink-0 flex-col gap-1">
-                      <Badge
-                        variant="secondary"
-                        className="bg-[#e8dcc3] text-xs text-[#5c3c10]"
-                      >
-                        {Math.round(article.similarity * 100)}% match
-                      </Badge>
-                      {/* Show specific distance scores for hybrid mode */}
-                      {data.searchType === "hybrid" &&
-                        article.titleDistance &&
-                        article.contentDistance && (
-                          <div className="text-xs text-[#8b7a5e]">
-                            <div>
-                              Title:{" "}
-                              {Math.round((1 - article.titleDistance) * 100)}%
-                            </div>
-                            <div>
-                              Content:{" "}
-                              {Math.round((1 - article.contentDistance) * 100)}%
-                            </div>
+            <Card className="group border-[#d4bc8b] bg-[#fefcf6] transition-all duration-200 hover:border-[#5c3c10] hover:shadow-md">
+              <CardHeader className="pb-3">
+                <div className="flex items-start justify-between gap-2">
+                  <CardTitle className="line-clamp-2 font-serif text-base text-[#3a2a14]">
+                    {article.title}
+                  </CardTitle>
+                  <div className="flex shrink-0 flex-col gap-1">
+                    <Badge
+                      variant="secondary"
+                      className="bg-[#e8dcc3] text-xs text-[#5c3c10]"
+                    >
+                      {Math.round(article.similarity * 100)}% match
+                    </Badge>
+                    {/* Show specific distance scores for hybrid mode */}
+                    {data.searchType === "hybrid" &&
+                      article.titleDistance &&
+                      article.contentDistance && (
+                        <div className="text-xs text-[#8b7a5e]">
+                          <div>
+                            Title:{" "}
+                            {Math.round((1 - article.titleDistance) * 100)}%
                           </div>
-                        )}
+                          <div>
+                            Content:{" "}
+                            {Math.round((1 - article.contentDistance) * 100)}%
+                          </div>
+                        </div>
+                      )}
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="mb-3 line-clamp-2 text-sm text-[#605244]">
+                  <ReactMarkdown>{article.content}</ReactMarkdown>
+                </div>
+
+                <div className="mb-3 flex items-center justify-between text-xs text-[#5c3c10]">
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-1">
+                      <User className="h-3 w-3" />
+                      <span>{article.author.name}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Clock className="h-3 w-3" />
+                      <span>{article.readTime}</span>
                     </div>
                   </div>
-                </CardHeader>
-                <CardContent>
-                  <span className="mb-3 line-clamp-2 text-sm text-[#605244]">
-                    <ReactMarkdown>{article.content}</ReactMarkdown>
-                  </span>
+                </div>
 
-                  <div className="flex items-center justify-between text-xs text-[#5c3c10]">
-                    <div className="flex items-center gap-4">
-                      <div className="flex items-center gap-1">
-                        <User className="h-3 w-3" />
-                        <span>{article.author.name}</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
-                        <span>{article.readTime}</span>
-                      </div>
-                    </div>
+                <div className="mb-3 text-xs text-[#8b7a5e]">
+                  Updated {formatDistanceToNow(new Date(article.updatedAt))}
+                </div>
 
-                    <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-                      <span>Read more</span>
-                      <ArrowRight className="h-3 w-3" />
-                    </div>
-                  </div>
-
-                  <div className="mt-2 text-xs text-[#8b7a5e]">
-                    Updated {formatDistanceToNow(new Date(article.updatedAt))}
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
+                <div className="flex justify-end">
+                  <Link
+                    href={`/wiki/${article.slug}`}
+                    className="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium text-[#5c3c10] transition-colors hover:text-[#3a2a14] hover:underline"
+                  >
+                    Read More
+                    <ArrowRight className="h-3 w-3" />
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
           </motion.div>
         ))}
       </div>
