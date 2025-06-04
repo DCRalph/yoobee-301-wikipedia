@@ -59,7 +59,7 @@ model VerificationToken {
 
 
 // ---------------------------------------------------------------------------
-// Application models for the Wikipedia clone
+// Application models for the WikiClone
 // ---------------------------------------------------------------------------
 
 /// Enum for defining user roles.

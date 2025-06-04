@@ -114,7 +114,7 @@ export default function Home() {
         </div>
         <div className="absolute inset-0 flex flex-col items-end justify-center px-12 text-white">
           <h1 className="mb-2 font-serif text-4xl md:text-5xl">
-            Welcome to Wikipedia
+            Welcome to WikiClone
           </h1>
           <p className="font-serif text-xl md:text-2xl">
             the free encyclopedia
@@ -286,7 +286,7 @@ export default function Home() {
 
       {/* Stats Section */}
       <section className="container mx-auto my-16 px-4 pb-16">
-        <SectionHeader title="Wikipedia by the Numbers" />
+        <SectionHeader title="WikiClone by the Numbers" />
 
         {isLoading ? (
           <div className="flex justify-center py-20">
@@ -400,7 +400,7 @@ export default function Home() {
 
             <div className="mt-12 text-center">
               <p className="text-accent-foreground">
-                Wikipedia is growing every day thanks to contributors like you!
+              WikiClone is growing every day thanks to contributors like you!
               </p>
             </div>
           </div>

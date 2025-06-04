@@ -3,8 +3,8 @@ import { Header } from "~/components/layout/header";
 import { Footer } from "~/components/layout/footer";
 
 export const metadata = {
-  title: "Modern Wikipedia Clone",
-  description: "A modern Wikipedia clone built with Next.js and shadcn/ui",
+  title: "Modern WikiClone",
+  description: "A modern WikiClone built with Next.js and shadcn/ui",
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
 
@@ -16,7 +16,7 @@ export default function MainLayout({
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
-      <main className="flex-1 w-full">{children}</main>
+      <main className="w-full flex-1">{children}</main>
       <Footer />
     </div>
   );

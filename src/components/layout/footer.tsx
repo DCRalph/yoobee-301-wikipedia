@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 // import { motion } from "framer-motion";
 
 export function Footer() {
@@ -11,10 +12,13 @@ export function Footer() {
     >
       <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 text-sm">
         <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#f9f5eb]">
-            <span className="font-serif font-bold text-[#3a2a14]">W</span>
-          </div>
-          <span className="font-serif">Wikipedia</span>
+          <Image
+            src="/icon.png"
+            alt="WikiClone"
+            width={32}
+            height={32}
+          />
+          <span className="font-serif">WikiClone</span>
         </div>
         <div className="flex flex-wrap gap-6">
           <Link href="#" className="hover:underline">
@@ -24,7 +28,7 @@ export function Footer() {
             Policy Privacy
           </Link>
           <Link href="#" className="hover:underline">
-            Contact Wikipedia
+            Contact WikiClone
           </Link>
           <Link href="#" className="hover:underline">
             About

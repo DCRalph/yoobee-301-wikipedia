@@ -5,7 +5,7 @@ import { auth } from "~/server/auth";
 
 export const metadata = {
   title: "User Management | Admin Dashboard",
-  description: "Manage users in your Wikipedia clone",
+  description: "Manage users in your WikiClone",
 };
 
 export default async function UsersPage() {

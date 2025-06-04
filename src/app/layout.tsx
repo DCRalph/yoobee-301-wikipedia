@@ -13,8 +13,8 @@ const inter = Inter({
 });
 
 export const metadata = {
-  title: "Modern Wikipedia Clone",
-  description: "A modern Wikipedia clone built with Next.js and shadcn/ui",
+  title: "Modern WikiClone",
+  description: "A modern WikiClone built with Next.js and shadcn/ui",
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
 

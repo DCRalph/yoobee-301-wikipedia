@@ -239,19 +239,19 @@ export default function AuthPage({
       {/* Main Content */}
       <div className="flex min-h-screen items-center justify-center p-8 relative z-10">
         <div className="w-full max-w-lg">
-          {/* Wikipedia Logo and Title */}
+          {/* WikiClone Logo and Title */}
           <div className="text-center mb-8">
             <div className="mb-6">
               <Image
-                src="/wikipedia-logo.svg"
-                alt="Wikipedia Logo"
+                src="/icon.png"
+                alt="WikiClone Logo"
                 width={120}
                 height={120}
                 className="mx-auto drop-shadow-lg"
               />
             </div>
             <h1 className="text-5xl font-serif text-background mb-2 drop-shadow-md">
-              Welcome to Wikipedia
+              Welcome to WikiClone
             </h1>
             <p className="text-xl text-background/90 font-light">
               The Free Encyclopedia
@@ -270,7 +270,7 @@ export default function AuthPage({
             {/* Card Header */}
             <div className="bg-primary py-4 px-6 border-b border-border">
               <h2 className="text-2xl font-serif text-center text-primary-foreground">
-                {isSignUp ? "Join Wikipedia" : "Encyclopedia Access"}
+                {isSignUp ? "Join WikiClone" : "Encyclopedia Access"}
               </h2>
             </div>
 
@@ -279,8 +279,8 @@ export default function AuthPage({
               <div className="text-center mb-8">
                 <p className="text-card-foreground text-lg leading-relaxed">
                   {isSignUp
-                    ? "Create an account to contribute to Wikipedia"
-                    : "Please sign in to access the complete collection of Wikipedia"
+                    ? "Create an account to contribute to WikiClone"
+                    : "Please sign in to access the complete collection of WikiClone"
                   }
                 </p>
               </div>

@@ -1,6 +1,6 @@
 # Vector Search Implementation
 
-This document describes the vector search functionality implemented in the Wikipedia clone application using pgvector and Transformers.js.
+This document describes the vector search functionality implemented in the WikiClone application using pgvector and Transformers.js.
 
 ## Overview
 

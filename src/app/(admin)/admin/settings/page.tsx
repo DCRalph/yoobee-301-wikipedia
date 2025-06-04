@@ -5,7 +5,7 @@ import { Role } from "@prisma/client";
 
 export const metadata = {
   title: "Site Settings | Admin Dashboard",
-  description: "Configure site-wide settings for your Wikipedia clone",
+  description: "Configure site-wide settings for your WikiClone",
 };
 
 export default async function SettingsPage() {
@@ -15,7 +15,5 @@ export default async function SettingsPage() {
     redirect("/");
   }
 
-  return (
-    <SettingsForm />
-  );
+  return <SettingsForm />;
 }

@@ -7,7 +7,7 @@ import { UserMenu } from "./user-menu";
 import { BookText, Brain, Home, Heart } from "lucide-react";
 import { api } from "~/trpc/react";
 import { SearchDialog } from "~/components/wiki/SearchDialog";
-
+import Image from "next/image";
 export function Header() {
   // const { data: session } = useSession();
   // const isAdmin = session?.user?.role === Role.ADMIN;
@@ -24,7 +24,13 @@ export function Header() {
       <div className="container mx-auto flex h-14 items-center justify-between px-4">
         {/* Logo */}
         <div className="flex items-center">
-          <Link href="/" className="font-bold">
+          <Link href="/" className="font-bold flex items-center gap-2">
+            <Image
+              src="/icon.png"
+              alt="WikiClone"
+              width={32}
+              height={32}
+            />
             WikiClone
           </Link>
         </div>

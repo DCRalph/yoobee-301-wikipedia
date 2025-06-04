@@ -4,8 +4,8 @@ import { Role } from "@prisma/client";
 import { auth } from "~/server/auth";
 
 export const metadata = {
-  title: "Admin Dashboard | Modern Wikipedia Clone",
-  description: "Administration dashboard for your Wikipedia clone",
+  title: "Admin Dashboard | Modern WikiClone",
+  description: "Administration dashboard for your WikiClone",
 };
 
 export default async function AdminDashboardPage() {

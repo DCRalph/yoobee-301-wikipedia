@@ -329,7 +329,7 @@ export default function CategoriesPage() {
           <div className="relative h-48 bg-gradient-to-r from-primary/80 to-primary flex items-center justify-center">
             <Image src="/category/banner.png" alt="Category banner" className="absolute inset-0 w-full h-full object-cover" width={1920} height={400} />
             <div className="relative text-center">
-              <h1 className="text-4xl font-serif text-primary-foreground mb-2">Wikipedia Contents</h1>
+              <h1 className="text-4xl font-serif text-primary-foreground mb-2">WikiClone Contents</h1>
             </div>
             {/* Decorative diamond */}
             <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">

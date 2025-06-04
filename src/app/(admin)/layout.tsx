@@ -5,8 +5,8 @@ import { AdminNav } from "~/components/admin/admin-nav";
 import { Header } from "~/components/layout/header";
 
 export const metadata = {
-  title: "Admin Dashboard | Modern Wikipedia Clone",
-  description: "Admin dashboard for managing the Wikipedia clone",
+  title: "Admin Dashboard | Modern WikiClone",
+  description: "Admin dashboard for managing the WikiClone",
 };
 
 export default async function AdminLayout({

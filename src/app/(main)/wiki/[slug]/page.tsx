@@ -13,12 +13,12 @@ export async function generateMetadata({
     const { slug } = await params;
     const article = await api.user.articles.getBySlug({ slug });
     return {
-      title: `${article.title} | Modern Wikipedia Clone`,
+      title: `${article.title} | Modern WikiClone`,
       description: article.content.slice(0, 160),
     };
   } catch {
     return {
-      title: "Article Not Found | Modern Wikipedia Clone",
+      title: "Article Not Found | Modern WikiClone",
       description: "The requested article could not be found.",
     };
   }

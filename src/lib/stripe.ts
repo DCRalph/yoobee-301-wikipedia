@@ -28,7 +28,7 @@ export async function createCheckoutSession(
         price_data: {
           currency: "usd",
           product_data: {
-            name: "Donation to Wikipedia Clone",
+            name: "Donation to WikiClone",
             description: "Thank you for supporting our project!",
           },
           unit_amount: amount,

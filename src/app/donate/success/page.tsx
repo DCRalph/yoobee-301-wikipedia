@@ -74,7 +74,7 @@ export default function DonationSuccessPage() {
               className="text-muted-foreground hover:text-foreground gap-2 transition-colors"
             >
               <ArrowLeft className="h-4 w-4" />
-              <span>Back to Wikipedia</span>
+              <span>Back to WikiClone</span>
             </Button>
           </Link>
           <div className="flex items-center gap-2">
@@ -120,7 +120,7 @@ export default function DonationSuccessPage() {
               </p>
             </div>
 
-            <Card className="mx-auto w-full overflow-hidden rounded-2xl border-0 shadow-xl pt-0">
+            <Card className="mx-auto w-full overflow-hidden rounded-2xl border-0 pt-0 shadow-xl">
               <CardHeader className="bg-primary/10 py-4">
                 <CardTitle className="flex items-center justify-center text-2xl font-bold">
                   Donation Confirmation
@@ -245,8 +245,8 @@ export default function DonationSuccessPage() {
             </div>
             <div className="text-muted-foreground mt-2 text-sm">
               <p>
-                Wikipedia Clone &copy; {new Date().getFullYear()} • All
-                donations securely processed
+                WikiClone &copy; {new Date().getFullYear()} • All donations
+                securely processed
               </p>
               <p className="mt-1">
                 <a

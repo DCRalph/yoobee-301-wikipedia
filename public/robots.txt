@@ -1,0 +1,21 @@
+User-agent: *
+
+# Disallow admin areas
+Disallow: /admin/
+Disallow: /admin
+
+# Disallow API endpoints
+Disallow: /api/
+
+
+# Disallow testing pages
+Disallow: /testing/
+Disallow: /testing
+
+# Disallow donation processing pages (sensitive)
+Disallow: /donate/checkout
+Disallow: /donate/success
+Disallow: /donate/cancel
+
+# Allow everything else
+Allow: /

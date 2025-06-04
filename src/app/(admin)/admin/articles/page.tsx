@@ -5,7 +5,7 @@ import { Role } from "@prisma/client";
 
 export const metadata = {
   title: "Article Management | Admin Dashboard",
-  description: "Manage articles in your Wikipedia clone",
+  description: "Manage articles in your WikiClone",
 };
 
 export default async function ArticlePage() {
@@ -15,8 +15,5 @@ export default async function ArticlePage() {
     redirect("/");
   }
 
-  return (
-    <ArticleManagementContent />
-  );
+  return <ArticleManagementContent />;
 }
-
