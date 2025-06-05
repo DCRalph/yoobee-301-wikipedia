@@ -6,13 +6,13 @@ export function Footer() {
   return (
     <footer
       className="relative z-50 mt-auto bg-gradient-to-br from-[#3b2a1a] to-[#2a1f12] px-4 py-12"
-    // initial={{ opacity: 0, y: 20 }}
-    // animate={{ opacity: 1, y: 0 }}
-    // transition={{ duration: 0.5, delay: 0.5 }}
+      // initial={{ opacity: 0, y: 20 }}
+      // animate={{ opacity: 1, y: 0 }}
+      // transition={{ duration: 0.5, delay: 0.5 }}
     >
       <div className="mx-auto max-w-7xl">
         {/* Main Footer Content */}
-        <div className="mb-8 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
+        <div className="mb-8 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-5">
           {/* Brand Section */}
           <div className="group flex flex-col items-center space-y-4 lg:items-start">
             <div className="flex items-center gap-3">
@@ -37,7 +37,7 @@ export function Footer() {
             <div className="space-y-3">
               <Link
                 href="/about"
-                className="group/link block text-sm text-[#f8f5f1]/80 transition-all duration-200 hover:text-[#f8f5f1] hover:translate-x-1"
+                className="group/link block text-sm text-[#f8f5f1]/80 transition-all duration-200 hover:translate-x-1 hover:text-[#f8f5f1]"
               >
                 <span className="border-b border-transparent transition-all duration-200 group-hover/link:border-[#f8f5f1]/50">
                   About WikiClone
@@ -45,10 +45,27 @@ export function Footer() {
               </Link>
               <Link
                 href="/contact"
-                className="group/link block text-sm text-[#f8f5f1]/80 transition-all duration-200 hover:text-[#f8f5f1] hover:translate-x-1"
+                className="group/link block text-sm text-[#f8f5f1]/80 transition-all duration-200 hover:translate-x-1 hover:text-[#f8f5f1]"
               >
                 <span className="border-b border-transparent transition-all duration-200 group-hover/link:border-[#f8f5f1]/50">
                   Contact Us
+                </span>
+              </Link>
+            </div>
+          </div>
+
+          {/* Games Section */}
+          <div className="text-center lg:text-left">
+            <h3 className="mb-4 font-serif text-lg font-semibold text-[#f8f5f1]">
+              Games
+            </h3>
+            <div className="space-y-3">
+              <Link
+                href="/play"
+                className="group/link block text-sm text-[#f8f5f1]/80 transition-all duration-200 hover:translate-x-1 hover:text-[#f8f5f1]"
+              >
+                <span className="border-b border-transparent transition-all duration-200 group-hover/link:border-[#f8f5f1]/50">
+                  Play Games
                 </span>
               </Link>
             </div>
@@ -62,7 +79,7 @@ export function Footer() {
             <div className="space-y-3">
               <Link
                 href="/privacy-policy"
-                className="group/link block text-sm text-[#f8f5f1]/80 transition-all duration-200 hover:text-[#f8f5f1] hover:translate-x-1"
+                className="group/link block text-sm text-[#f8f5f1]/80 transition-all duration-200 hover:translate-x-1 hover:text-[#f8f5f1]"
               >
                 <span className="border-b border-transparent transition-all duration-200 group-hover/link:border-[#f8f5f1]/50">
                   Privacy Policy
@@ -70,7 +87,7 @@ export function Footer() {
               </Link>
               <Link
                 href="/terms-of-service"
-                className="group/link block text-sm text-[#f8f5f1]/80 transition-all duration-200 hover:text-[#f8f5f1] hover:translate-x-1"
+                className="group/link block text-sm text-[#f8f5f1]/80 transition-all duration-200 hover:translate-x-1 hover:text-[#f8f5f1]"
               >
                 <span className="border-b border-transparent transition-all duration-200 group-hover/link:border-[#f8f5f1]/50">
                   Terms of Service
@@ -85,7 +102,7 @@ export function Footer() {
               Community
             </h3>
             <div className="space-y-3">
-              <div className="group/stat rounded-lg border border-[#f8f5f1]/20 bg-gradient-to-br from-[#6b4c35]/20 to-[#3b2a1a]/20 p-3 transition-all duration-300 hover:border-[#f8f5f1]/40 hover:scale-105">
+              <div className="group/stat rounded-lg border border-[#f8f5f1]/20 bg-gradient-to-br from-[#6b4c35]/20 to-[#3b2a1a]/20 p-3 transition-all duration-300 hover:scale-105 hover:border-[#f8f5f1]/40">
                 <div className="text-lg font-bold text-[#f8f5f1] transition-colors duration-200 group-hover/stat:text-white">
                   Growing Daily
                 </div>
@@ -107,7 +124,7 @@ export function Footer() {
           </div>
 
           <div className="flex items-center gap-4">
-            <div className="inline-flex items-center rounded-full border border-[#f8f5f1]/20 bg-gradient-to-r from-[#6b4c35]/20 to-[#3b2a1a]/20 px-4 py-2 text-xs text-[#f8f5f1]/80 transition-all duration-300 hover:border-[#f8f5f1]/40 hover:scale-105 hover:text-[#f8f5f1]">
+            <div className="inline-flex items-center rounded-full border border-[#f8f5f1]/20 bg-gradient-to-r from-[#6b4c35]/20 to-[#3b2a1a]/20 px-4 py-2 text-xs text-[#f8f5f1]/80 transition-all duration-300 hover:scale-105 hover:border-[#f8f5f1]/40 hover:text-[#f8f5f1]">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="mr-2 h-3 w-3"
