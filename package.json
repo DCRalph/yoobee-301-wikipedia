@@ -13,21 +13,16 @@
     "db:seed": "prisma db seed",
     "devt": "next dev --turbo",
     "dev": "next dev",
-    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,mdx}\" --cache",
-    "format:write": "prettier --write \"**/*.{ts,tsx,js,jsx,mdx}\" --cache",
     "postinstall": "prisma generate",
     "lint": "next lint",
     "lint:fix": "next lint --fix",
     "preview": "next build && next start",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "vectors:generate": "tsx scripts/generate-vectors.ts",
-    "vectors:optimize": "tsx scripts/optimize-vector-performance.ts optimize",
-    "vectors:health": "tsx scripts/optimize-vector-performance.ts health",
-    "vectors:benchmark": "tsx scripts/optimize-vector-performance.ts benchmark",
-    "vectors:quality:fast": "tsx scripts/optimize-vector-performance.ts quality fast",
-    "vectors:quality:balanced": "tsx scripts/optimize-vector-performance.ts quality balanced",
-    "vectors:quality:high": "tsx scripts/optimize-vector-performance.ts quality quality"
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:run": "vitest run",
+    "test:coverage": "vitest --coverage"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
@@ -96,13 +91,19 @@
     "@faker-js/faker": "^9.8.0",
     "@tailwindcss/postcss": "^4.0.15",
     "@tailwindcss/typography": "^0.5.16",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
     "@types/bcryptjs": "^3.0.0",
     "@types/diff": "^7.0.2",
     "@types/node": "^20.14.10",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^4.5.1",
+    "@vitest/ui": "^3.2.2",
     "eslint": "^9.23.0",
     "eslint-config-next": "^15.2.3",
+    "jsdom": "^26.1.0",
     "postcss": "^8.5.3",
     "prettier": "^3.5.3",
     "prettier-plugin-tailwindcss": "^0.6.11",
@@ -110,7 +111,8 @@
     "slugify": "^1.6.6",
     "tailwindcss": "^4.0.15",
     "typescript": "^5.8.2",
-    "typescript-eslint": "^8.27.0"
+    "typescript-eslint": "^8.27.0",
+    "vitest": "^3.2.2"
   },
   "ct3aMetadata": {
     "initVersion": "7.39.3"
