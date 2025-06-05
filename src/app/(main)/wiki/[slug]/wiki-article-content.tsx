@@ -24,7 +24,6 @@ import { useState } from "react";
 import type { RouterOutputs } from "~/trpc/react";
 import React from "react";
 import { SidebarProvider, SidebarTrigger } from "~/components/ui/sidebar";
-import Image from "next/image";
 import { motion } from "framer-motion";
 import { markdownComponents } from "../components/custom-markdown-components";
 import {
@@ -35,6 +34,7 @@ import {
 } from "~/components/ui/dropdown-menu";
 import { AIDisabledMessage } from "~/app/testing/ai-disabled-message";
 import { SimilarArticles } from "../components/similar-articles";
+import { GameLinkInterceptor } from "~/components/game/game-link-interceptor";
 
 interface WikiArticleContentProps {
   article: RouterOutputs["user"]["articles"]["getBySlug"];
@@ -106,24 +106,6 @@ export function WikiArticleContent({
             {!UseAi && <AIDisabledMessage />}
 
             <div className="mx-auto flex flex-col px-2 sm:px-4 md:flex-row lg:px-6">
-              {/* Large Image on the Left */}
-              <div className="hidden p-4 md:sticky md:top-0 md:h-screen md:w-80 md:flex-shrink-0">
-                <motion.div className="h-full" variants={itemVariants}>
-                  <div className="overflow-hidden">
-                    <Image
-                      src="/placeholder.svg?height=800&width=600"
-                      alt={article.title}
-                      className="h-auto w-full object-cover"
-                      width={600}
-                      height={800}
-                    />
-                  </div>
-                  <p className="mt-2 text-xs text-[#605244]">
-                    {article.title} - Representative image
-                  </p>
-                </motion.div>
-              </div>
-
               {/* Main Article Content */}
               <main className="flex flex-1 flex-col items-center sm:p-4 md:pl-6">
                 <motion.div
@@ -202,156 +184,105 @@ export function WikiArticleContent({
                       </div>
 
                       <TabsContent value="article" className="mt-4">
-                        {/* Article Title and Alerts */}
-                        <motion.div
-                          className="mb-6 border-b border-[#d4bc8b] pb-4"
-                          variants={itemVariants}
-                        >
-                          <motion.h1
-                            className="wiki-title font-serif text-2xl font-bold break-words text-[#3a2a14] sm:text-3xl"
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ duration: 0.5 }}
-                          >
-                            {article.title}
-                          </motion.h1>
-                        </motion.div>
-
-                        {/* Article Metadata */}
-                        <motion.div
-                          className="mb-6 flex flex-col gap-2 text-sm text-[#5c3c10] sm:flex-row sm:flex-wrap sm:items-center sm:gap-4"
-                          variants={itemVariants}
-                        >
-                          <div className="flex items-center gap-1">
-                            <User className="h-4 w-4 flex-shrink-0" />
-                            <span className="truncate">
-                              {article.author.name ?? "Anonymous"}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Calendar className="h-4 w-4 flex-shrink-0" />
-                            <span className="text-xs sm:text-sm">
-                              Created {formatDate(new Date(article.createdAt))}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Clock className="h-4 w-4 flex-shrink-0" />
-                            <span className="text-xs sm:text-sm">
-                              Last updated{" "}
-                              {formatDistanceToNow(new Date(article.updatedAt))}
-                            </span>
-                          </div>
-                        </motion.div>
-
-                        {/* Quick Facts */}
-                        {article.quickFacts &&
-                          Object.keys(
-                            article.quickFacts as Record<string, unknown>,
-                          ).length > 0 && (
-                            <motion.div
-                              className="mb-6 rounded-lg border border-[#d4bc8b] bg-[#e8dcc3] p-3 sm:p-4"
-                              variants={itemVariants}
-                            >
-                              <h3 className="mb-4 font-serif text-lg font-semibold text-[#3a2a14]">
-                                Quick Facts
-                              </h3>
-                              <dl className="space-y-3 overflow-x-hidden">
-                                {Object.entries(
-                                  article.quickFacts as Record<string, unknown>,
-                                ).map(([key, value]) => (
-                                  <div
-                                    key={key}
-                                    className="flex flex-col gap-1 border-b border-[#d4bc8b] pb-2 last:border-b-0 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
-                                  >
-                                    <dt className="font-medium break-words text-[#4b2e13]">
-                                      {key}
-                                    </dt>
-                                    <dd className="prose min-w-0 flex-1 overflow-x-hidden text-[#605244]">
-                                      <ReactMarkdown
-                                        remarkPlugins={[remarkGfm]}
-                                        components={markdownComponents}
-                                      >
-                                        {String(value)}
-                                      </ReactMarkdown>
-                                    </dd>
-                                  </div>
-                                ))}
-                              </dl>
-                            </motion.div>
-                          )}
-
-                        {/* Article Content */}
-                        <motion.div
-                          className="prose prose-sm sm:prose overflow-x-hidden font-serif [&_code]:break-words [&_pre]:overflow-x-auto [&_table]:overflow-x-auto [&>:where(h1,h2,h3,h4,h5,h6)]:scroll-mt-24"
-                          variants={itemVariants}
-                        >
-                          <ReactMarkdown
-                            remarkPlugins={[remarkGfm]}
-                            rehypePlugins={[rehypeSlug]}
-                            components={markdownComponents}
-                          >
-                            {currentContent}
-                          </ReactMarkdown>
-                        </motion.div>
-
-                        {/* Action Buttons - Removing this section since buttons are now in dropdown */}
-                        <motion.div
-                          className="mt-8 mb-8"
-                          variants={itemVariants}
-                        >
-                          {/* No buttons here anymore - moved to dropdown */}
-                        </motion.div>
-
-                        {/* Revision History */}
-                        {article.revisions.length > 0 && (
+                        <GameLinkInterceptor currentArticleId={article.id}>
+                          {/* Article Title and Alerts */}
                           <motion.div
-                            className="mt-8 rounded-lg border border-[#d4bc8b] bg-[#f9f5eb] p-3 sm:p-4"
+                            className="mb-6 border-b border-[#d4bc8b] pb-4"
                             variants={itemVariants}
                           >
-                            <div className="mb-2 flex items-center gap-2">
-                              <History className="h-5 w-5 flex-shrink-0 text-[#5c3c10]" />
-                              <h3 className="font-serif font-bold text-[#3a2a14]">
-                                Revision History
-                              </h3>
-                            </div>
-                            <p className="mb-4 text-sm text-[#5c3c10]">
-                              This article has been edited{" "}
-                              {article.revisions.length} times
-                            </p>
-
-                            <div className="space-y-4 overflow-x-hidden">
-                              {article.revisions.slice(0, 5).map((revision) => (
-                                <div
-                                  key={revision.id}
-                                  className="flex flex-col gap-1 border-b border-[#d4bc8b] pb-2 last:border-0 sm:flex-row sm:items-center sm:justify-between"
-                                >
-                                  <div className="min-w-0">
-                                    <span className="font-medium break-words text-[#3a2a14]">
-                                      {revision.editor.name ?? "Anonymous"}
-                                    </span>
-                                    <span className="ml-2 block text-sm text-[#5c3c10] sm:inline">
-                                      {formatDate(new Date(revision.createdAt))}
-                                    </span>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-
-                            {article.revisions.length > 5 && (
-                              <div className="mt-4 text-right">
-                                <Button
-                                  variant="link"
-                                  className="px-0 text-[#5c3c10] hover:text-[#3a2a14]"
-                                  asChild
-                                >
-                                  <Link href={`/wiki/${article.slug}/history`}>
-                                    View all revisions
-                                  </Link>
-                                </Button>
-                              </div>
-                            )}
+                            <motion.h1
+                              className="wiki-title font-serif text-2xl font-bold break-words text-[#3a2a14] sm:text-3xl"
+                              initial={{ opacity: 0, x: -20 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ duration: 0.5 }}
+                            >
+                              {article.title}
+                            </motion.h1>
                           </motion.div>
-                        )}
+
+                          {/* Article Metadata */}
+                          <motion.div
+                            className="mb-6 flex flex-col gap-2 text-sm text-[#5c3c10] sm:flex-row sm:flex-wrap sm:items-center sm:gap-4"
+                            variants={itemVariants}
+                          >
+                            <div className="flex items-center gap-1">
+                              <User className="h-4 w-4 flex-shrink-0" />
+                              <span className="truncate">
+                                {article.author.name ?? "Anonymous"}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Calendar className="h-4 w-4 flex-shrink-0" />
+                              <span className="text-xs sm:text-sm">
+                                Created{" "}
+                                {formatDate(new Date(article.createdAt))}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Clock className="h-4 w-4 flex-shrink-0" />
+                              <span className="text-xs sm:text-sm">
+                                Last updated{" "}
+                                {formatDistanceToNow(
+                                  new Date(article.updatedAt),
+                                )}
+                              </span>
+                            </div>
+                          </motion.div>
+
+                          {/* Quick Facts */}
+                          {article.quickFacts &&
+                            Object.keys(
+                              article.quickFacts as Record<string, unknown>,
+                            ).length > 0 && (
+                              <motion.div
+                                className="mb-6 rounded-lg border border-[#d4bc8b] bg-[#e8dcc3] p-3 sm:p-4"
+                                variants={itemVariants}
+                              >
+                                <h3 className="mb-4 font-serif text-lg font-semibold text-[#3a2a14]">
+                                  Quick Facts
+                                </h3>
+                                <dl className="space-y-3 overflow-x-hidden">
+                                  {Object.entries(
+                                    article.quickFacts as Record<
+                                      string,
+                                      unknown
+                                    >,
+                                  ).map(([key, value]) => (
+                                    <div
+                                      key={key}
+                                      className="flex flex-col gap-1 border-b border-[#d4bc8b] pb-2 last:border-b-0 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
+                                    >
+                                      <dt className="font-medium break-words text-[#4b2e13]">
+                                        {key}
+                                      </dt>
+                                      <dd className="prose min-w-0 flex-1 overflow-x-hidden text-[#605244]">
+                                        <ReactMarkdown
+                                          remarkPlugins={[remarkGfm]}
+                                          components={markdownComponents}
+                                        >
+                                          {String(value)}
+                                        </ReactMarkdown>
+                                      </dd>
+                                    </div>
+                                  ))}
+                                </dl>
+                              </motion.div>
+                            )}
+
+                          {/* Article Content */}
+                          <motion.div
+                            className="prose prose-sm sm:prose overflow-x-hidden font-serif [&_code]:break-words [&_pre]:overflow-x-auto [&_table]:overflow-x-auto [&>:where(h1,h2,h3,h4,h5,h6)]:scroll-mt-24"
+                            variants={itemVariants}
+                          >
+                            <ReactMarkdown
+                              remarkPlugins={[remarkGfm]}
+                              rehypePlugins={[rehypeSlug]}
+                              components={markdownComponents}
+                            >
+                              {currentContent}
+                            </ReactMarkdown>
+                          </motion.div>
+                        </GameLinkInterceptor>
                       </TabsContent>
 
                       <TabsContent value="talk" className="mt-4">
@@ -428,7 +359,7 @@ export function WikiArticleContent({
 
                 {/* Similar Articles Section */}
                 <motion.div
-                  className="mt-6 overflow-x-hidden w-full"
+                  className="mt-6 w-full overflow-x-hidden"
                   variants={itemVariants}
                 >
                   <SimilarArticles

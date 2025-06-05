@@ -69,6 +69,13 @@ enum Role {
   ADMIN
 }
 
+/// Enum for game session status
+enum GameStatus {
+  IN_PROGRESS
+  COMPLETED
+  FORFEITED
+}
+
 /// The User model extends authentication properties and includes roles.
 model User {
   id            String    @id @default(cuid())
@@ -87,6 +94,7 @@ model User {
   // notes         Note[]       @relation("userNotes")
   approvedArticles Article[] @relation("approvedArticles")
   approvedRevisions Revision[] @relation("approvedRevisions")
+  gameSessions  GameSession[] @relation("userGameSessions")
 }
 
 /// Model to track IP address views for Articles
@@ -147,6 +155,11 @@ model Article {
   revisions   Revision[]  @relation("articleRevisions")
   summaries   ArticleSummary[]
   categories  CategoriesOnArticles[]
+  
+  // Game session relations
+  gameSessionsAsStart GameSession[] @relation("gameStartArticle")
+  gameSessionsAsEnd   GameSession[] @relation("gameEndArticle")
+  gameSessionsAsCurrent GameSession[] @relation("gameCurrentArticle")
 
   // Existing indexes
   @@index([isFeatured, featuredAt])
@@ -277,4 +290,30 @@ model ArticleSummary {
   articleId String
 
   @@unique([articleId, level])
+}
+
+/// The GameSession model for Six Degrees of Wiki Separation game
+model GameSession {
+  id             String      @id @default(cuid())
+  userId         String
+  user           User        @relation("userGameSessions", fields: [userId], references: [id], onDelete: Cascade)
+  startArticleId String
+  startArticle   Article     @relation("gameStartArticle", fields: [startArticleId], references: [id])
+  endArticleId   String
+  endArticle     Article     @relation("gameEndArticle", fields: [endArticleId], references: [id])
+  currentArticleId String?
+  currentArticle Article?    @relation("gameCurrentArticle", fields: [currentArticleId], references: [id])
+  status         GameStatus  @default(IN_PROGRESS)
+  path           Json        @default("[]") // Array of { articleId: String, timestamp: DateTime }
+  startTime      DateTime    @default(now())
+  endTime        DateTime?
+  clicks         Int         @default(0)
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([userId, status])
+  @@index([createdAt])
+  @@index([currentArticleId])
 }

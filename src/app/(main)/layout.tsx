@@ -1,6 +1,7 @@
 import "~/styles/globals.css";
 import { Header } from "~/components/layout/header";
 import { Footer } from "~/components/layout/footer";
+import { GameBanner } from "~/components/game/game-banner";
 
 export const metadata = {
   title: "Modern WikiClone",
@@ -16,6 +17,7 @@ export default function MainLayout({
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
+      <GameBanner />
       <main className="w-full flex-1">{children}</main>
       <Footer />
     </div>
