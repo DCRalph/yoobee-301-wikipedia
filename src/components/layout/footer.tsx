@@ -61,6 +61,14 @@ export function Footer() {
             </h3>
             <div className="space-y-3">
               <Link
+                href="/leaderboards"
+                className="group/link block text-sm text-[#f8f5f1]/80 transition-all duration-200 hover:translate-x-1 hover:text-[#f8f5f1]"
+              >
+                <span className="border-b border-transparent transition-all duration-200 group-hover/link:border-[#f8f5f1]/50">
+                  Leaderboards
+                </span>
+              </Link>
+              <Link
                 href="/play"
                 className="group/link block text-sm text-[#f8f5f1]/80 transition-all duration-200 hover:translate-x-1 hover:text-[#f8f5f1]"
               >
