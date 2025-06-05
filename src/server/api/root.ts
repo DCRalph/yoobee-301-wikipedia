@@ -8,6 +8,7 @@ import { articleRouter } from "./routers/article";
 import { categoryRouter } from "./routers/category";
 import { homeRouter } from "./routers/home";
 import { gameRouter } from "./routers/game";
+import { statsRouter } from "./routers/stats";
 
 /**
  * This is the primary router for your server.
@@ -24,6 +25,7 @@ export const appRouter = createTRPCRouter({
   category: categoryRouter,
   home: homeRouter,
   game: gameRouter,
+  stats: statsRouter,
 });
 
 // export type definition of API

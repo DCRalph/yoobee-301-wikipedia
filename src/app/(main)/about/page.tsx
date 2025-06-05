@@ -1,8 +1,11 @@
 "use client";
 
 import { motion } from "motion/react";
+import { api } from "~/trpc/react";
 
 export default function AboutPage() {
+  const { data: dbStats, isLoading: dbStatsLoading } = api.stats.getDatabaseSize.useQuery();
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -23,25 +26,40 @@ export default function AboutPage() {
   };
 
   const cardVariants = {
-    hidden: { scale: 0.8, opacity: 0 },
+    hidden: { scale: 0.95, opacity: 0 },
     visible: {
       scale: 1,
       opacity: 1,
       transition: {
         type: "spring",
-        stiffness: 100,
+        stiffness: 60,
+        damping: 15,
       },
     },
   };
 
   const imageVariants = {
-    hidden: { scale: 1.2, opacity: 0 },
+    hidden: { scale: 1.1, opacity: 0 },
     visible: {
       scale: 1,
       opacity: 1,
       transition: {
         duration: 1,
         ease: "easeOut",
+      },
+    },
+  };
+
+  const numberCountUpVariants = {
+    hidden: { scale: 0, opacity: 0 },
+    visible: {
+      scale: 1,
+      opacity: 1,
+      transition: {
+        type: "spring",
+        stiffness: 80,
+        damping: 12,
+        delay: 0.5,
       },
     },
   };
@@ -56,9 +74,9 @@ export default function AboutPage() {
       <motion.div className="mb-12 text-center" variants={itemVariants}>
         <motion.h1
           className="mb-6 text-5xl font-bold text-[#3a2a14]"
-          initial={{ scale: 0.5, opacity: 0 }}
+          initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.8, type: "spring", stiffness: 100 }}
+          transition={{ duration: 0.8, type: "spring", stiffness: 60 }}
         >
           About WikiClone
         </motion.h1>
@@ -78,7 +96,7 @@ export default function AboutPage() {
         <motion.div
           className="relative h-64 overflow-hidden rounded-lg md:h-80"
           variants={imageVariants}
-          whileHover={{ scale: 1.05 }}
+          whileHover={{ scale: 1.02 }}
           transition={{ duration: 0.3 }}
         >
           <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[#3a2a14] to-[#5a4a34]">
@@ -109,6 +127,151 @@ export default function AboutPage() {
             and learning across all disciplines and cultures.
           </p>
         </motion.div>
+      </motion.div>
+
+      {/* Database Statistics Section */}
+      <motion.div
+        className="mb-16 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-100 p-8 shadow-lg"
+        variants={itemVariants}
+        whileInView={{ scale: [0.98, 1.01, 1] }}
+        transition={{ duration: 0.6 }}
+      >
+        <div className="text-center">
+          <motion.h2
+            className="mb-6 text-3xl font-bold text-[#3a2a14]"
+            variants={itemVariants}
+          >
+            🗄️ Our Knowledge Database
+          </motion.h2>
+
+          {dbStatsLoading ? (
+            <motion.div
+              className="flex justify-center items-center space-x-1"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5 }}
+            >
+              {[0, 1, 2, 3, 4].map((index) => (
+                <motion.div
+                  key={index}
+                  className="w-3 h-3 bg-[#3a2a14] rounded-full"
+                  animate={{
+                    scale: [1, 1.3, 1],
+                    opacity: [0.4, 1, 0.4],
+                  }}
+                  transition={{
+                    duration: 1.2,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                    delay: index * 0.15,
+                  }}
+                />
+              ))}
+              <motion.span
+                className="ml-4 text-[#3a2a14] font-medium"
+                animate={{
+                  opacity: [0.5, 1, 0.5],
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+              >
+                Loading database info...
+              </motion.span>
+            </motion.div>
+          ) : dbStats ? (
+            <motion.div
+              className="grid gap-6 md:grid-cols-2"
+              variants={containerVariants}
+            >
+              {/* Main Database Size */}
+              <motion.div
+                className="bg-white rounded-xl p-6 border-2 border-indigo-200"
+                variants={cardVariants}
+                whileHover={{
+                  y: -3,
+                  boxShadow: "0 10px 25px rgba(59, 130, 246, 0.12)",
+                  borderColor: "#3b82f6"
+                }}
+                transition={{ duration: 0.3 }}
+              >
+                <motion.div
+                  className="text-6xl mb-4"
+                  whileHover={{
+                    scale: 1.05,
+                  }}
+                  transition={{
+                    duration: 0.3,
+                    ease: "easeInOut",
+                  }}
+                >
+                  💾
+                </motion.div>
+                <h3 className="text-lg font-semibold text-gray-600 mb-2">Total Database Size</h3>
+                <motion.div
+                  className="text-4xl font-bold text-[#3a2a14]"
+                  variants={numberCountUpVariants}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true }}
+                >
+                  {dbStats?.formattedSize ?? 'N/A'}
+                </motion.div>
+                {dbStats?.error && (
+                  <p className="text-sm text-red-500 mt-2">{dbStats.error}</p>
+                )}
+              </motion.div>
+
+              {/* Article Count */}
+              <motion.div
+                className="bg-white rounded-xl p-6 border-2 border-purple-200"
+                variants={cardVariants}
+                whileHover={{
+                  y: -3,
+                  boxShadow: "0 10px 25px rgba(147, 51, 234, 0.12)",
+                  borderColor: "#9333ea"
+                }}
+                transition={{ duration: 0.3 }}
+              >
+                <motion.div
+                  className="text-4xl mb-4"
+                  whileHover={{
+                    rotate: 15,
+                    scale: 1.05,
+                  }}
+                  transition={{
+                    duration: 0.3,
+                    ease: "easeInOut",
+                  }}
+                >
+                  📄
+                </motion.div>
+                <h3 className="text-lg font-semibold text-gray-600 mb-2">Article Count</h3>
+                <motion.div
+                  className="text-4xl font-bold text-purple-600"
+                  variants={numberCountUpVariants}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true }}
+                >
+                  {dbStats?.articleCount?.toLocaleString() ?? 'N/A'}
+                </motion.div>
+              </motion.div>
+
+
+            </motion.div>
+          ) : (
+            <motion.div
+              className="text-gray-500"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+            >
+              Unable to load database statistics
+            </motion.div>
+          )}
+        </div>
       </motion.div>
 
       <motion.div
@@ -171,7 +334,7 @@ export default function AboutPage() {
           <div>
             <h2 className="mb-4 text-3xl font-bold">Our Story</h2>
             <p className="mb-4 leading-relaxed">
-              Founded in 2024, WikiClone emerged from the collaborative efforts
+              Founded in 2025 BC, WikiClone emerged from the collaborative efforts
               of passionate educators, technologists, and knowledge enthusiasts
               who recognized the need for a more dynamic and accessible
               knowledge platform.
