@@ -15,6 +15,8 @@ export const env = createEnv({
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
+    NEXTAUTH_URL: z.string().url(),
+    VERCEL_ANALYTICS: z.boolean().default(false),
 
     GOOGLE_CLIENT_ID: z.string(),
     GOOGLE_CLIENT_SECRET: z.string(),
@@ -45,6 +47,8 @@ export const env = createEnv({
     AUTH_SECRET: process.env.AUTH_SECRET,
     DATABASE_URL: process.env.DATABASE_URL,
     NODE_ENV: process.env.NODE_ENV,
+    NEXTAUTH_URL: process.env.NEXTAUTH_URL,
+    VERCEL_ANALYTICS: process.env.VERCEL_ANALYTICS,
 
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
