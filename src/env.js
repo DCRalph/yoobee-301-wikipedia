@@ -16,7 +16,10 @@ export const env = createEnv({
       .enum(["development", "test", "production"])
       .default("development"),
     NEXTAUTH_URL: z.string().url(),
-    VERCEL_ANALYTICS: z.boolean().default(false),
+    VERCEL_ANALYTICS: z
+      .string()
+      .default("false")
+      .transform((val) => val === "true"),
 
     GOOGLE_CLIENT_ID: z.string(),
     GOOGLE_CLIENT_SECRET: z.string(),
