@@ -32,7 +32,6 @@ export default function RootLayout({
           <Analytics
             endpoint="/fuckoffaddblockers"
             scriptSrc="/fuckoffaddblocker/script.js"
-            mode="production"
           />
         )}
         <SessionProvider>
