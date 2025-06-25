@@ -35,6 +35,18 @@ const config = {
       },
     ],
   },
+  rewrites: async () => {
+    return [
+      {
+        source: "/fuckoffaddblockers/:match*",
+        destination: "https://www.wikipediagpt.com/_vercel/insights/:match*",
+      },
+      {
+        source: "/fuckoffaddblocker/script.js",
+        destination: "https://www.wikipediagpt.com/_vercel/insights/script.js",
+      },
+    ];
+  },
 };
 
 export default config;

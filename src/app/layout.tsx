@@ -28,7 +28,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`font-sans ${inter.variable}`}>
-        {env.NODE_ENV === "production" && env.VERCEL_ANALYTICS && <Analytics />}
+        {env.VERCEL_ANALYTICS && (
+          <Analytics
+            endpoint="/fuckoffaddblockers"
+            scriptSrc="/fuckoffaddblocker/script.js"
+            mode="production"
+          />
+        )}
         <SessionProvider>
           <TRPCReactProvider>
             <NextTopLoader />
