@@ -22,7 +22,7 @@ export async function createCheckoutSession(
 ) {
   const stripe = new Stripe(env.STRIPE_SECRET_KEY);
   const session = await stripe.checkout.sessions.create({
-    payment_method_types: ["card"],
+    payment_method_types: ["card", "afterpay_clearpay", "klarna"],
     line_items: [
       {
         price_data: {
