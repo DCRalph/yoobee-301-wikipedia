@@ -161,9 +161,12 @@ export default function Home() {
         ) : (
           <div className="mx-auto max-w-5xl">
             <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2">
-              <div>
-                <h3 className="mb-4 border-b border-[#c0a080] pb-2 font-serif text-xl">
+              <div >
+                <h3 className="mb-4 border-b border-[#c0a080] pb-2 font-serif text-xl flex justify-between">
                   Featured Articles
+                  <span className="text-sm text- self-end">
+                    {homeContent?.featured?.length} articles in {homeContent?.timings?.featured.toFixed(0)} ms
+                  </span>
                 </h3>
                 <div className="grid gap-4">
                   {homeContent?.featured && homeContent.featured.length > 0 ? (
@@ -204,8 +207,11 @@ export default function Home() {
               </div>
 
               <div>
-                <h3 className="mb-4 border-b border-[#c0a080] pb-2 font-serif text-xl">
+                <h3 className="mb-4 border-b border-[#c0a080] pb-2 font-serif text-xl flex justify-between">
                   Trending Now
+                  <span className="text-sm text-gray-500 self-end">
+                    {homeContent?.trending?.length} articles in {homeContent?.timings?.trending.toFixed(0)} ms
+                  </span>
                 </h3>
                 <div className="grid gap-4">
                   {homeContent?.trending && homeContent.trending.length > 0 ? (
@@ -262,8 +268,11 @@ export default function Home() {
             <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2">
               {/* Today's Article */}
               <div>
-                <h3 className="mb-4 border-b border-[#c0a080] pb-2 font-serif text-xl">
+                <h3 className="mb-4 border-b border-[#c0a080] pb-2 font-serif text-xl flex justify-between">
                   {"Today's Article"}
+                  <span className="text-sm text-gray-500 self-end">
+                    {homeContent?.daily?.todaysArticle?.title} in {homeContent?.timings?.todaysArticle.toFixed(0)} ms
+                  </span>
                 </h3>
                 {homeContent?.daily?.todaysArticle ? (
                   <div className="grid grid-cols-1 gap-4">
@@ -308,7 +317,20 @@ export default function Home() {
 
       {/* Stats Section */}
       <section className="container mx-auto my-16 px-4 pb-16">
-        <SectionHeader title="WikiClone by the Numbers" />
+        <div className="mb-6 flex items-center justify-center">
+          <div className="h-px w-12 bg-[#c0a080]"></div>
+          <div className="mx-4 text-center">
+            <h2 className="font-serif text-2xl font-medium">
+              WikiClone by the Numbers
+            </h2>
+            {homeContent?.timings?.stats !== undefined && (
+              <p className="mt-1 text-xs text-gray-500">
+                Stats loaded in {homeContent.timings.stats.toFixed(0)} ms
+              </p>
+            )}
+          </div>
+          <div className="h-px w-12 bg-[#c0a080]"></div>
+        </div>
 
         {isLoading ? (
           <div className="flex justify-center py-20">
@@ -316,33 +338,7 @@ export default function Home() {
           </div>
         ) : (
           <div className="mx-auto max-w-5xl">
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-              <div className="group flex flex-col items-center rounded-xl border-2 border-[#e8e0d6] bg-gradient-to-br from-white to-[#faf7f3] p-6 shadow-lg transition-all duration-300 hover:scale-105 hover:border-[#d4c4b0] hover:shadow-xl active:scale-95">
-                <div className="mb-3 text-[#6b4c35] transition-colors duration-200 group-hover:text-[#3b2a1a]">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-8 w-8"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"
-                    />
-                  </svg>
-                </div>
-                <h3 className="mb-2 text-3xl font-bold text-[#3b2a1a] transition-colors duration-200 group-hover:text-[#6b4c35]">
-                  <CountUp end={homeContent?.stats?.totalArticles ?? 0} />
-                </h3>
-                <div className="inline-flex items-center rounded-full bg-gradient-to-r from-[#e8e0d6] to-[#d4c4b0] px-3 py-1 text-xs font-medium text-[#6b4c35] transition-all duration-200 group-hover:from-[#d4c4b0] group-hover:to-[#c4b4a0]">
-                  Articles Published
-                </div>
-                <div className="mx-auto mt-2 h-0.5 w-12 bg-gradient-to-r from-transparent via-[#d4c4b0] to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
-              </div>
-
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               <div className="group flex flex-col items-center rounded-xl border-2 border-[#e8e0d6] bg-gradient-to-br from-white to-[#faf7f3] p-6 shadow-lg transition-all duration-300 hover:scale-105 hover:border-[#d4c4b0] hover:shadow-xl active:scale-95">
                 <div className="mb-3 text-[#6b4c35] transition-colors duration-200 group-hover:text-[#3b2a1a]">
                   <svg
@@ -366,6 +362,11 @@ export default function Home() {
                 <div className="inline-flex items-center rounded-full bg-gradient-to-r from-[#e8e0d6] to-[#d4c4b0] px-3 py-1 text-xs font-medium text-[#6b4c35] transition-all duration-200 group-hover:from-[#d4c4b0] group-hover:to-[#c4b4a0]">
                   Contributors
                 </div>
+                {homeContent?.timings?.statTimings?.totalUsers !== undefined && (
+                  <p className="mt-1 text-xs text-gray-400">
+                    {homeContent.timings.statTimings.totalUsers.toFixed(0)} ms
+                  </p>
+                )}
                 <div className="mx-auto mt-2 h-0.5 w-12 bg-gradient-to-r from-transparent via-[#d4c4b0] to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
               </div>
 
@@ -392,6 +393,11 @@ export default function Home() {
                 <div className="inline-flex items-center rounded-full bg-gradient-to-r from-[#e8e0d6] to-[#d4c4b0] px-3 py-1 text-xs font-medium text-[#6b4c35] transition-all duration-200 group-hover:from-[#d4c4b0] group-hover:to-[#c4b4a0]">
                   Categories
                 </div>
+                {homeContent?.timings?.statTimings?.totalCategories !== undefined && (
+                  <p className="mt-1 text-xs text-gray-400">
+                    {homeContent.timings.statTimings.totalCategories.toFixed(0)} ms
+                  </p>
+                )}
                 <div className="mx-auto mt-2 h-0.5 w-12 bg-gradient-to-r from-transparent via-[#d4c4b0] to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
               </div>
 
@@ -424,6 +430,11 @@ export default function Home() {
                 <div className="inline-flex items-center rounded-full bg-gradient-to-r from-[#e8e0d6] to-[#d4c4b0] px-3 py-1 text-xs font-medium text-[#6b4c35] transition-all duration-200 group-hover:from-[#d4c4b0] group-hover:to-[#c4b4a0]">
                   Daily Views
                 </div>
+                {homeContent?.timings?.statTimings?.dailyViews !== undefined && (
+                  <p className="mt-1 text-xs text-gray-400">
+                    {homeContent.timings.statTimings.dailyViews.toFixed(0)} ms
+                  </p>
+                )}
                 <div className="mx-auto mt-2 h-0.5 w-12 bg-gradient-to-r from-transparent via-[#d4c4b0] to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
               </div>
             </div>

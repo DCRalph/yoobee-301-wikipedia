@@ -1,0 +1,7 @@
+CREATE INDEX ON public."Article"
+  USING hnsw ("titleVector" vector_cosine_ops)
+  WITH (m = 12, ef_construction = 200);
+
+ CREATE INDEX ON public."Article"
+  USING hnsw ("contentVector" vector_cosine_ops)
+  WITH (m = 16, ef_construction = 300);

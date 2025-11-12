@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "motion/react";
+import { motion, type Variants } from "motion/react";
 import { api } from "~/trpc/react";
 
 export default function AboutPage() {
@@ -25,7 +25,7 @@ export default function AboutPage() {
     },
   };
 
-  const cardVariants = {
+  const cardVariants: Variants = {
     hidden: { scale: 0.95, opacity: 0 },
     visible: {
       scale: 1,
@@ -38,7 +38,7 @@ export default function AboutPage() {
     },
   };
 
-  const imageVariants = {
+  const imageVariants: Variants = {
     hidden: { scale: 1.1, opacity: 0 },
     visible: {
       scale: 1,
@@ -50,7 +50,7 @@ export default function AboutPage() {
     },
   };
 
-  const numberCountUpVariants = {
+  const numberCountUpVariants: Variants = {
     hidden: { scale: 0, opacity: 0 },
     visible: {
       scale: 1,

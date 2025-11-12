@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, type Variants } from "framer-motion";
 import {
   Card,
   CardContent,
@@ -46,7 +46,7 @@ export default function DonatePage() {
   const duration = 2000; // 2 seconds
 
   // Animation variants
-  const containerVariants = {
+  const containerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
@@ -57,7 +57,7 @@ export default function DonatePage() {
     },
   };
 
-  const scaleVariants = {
+  const scaleVariants: Variants = {
     hidden: { scale: 0.8, opacity: 0 },
     visible: {
       scale: 1,
@@ -69,7 +69,7 @@ export default function DonatePage() {
     },
   };
 
-  const slideInVariants = {
+  const slideInVariants: Variants = {
     hidden: { x: -50, opacity: 0 },
     visible: {
       x: 0,
@@ -81,7 +81,7 @@ export default function DonatePage() {
     },
   };
 
-  const staggerContainerVariants = {
+  const staggerContainerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
@@ -92,7 +92,7 @@ export default function DonatePage() {
     },
   };
 
-  const fadeInUpVariants = {
+  const fadeInUpVariants: Variants = {
     hidden: { y: 30, opacity: 0 },
     visible: {
       y: 0,

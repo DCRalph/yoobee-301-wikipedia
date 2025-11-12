@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, type Variants } from "framer-motion";
 import {
   Card,
   CardContent,
@@ -36,7 +36,7 @@ export default function DonationSuccessPage() {
   const duration = 2000; // 2 seconds
 
   // Animation variants
-  const celebrationVariants = {
+  const celebrationVariants: Variants = {
     hidden: { scale: 0, rotate: -180, opacity: 0 },
     visible: {
       scale: 1,
@@ -50,7 +50,7 @@ export default function DonationSuccessPage() {
     },
   };
 
-  const confettiVariants = {
+  const confettiVariants: Variants = {
     hidden: { y: -100, opacity: 0, rotate: 0 },
     visible: (i: number) => ({
       y: [0, 200],
@@ -65,7 +65,7 @@ export default function DonationSuccessPage() {
     }),
   };
 
-  const containerVariants = {
+  const containerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
@@ -76,7 +76,7 @@ export default function DonationSuccessPage() {
     },
   };
 
-  const bounceVariants = {
+  const bounceVariants: Variants = {
     hidden: { y: -100, opacity: 0 },
     visible: {
       y: 0,
@@ -89,7 +89,7 @@ export default function DonationSuccessPage() {
     },
   };
 
-  const slideInVariants = {
+  const slideInVariants: Variants = {
     hidden: { x: -100, opacity: 0 },
     visible: {
       x: 0,
@@ -101,7 +101,7 @@ export default function DonationSuccessPage() {
     },
   };
 
-  const staggerContainerVariants = {
+  const staggerContainerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
@@ -112,7 +112,7 @@ export default function DonationSuccessPage() {
     },
   };
 
-  const fadeInUpVariants = {
+  const fadeInUpVariants: Variants = {
     hidden: { y: 30, opacity: 0 },
     visible: {
       y: 0,

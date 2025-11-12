@@ -1,4 +1,3 @@
-// import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 
 // Types for our API responses
@@ -35,40 +34,51 @@ export type HomeContent = {
   trending: TrendingArticle[];
   daily: DailyContent;
   stats?: {
-    totalArticles: number;
     totalUsers: number;
     totalCategories: number;
     dailyViews: number;
   };
+  timings?: {
+    featured: number;
+    trending: number;
+    todaysArticle: number;
+    stats: number;
+    statTimings?: {
+      totalUsers: number;
+      totalCategories: number;
+      dailyViews: number;
+    };
+  };
 };
 
-// Helper function to create excerpt
+// ---------- Helpers ----------
+
+const CATEGORIES_INCLUDE = {
+  categories: {
+    include: { category: true },
+  },
+} as const;
+
 const createExcerpt = (
   content: string,
   featuredDescription?: string | null,
-): string => {
-  return featuredDescription ?? content.substring(0, 150) + "...";
+): string => featuredDescription ?? content.substring(0, 150) + "...";
+
+type RawArticle = {
+  id: string;
+  title: string;
+  content: string;
+  featuredDescription?: string | null;
+  imageUrl?: string | null;
+  slug: string;
+  categories: Array<{ category: { name: string } }>;
 };
 
-// Helper function to transform article to featured/trending format
-const transformArticle = (
-  article: {
-    id: string;
-    title: string;
-    content: string;
-    featuredDescription?: string | null;
-    imageUrl?: string | null;
-    slug: string;
-    categories: Array<{
-      category: {
-        name: string;
-      };
-    }>;
-  },
+const toArticleCard = (
+  article: RawArticle,
   urlPrefix = "/wiki/",
 ): FeaturedArticle | TrendingArticle => {
   const firstCategory = article.categories[0]?.category.name ?? "Uncategorized";
-
   return {
     id: article.id,
     title: article.title,
@@ -79,160 +89,212 @@ const transformArticle = (
   };
 };
 
+const timeDbCall = async <T>(
+  dbCall: () => Promise<T>,
+): Promise<{ result: T; timing: number }> => {
+  const start = performance.now();
+  const result = await dbCall();
+  return { result, timing: performance.now() - start };
+};
+
+// Extract or log errors from Promise.allSettled results
+const getFulfilled = <T>(
+  settled: PromiseSettledResult<T>,
+  label: string,
+): T | null => {
+  if (settled.status === "fulfilled") return settled.value;
+  console.error(`Error in ${label}:`, settled.reason);
+  return null;
+};
+
+// ---------- Routers ----------
+
 export const homeRouter = createTRPCRouter({
   // Get all home content in a single query to reduce API calls
   getHomeContent: publicProcedure.query(async ({ ctx }) => {
     try {
-      const result: HomeContent = {
+      const baseResult: HomeContent = {
         featured: [],
         trending: [],
         daily: {},
+        timings: {
+          featured: 0,
+          trending: 0,
+          todaysArticle: 0,
+          stats: 0,
+        },
       };
 
-      // Get featured articles
-      const featuredArticles = await ctx.db.article.findMany({
-        where: {
-          isFeatured: true,
-          published: true,
-          approved: true,
-          needsApproval: false,
-        },
-        orderBy: {
-          featuredAt: "desc",
-        },
-        take: 4,
-        include: {
-          categories: {
-            include: {
-              category: true,
+      const [
+        featuredSettled,
+        trendingSettled,
+        todaysSettled,
+        statsSettled,
+      ] = await Promise.allSettled([
+        timeDbCall(() =>
+          ctx.db.article.findMany({
+            where: {
+              isFeatured: true,
+              published: true,
+              approved: true,
+              needsApproval: false,
             },
-          },
-        },
-      });
-
-      result.featured = featuredArticles.map((article) =>
-        transformArticle(article),
-      );
-
-      // Get trending articles
-      const trendingArticles = await ctx.db.article.findMany({
-        where: {
-          published: true,
-          approved: true,
-          needsApproval: false,
-        },
-        orderBy: {
-          dailyViews: "desc",
-        },
-        take: 4,
-        include: {
-          categories: {
-            include: {
-              category: true,
-            },
-          },
-        },
-      });
-
-      result.trending = trendingArticles.map((article) =>
-        transformArticle(article),
-      );
-
-      // Get today's featured article
-      const todaysArticle = await ctx.db.article.findFirst({
-        where: {
-          published: true,
-          approved: true,
-          needsApproval: false,
-        },
-        orderBy: [
-          { isFeatured: "desc" },
-          { featuredAt: "desc" },
-          { viewCount: "desc" },
-        ],
-        include: {
-          categories: {
-            include: {
-              category: true,
-            },
-          },
-        },
-      });
-
-      if (todaysArticle) {
-        result.daily.todaysArticle = {
-          id: todaysArticle.id,
-          title: todaysArticle.title,
-          excerpt: createExcerpt(
-            todaysArticle.content,
-            todaysArticle.featuredDescription,
-          ),
-          imageUrl: todaysArticle.imageUrl ?? undefined,
-          readMoreUrl: `/wiki/${todaysArticle.slug}`,
-        };
-      }
-
-      // Get statistics counts
-      const [articleCount, userCount, categoryCount, viewsCount] =
-        await Promise.all([
-          ctx.db.article.count({
+            orderBy: { featuredAt: "desc" },
+            take: 4,
+            include: CATEGORIES_INCLUDE,
+          }),
+        ),
+        timeDbCall(() =>
+          ctx.db.article.findMany({
             where: {
               published: true,
               approved: true,
+              needsApproval: false,
             },
+            orderBy: { dailyViews: "desc" },
+            take: 4,
+            include: CATEGORIES_INCLUDE,
           }),
-          ctx.db.user.count(),
-          ctx.db.category.count(),
-          ctx.db.articleView.count({
+        ),
+        timeDbCall(() =>
+          ctx.db.article.findFirst({
             where: {
-              createdAt: {
-                gte: new Date(Date.now() - 24 * 60 * 60 * 1000), // Last 24 hours
-              },
+              published: true,
+              approved: true,
+              needsApproval: false,
             },
+            orderBy: [
+              { isFeatured: "desc" },
+              { featuredAt: "desc" },
+              { viewCount: "desc" },
+            ],
+            include: CATEGORIES_INCLUDE,
           }),
-        ]);
+        ),
+        timeDbCall(async () => {
+          // Stats sub-queries with individual timings
+          const [userCount, categoryCount, dailyViews] = await Promise.allSettled(
+            [
+              timeDbCall(() => ctx.db.user.count()),
+              timeDbCall(() => ctx.db.category.count()),
+              timeDbCall(() =>
+                ctx.db.articleView.count({
+                  where: {
+                    createdAt: {
+                      gte: new Date(Date.now() - 24 * 60 * 60 * 1000),
+                    },
+                  },
+                }),
+              ),
+            ],
+          );
 
-      result.stats = {
-        totalArticles: articleCount,
-        totalUsers: userCount,
-        totalCategories: categoryCount,
-        dailyViews: viewsCount,
-      };
+          const users =
+            userCount.status === "fulfilled" ? userCount.value.result : 0;
+          const categories =
+            categoryCount.status === "fulfilled" ? categoryCount.value.result : 0;
+          const views =
+            dailyViews.status === "fulfilled" ? dailyViews.value.result : 0;
 
-      return result;
+          return {
+            totalUsers: users,
+            totalCategories: categories,
+            dailyViews: views,
+            statTimings: {
+              totalUsers:
+                userCount.status === "fulfilled" ? userCount.value.timing : 0,
+              totalCategories:
+                categoryCount.status === "fulfilled"
+                  ? categoryCount.value.timing
+                  : 0,
+              dailyViews:
+                dailyViews.status === "fulfilled"
+                  ? dailyViews.value.timing
+                  : 0,
+            },
+          };
+        }),
+      ]);
+
+      // Featured
+      const featured = getFulfilled(featuredSettled, "featured");
+      if (featured) {
+        baseResult.featured = featured.result.map((a: RawArticle) =>
+          toArticleCard(a),
+        );
+        baseResult.timings!.featured = featured.timing;
+      }
+
+      // Trending
+      const trending = getFulfilled(trendingSettled, "trending");
+      if (trending) {
+        baseResult.trending = trending.result.map((a: RawArticle) =>
+          toArticleCard(a),
+        );
+        baseResult.timings!.trending = trending.timing;
+      }
+
+      // Today's article
+      const todays = getFulfilled(todaysSettled, "todaysArticle");
+      if (todays) {
+        const art = todays.result as RawArticle | null;
+        if (art) {
+          baseResult.daily.todaysArticle = {
+            id: art.id,
+            title: art.title,
+            excerpt: createExcerpt(art.content, art.featuredDescription),
+            imageUrl: art.imageUrl ?? undefined,
+            readMoreUrl: `/wiki/${art.slug}`,
+          };
+        }
+        baseResult.timings!.todaysArticle = todays.timing;
+      }
+
+      // Stats
+      const stats = getFulfilled(statsSettled, "stats");
+      if (stats) {
+        baseResult.stats = {
+          totalUsers: stats.result.totalUsers,
+          totalCategories: stats.result.totalCategories,
+          dailyViews: stats.result.dailyViews,
+        };
+        baseResult.timings!.stats = stats.timing;
+        baseResult.timings!.statTimings = stats.result.statTimings;
+      }
+
+      return baseResult;
     } catch (error) {
       console.error("Error fetching home content:", error);
       return {
         featured: [],
         trending: [],
         daily: {},
-      };
+        timings: {
+          featured: 0,
+          trending: 0,
+          todaysArticle: 0,
+          stats: 0,
+          statTimings: {
+            totalUsers: 0,
+            totalCategories: 0,
+            dailyViews: 0,
+          },
+        },
+      } satisfies HomeContent;
     }
   }),
 
   // Legacy endpoints for backward compatibility
   getFeaturedArticles: publicProcedure.query(async ({ ctx }) => {
     try {
-      const featuredArticles = await ctx.db.article.findMany({
-        where: {
-          isFeatured: true,
-          published: true,
-          approved: true,
-        },
-        orderBy: {
-          featuredAt: "desc",
-        },
+      const items = await ctx.db.article.findMany({
+        where: { isFeatured: true, published: true, approved: true },
+        orderBy: { featuredAt: "desc" },
         take: 4,
-        include: {
-          categories: {
-            include: {
-              category: true,
-            },
-          },
-        },
+        include: CATEGORIES_INCLUDE,
       });
 
-      return featuredArticles.map((article) => transformArticle(article));
+      return items.map((a: RawArticle) => toArticleCard(a));
     } catch (error) {
       console.error("Error fetching featured articles:", error);
       return [];
@@ -241,25 +303,14 @@ export const homeRouter = createTRPCRouter({
 
   getTrendingArticles: publicProcedure.query(async ({ ctx }) => {
     try {
-      const trendingArticles = await ctx.db.article.findMany({
-        where: {
-          published: true,
-          approved: true,
-        },
-        orderBy: {
-          dailyViews: "desc",
-        },
+      const items = await ctx.db.article.findMany({
+        where: { published: true, approved: true },
+        orderBy: { dailyViews: "desc" },
         take: 4,
-        include: {
-          categories: {
-            include: {
-              category: true,
-            },
-          },
-        },
+        include: CATEGORIES_INCLUDE,
       });
 
-      return trendingArticles.map((article) => transformArticle(article));
+      return items.map((a: RawArticle) => toArticleCard(a));
     } catch (error) {
       console.error("Error fetching trending articles:", error);
       return [];
@@ -268,42 +319,28 @@ export const homeRouter = createTRPCRouter({
 
   getDailyContent: publicProcedure.query(async ({ ctx }) => {
     try {
-      const result: DailyContent = {};
-
-      // Get today's featured article
-      const todaysArticle = await ctx.db.article.findFirst({
-        where: {
-          published: true,
-          approved: true,
-        },
+      const art = await ctx.db.article.findFirst({
+        where: { published: true, approved: true },
         orderBy: [
           { isFeatured: "desc" },
           { featuredAt: "desc" },
           { viewCount: "desc" },
         ],
-        include: {
-          categories: {
-            include: {
-              category: true,
-            },
-          },
-        },
+        include: CATEGORIES_INCLUDE,
       });
 
-      if (todaysArticle) {
-        result.todaysArticle = {
-          id: todaysArticle.id,
-          title: todaysArticle.title,
-          excerpt: createExcerpt(
-            todaysArticle.content,
-            todaysArticle.featuredDescription,
-          ),
-          imageUrl: todaysArticle.imageUrl ?? undefined,
-          readMoreUrl: `/wiki/${todaysArticle.slug}`,
-        };
-      }
+      if (!art) return {};
 
-      return result;
+      const a = art as RawArticle;
+      return {
+        todaysArticle: {
+          id: a.id,
+          title: a.title,
+          excerpt: createExcerpt(a.content, a.featuredDescription),
+          imageUrl: a.imageUrl ?? undefined,
+          readMoreUrl: `/wiki/${a.slug}`,
+        },
+      } satisfies DailyContent;
     } catch (error) {
       console.error("Error fetching daily content:", error);
       return {};
