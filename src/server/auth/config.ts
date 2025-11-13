@@ -22,12 +22,9 @@ declare module "next-auth" {
     user: PUser;
   }
 }
-/**
- * Options for NextAuth.js used to configure adapters, providers, callbacks, etc.
- *
- * @see https://next-auth.js.org/configuration/options
- */
-export const authConfig = {
+
+
+export const authConfig: NextAuthConfig = {
   trustHost: true,
   pages: {
     signIn: "/signin",
@@ -187,7 +184,7 @@ export const authConfig = {
       return JSON.stringify(params.token);
     },
   },
-} satisfies NextAuthConfig;
+};
 
 // https://ap-southeast-2f8wjhmcb7.auth.ap-southeast-2.amazoncognito.com/oauth2/authorize?response_type=code&client_id=5melqqcum081ah78h1ei51vc86&redirect_uri=http%3A%2F%2Flocalhost%3A3001%2Fapi%2Fauth%2Fcallback%2Fcognito&scope=openid+profile+email&code_challenge=8WddoRnD4vK_K2xWRbwzZSNOJtDLJFKiJuQsJm7rr7k&code_challenge_method=S256
 // https://cognito-idp.ap-southeast-2.amazonaws.com/ap-southeast-2_F8wjhmcb7/oauth2/authorize?response_type=code&client_id=5melqqcum081ah78h1ei51vc86&redirect_uri=http%3A%2F%2Flocalhost%3A3001%2Fapi%2Fauth%2Fcallback%2Fcognito&scope=openid+profile+email&code_challenge=OxFSm0hP12JByhSRrCzHiwu-5NMcmGKMvJxSyucS6sM&code_challenge_method=S256
