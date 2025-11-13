@@ -191,7 +191,7 @@ export function WikiArticleContent({
                             variants={itemVariants}
                           >
                             <motion.h1
-                              className="wiki-title font-serif text-2xl font-bold break-words text-[#3a2a14] sm:text-3xl"
+                              className="wiki-title font-serif text-2xl font-bold wrap-break-word text-[#3a2a14] sm:text-3xl"
                               initial={{ opacity: 0, x: -20 }}
                               animate={{ opacity: 1, x: 0 }}
                               transition={{ duration: 0.5 }}
@@ -206,20 +206,20 @@ export function WikiArticleContent({
                             variants={itemVariants}
                           >
                             <div className="flex items-center gap-1">
-                              <User className="h-4 w-4 flex-shrink-0" />
+                              <User className="h-4 w-4 shrink-0" />
                               <span className="truncate">
                                 {article.author.name ?? "Anonymous"}
                               </span>
                             </div>
                             <div className="flex items-center gap-1">
-                              <Calendar className="h-4 w-4 flex-shrink-0" />
+                              <Calendar className="h-4 w-4 shrink-0" />
                               <span className="text-xs sm:text-sm">
                                 Created{" "}
                                 {formatDate(new Date(article.createdAt))}
                               </span>
                             </div>
                             <div className="flex items-center gap-1">
-                              <Clock className="h-4 w-4 flex-shrink-0" />
+                              <Clock className="h-4 w-4 shrink-0" />
                               <span className="text-xs sm:text-sm">
                                 Last updated{" "}
                                 {formatDistanceToNow(
@@ -252,7 +252,7 @@ export function WikiArticleContent({
                                       key={key}
                                       className="flex flex-col gap-1 border-b border-[#d4bc8b] pb-2 last:border-b-0 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
                                     >
-                                      <dt className="font-medium break-words text-[#4b2e13]">
+                                      <dt className="font-medium wrap-break-word text-[#4b2e13]">
                                         {key}
                                       </dt>
                                       <dd className="prose min-w-0 flex-1 overflow-x-hidden text-[#605244]">
@@ -271,7 +271,7 @@ export function WikiArticleContent({
 
                           {/* Article Content */}
                           <motion.div
-                            className="prose prose-sm sm:prose overflow-x-hidden font-serif [&_code]:break-words [&_pre]:overflow-x-auto [&_table]:overflow-x-auto [&>:where(h1,h2,h3,h4,h5,h6)]:scroll-mt-24"
+                            className="prose prose-sm sm:prose overflow-x-hidden font-serif [&_code]:wrap-break-word [&_pre]:overflow-x-auto [&_table]:overflow-x-auto [&>:where(h1,h2,h3,h4,h5,h6)]:scroll-mt-24"
                             variants={itemVariants}
                           >
                             <ReactMarkdown
@@ -288,7 +288,7 @@ export function WikiArticleContent({
                       <TabsContent value="talk" className="mt-4">
                         <div className="overflow-x-hidden p-2 text-[#5c3c10] sm:p-4">
                           {article.talkContent ? (
-                            <div className="prose prose-sm sm:prose overflow-x-hidden text-[#3a2a14] [&_code]:break-words [&_pre]:overflow-x-auto [&_table]:overflow-x-auto">
+                            <div className="prose prose-sm sm:prose overflow-x-hidden text-[#3a2a14] [&_code]:wrap-break-word [&_pre]:overflow-x-auto [&_table]:overflow-x-auto">
                               <ReactMarkdown
                                 remarkPlugins={[remarkGfm]}
                                 components={markdownComponents}
@@ -323,7 +323,7 @@ export function WikiArticleContent({
                       <TabsContent value="sources" className="mt-4">
                         <div className="overflow-x-hidden p-2 text-[#5c3c10] sm:p-4">
                           {article.sources ? (
-                            <div className="prose prose-sm sm:prose overflow-x-hidden text-[#3a2a14] [&_code]:break-words [&_pre]:overflow-x-auto [&_table]:overflow-x-auto">
+                            <div className="prose prose-sm sm:prose overflow-x-hidden text-[#3a2a14] [&_code]:wrap-break-word [&_pre]:overflow-x-auto [&_table]:overflow-x-auto">
                               <ReactMarkdown
                                 remarkPlugins={[remarkGfm]}
                                 components={markdownComponents}

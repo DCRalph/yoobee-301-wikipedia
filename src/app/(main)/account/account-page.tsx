@@ -159,45 +159,60 @@ export function AccountPage() {
 
   if (!session) {
     return (
-      <div className="container mx-auto py-8">
-        <h1 className="text-3xl font-bold">Please sign in to view your account</h1>
+      <div className="container mx-auto px-4 py-12">
+        <div className="mx-auto max-w-2xl rounded-lg border border-dashed border-muted-foreground/20 bg-muted/30 p-12 text-center">
+          <AlertCircle className="mx-auto mb-4 h-12 w-12 text-muted-foreground/50" />
+          <h1 className="mb-2 text-2xl font-bold">Please sign in to view your account</h1>
+          <p className="text-sm text-muted-foreground">
+            You need to be signed in to access your account settings.
+          </p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[var(--background)]">
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
           {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="space-y-6 lg:col-span-2">
             {/* Suggested Edits */}
-            <Card className="bg-[var(--card)] overflow-hidden py-0 border-[var(--border)]">
-              <CardHeader className="bg-[var(--primary)] py-3">
-                <CardTitle className="text-white flex items-center gap-2">
-                  <Edit3 className="w-5 h-5" />
+            <Card className="overflow-hidden">
+              <CardHeader className="bg-primary py-4">
+                <CardTitle className="flex items-center gap-2 text-primary-foreground">
+                  <Edit3 className="h-5 w-5" />
                   Suggested Edits
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-6">
-                <p className="mb-4 text-[var(--foreground)]">
-                  {"Choose some topics you're interested in editing"}
+                <p className="mb-4 text-sm text-muted-foreground">
+                  Choose some topics you&apos;re interested in editing
                 </p>
-                <div className="space-y-3 mb-6">
-                  {suggestedTopics?.topics.map((topic) => (
-                    <div key={topic} className="relative">
-                      <Button
-                        variant="outline"
-                        className="w-full justify-between h-12 bg-[var(--secondary)] border-[var(--border)] text-[var(--foreground)]"
-                      >
-                        {topic}
-                        <ChevronDown className="w-4 h-4" />
-                      </Button>
+                <div className="mb-6 space-y-3">
+                  {suggestedTopics?.topics.length ? (
+                    suggestedTopics.topics.map((topic) => (
+                      <div key={topic} className="relative">
+                        <Button
+                          variant="outline"
+                          className="h-12 w-full justify-between"
+                        >
+                          {topic}
+                          <ChevronDown className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="rounded-lg border border-dashed border-muted-foreground/20 bg-muted/30 p-8 text-center">
+                      <Edit3 className="mx-auto mb-2 h-8 w-8 text-muted-foreground/50" />
+                      <p className="text-sm text-muted-foreground">
+                        No suggested topics available
+                      </p>
                     </div>
-                  ))}
+                  )}
                 </div>
                 <div className="flex justify-end">
-                  <Button className="bg-[var(--primary)] text-[var(--primary-foreground)]">
+                  <Button disabled={!suggestedTopics?.topics.length}>
                     Continue
                   </Button>
                 </div>
@@ -205,56 +220,67 @@ export function AccountPage() {
             </Card>
 
             {/* Recent Activity & Watch List */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card className="bg-[var(--card)] border-[var(--border)]">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              <Card>
                 <CardHeader>
-                  <CardTitle className="text-[var(--foreground)]">Recent Activity</CardTitle>
+                  <CardTitle>Recent Activity</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {recentActivity?.hasActivity ? (
                     <div className="space-y-3">
                       {recentActivity.articles.slice(0, 3).map((article) => (
-                        <div key={article.id} className="p-3 rounded bg-[var(--muted)]">
-                          <h4 className="font-medium text-[var(--foreground)]">
-                            {article.title}
-                          </h4>
-                          <p className="text-sm text-[var(--muted-foreground)]">
+                        <div
+                          key={article.id}
+                          className="rounded-lg border bg-muted/50 p-3 transition-colors hover:bg-muted"
+                        >
+                          <h4 className="mb-1 font-medium">{article.title}</h4>
+                          <p className="text-xs text-muted-foreground">
                             {new Date(article.updatedAt).toLocaleDateString()}
                           </p>
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <p className="text-[var(--muted-foreground)]">
-                      {"You haven't made any edits yet. Start with suggested edits to begin your journey."}
-                    </p>
+                    <div className="rounded-lg border border-dashed border-muted-foreground/20 bg-muted/30 p-8 text-center">
+                      <p className="text-sm text-muted-foreground">
+                        You haven&apos;t made any edits yet. Start with suggested edits to begin your journey.
+                      </p>
+                    </div>
                   )}
                 </CardContent>
               </Card>
 
-              <Card className="bg-[var(--card)] border-[var(--border)]">
+              <Card>
                 <CardHeader>
-                  <CardTitle className="text-[var(--foreground)]">Watch list</CardTitle>
+                  <CardTitle>Watch list</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-[var(--muted-foreground)]">
-                    Add articles to your watchlist to track changes and updates.
-                  </p>
+                  <div className="rounded-lg border border-dashed border-muted-foreground/20 bg-muted/30 p-8 text-center">
+                    <p className="text-sm text-muted-foreground">
+                      Add articles to your watchlist to track changes and updates.
+                    </p>
+                  </div>
                 </CardContent>
               </Card>
             </div>
 
             {/* Account Management */}
-            <Card className="bg-[var(--card)] overflow-hidden py-0 border-[var(--border)]">
-              <CardHeader className="bg-[var(--primary)] py-3">
-                <CardTitle className="text-white">Account Management</CardTitle>
+            <Card className="overflow-hidden">
+              <CardHeader className="bg-primary py-4">
+                <CardTitle className="text-primary-foreground">Account Management</CardTitle>
               </CardHeader>
-              <CardContent className="py-0">
+              <CardContent className="p-0">
                 <Tabs defaultValue="profile" className="w-full">
-                  <TabsList className="w-full rounded-none border-b bg-[var(--card)]">
-                    <TabsTrigger value="profile" className="flex-1">Profile</TabsTrigger>
-                    <TabsTrigger value="linked-accounts" className="flex-1">Linked Accounts</TabsTrigger>
-                    <TabsTrigger value="security" className="flex-1">Security</TabsTrigger>
+                  <TabsList className="w-full rounded-none border-b bg-card">
+                    <TabsTrigger value="profile" className="flex-1">
+                      Profile
+                    </TabsTrigger>
+                    <TabsTrigger value="linked-accounts" className="flex-1">
+                      Linked Accounts
+                    </TabsTrigger>
+                    <TabsTrigger value="security" className="flex-1">
+                      Security
+                    </TabsTrigger>
                   </TabsList>
 
                   {/* Profile Tab */}

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { api, type RouterOutputs } from "~/trpc/react";
-import { FileText, Tag, Calendar, Eye, User, ArrowRight } from "lucide-react";
+import { FileText, Tag, Calendar, Eye, User, ArrowRight, Loader2, AlertCircle } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -40,7 +40,7 @@ const ContentCard = ({ category }: { category: CategoryWithTopArticles }) => {
   return (
     <div className="bg-card border-border overflow-hidden border transition-shadow duration-200 hover:shadow-md">
       {/* Placeholder image - in a real app, you'd have category images */}
-      <div className="from-sidebar-accent to-muted flex h-32 items-center justify-center bg-gradient-to-br">
+      <div className="from-sidebar-accent to-muted flex h-32 items-center justify-center bg-linear-to-br">
         <Tag className="text-primary h-8 w-8 opacity-50" />
       </div>
       <div className="p-3">
@@ -85,8 +85,9 @@ const ArticleList = ({
 }) => {
   if (!articles || articles.length === 0) {
     return (
-      <div className="text-muted-foreground py-8 text-center">
-        <p>No articles in this category yet.</p>
+      <div className="rounded-lg border border-dashed border-muted-foreground/20 bg-muted/30 py-8 text-center">
+        <FileText className="mx-auto mb-2 h-8 w-8 text-muted-foreground/50" />
+        <p className="text-sm text-muted-foreground">No articles in this category yet.</p>
       </div>
     );
   }
@@ -279,7 +280,7 @@ export default function CategoriesPage() {
           <CategorySidebar />
           <div className="flex-1 p-8">
             <div className="flex min-h-[400px] items-center justify-center">
-              <div className="border-primary h-12 w-12 animate-spin rounded-full border-t-2 border-b-2"></div>
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
           </div>
         </SidebarProvider>
@@ -293,13 +294,13 @@ export default function CategoriesPage() {
         <SidebarProvider defaultOpen={true}>
           <CategorySidebar />
           <div className="flex-1 p-8">
-            <div className="py-20 text-center">
-              <h2 className="text-foreground mb-4 text-xl font-medium">
+            <div className="flex min-h-[400px] flex-col items-center justify-center">
+              <AlertCircle className="mb-4 h-12 w-12 text-destructive" />
+              <h2 className="mb-2 text-xl font-medium text-foreground">
                 Error Loading Categories
               </h2>
-              <p className="text-muted-foreground">
-                There was an error loading the categories. Please try again
-                later.
+              <p className="text-sm text-muted-foreground">
+                There was an error loading the categories. Please try again later.
               </p>
             </div>
           </div>
@@ -364,7 +365,7 @@ export default function CategoriesPage() {
           </div>
 
           {/* Header with background image */}
-          <div className="from-primary/80 to-primary relative flex h-48 items-center justify-center bg-gradient-to-r">
+          <div className="from-primary/80 to-primary relative flex h-48 items-center justify-center bg-linear-to-r">
             <Image
               src="/category/banner.png"
               alt="Category banner"
@@ -387,50 +388,50 @@ export default function CategoriesPage() {
             {/* Literature & Philosophy Section */}
             {(literatureCategories.length > 0 ||
               otherCategories.length > 0) && (
-              <section className="mb-12">
-                <SectionHeader title="Literature & Philosophy" />
-                <div className="mb-4">
-                  {literatureCategories.map((category) => (
-                    <CategoryTag key={category.id} category={category} />
-                  ))}
-                  {literatureCategories.length === 0 &&
-                    otherCategories
-                      .slice(0, 6)
-                      .map((category) => (
-                        <CategoryTag key={category.id} category={category} />
-                      ))}
-                </div>
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-                  {(literatureCategories.length > 0
-                    ? literatureCategories
-                    : otherCategories
-                  )
-                    .slice(0, 4)
-                    .map((category) => (
-                      <ContentCard key={category.id} category={category} />
+                <section className="mb-12">
+                  <SectionHeader title="Literature & Philosophy" />
+                  <div className="mb-4">
+                    {literatureCategories.map((category) => (
+                      <CategoryTag key={category.id} category={category} />
                     ))}
-                </div>
-                {/* Show top articles for this section */}
-                {literatureCategories.length > 0 && (
-                  <ArticleList
-                    articles={literatureCategories
-                      .flatMap((cat) => cat.topArticles)
-                      .slice(0, 10)}
-                    section="literature"
-                  />
-                )}
-                {literatureCategories.length === 0 &&
-                  otherCategories.length > 0 && (
+                    {literatureCategories.length === 0 &&
+                      otherCategories
+                        .slice(0, 6)
+                        .map((category) => (
+                          <CategoryTag key={category.id} category={category} />
+                        ))}
+                  </div>
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+                    {(literatureCategories.length > 0
+                      ? literatureCategories
+                      : otherCategories
+                    )
+                      .slice(0, 4)
+                      .map((category) => (
+                        <ContentCard key={category.id} category={category} />
+                      ))}
+                  </div>
+                  {/* Show top articles for this section */}
+                  {literatureCategories.length > 0 && (
                     <ArticleList
-                      articles={otherCategories
-                        .slice(0, 4)
+                      articles={literatureCategories
                         .flatMap((cat) => cat.topArticles)
                         .slice(0, 10)}
                       section="literature"
                     />
                   )}
-              </section>
-            )}
+                  {literatureCategories.length === 0 &&
+                    otherCategories.length > 0 && (
+                      <ArticleList
+                        articles={otherCategories
+                          .slice(0, 4)
+                          .flatMap((cat) => cat.topArticles)
+                          .slice(0, 10)}
+                        section="literature"
+                      />
+                    )}
+                </section>
+              )}
 
             {/* Arts & Culture Section */}
             {(artsCategories.length > 0 || otherCategories.length > 4) && (

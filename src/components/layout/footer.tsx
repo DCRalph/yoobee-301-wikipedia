@@ -5,10 +5,10 @@ import Image from "next/image";
 export function Footer() {
   return (
     <footer
-      className="relative z-50 mt-auto bg-gradient-to-br from-[#3b2a1a] to-[#2a1f12] px-4 py-12"
-      // initial={{ opacity: 0, y: 20 }}
-      // animate={{ opacity: 1, y: 0 }}
-      // transition={{ duration: 0.5, delay: 0.5 }}
+      className="relative z-50 mt-auto bg-linear-to-br from-[#3b2a1a] to-[#2a1f12] px-4 py-12"
+    // initial={{ opacity: 0, y: 20 }}
+    // animate={{ opacity: 1, y: 0 }}
+    // transition={{ duration: 0.5, delay: 0.5 }}
     >
       <div className="mx-auto max-w-7xl">
         {/* Main Footer Content */}
@@ -16,7 +16,7 @@ export function Footer() {
           {/* Brand Section */}
           <div className="group flex flex-col items-center space-y-4 lg:items-start">
             <div className="flex items-center gap-3">
-              <div className="rounded-full bg-gradient-to-br from-[#f8f5f1] to-[#e8e0d6] p-2 shadow-lg transition-all duration-300 group-hover:scale-105 group-hover:shadow-xl">
+              <div className="rounded-full bg-linear-to-br from-[#f8f5f1] to-[#e8e0d6] p-2 shadow-lg transition-all duration-300 group-hover:scale-105 group-hover:shadow-xl">
                 <Image src="/icon.png" alt="WikiClone" width={32} height={32} />
               </div>
               <span className="font-serif text-2xl font-bold text-[#f8f5f1] transition-colors duration-300 group-hover:text-white">
@@ -26,7 +26,7 @@ export function Footer() {
             <p className="text-center text-sm text-[#f8f5f1]/80 transition-colors duration-300 group-hover:text-[#f8f5f1] lg:text-left">
               The free encyclopedia that anyone can edit
             </p>
-            <div className="mx-auto h-0.5 w-16 bg-gradient-to-r from-transparent via-[#f8f5f1]/50 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 lg:mx-0" />
+            <div className="mx-auto h-0.5 w-16 bg-linear-to-r from-transparent via-[#f8f5f1]/50 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 lg:mx-0" />
           </div>
 
           {/* Navigation Links */}
@@ -110,7 +110,7 @@ export function Footer() {
               Community
             </h3>
             <div className="space-y-3">
-              <div className="group/stat rounded-lg border border-[#f8f5f1]/20 bg-gradient-to-br from-[#6b4c35]/20 to-[#3b2a1a]/20 p-3 transition-all duration-300 hover:scale-105 hover:border-[#f8f5f1]/40">
+              <div className="group/stat rounded-lg border border-[#f8f5f1]/20 bg-linear-to-br from-[#6b4c35]/20 to-[#3b2a1a]/20 p-3 transition-all duration-300 hover:scale-105 hover:border-[#f8f5f1]/40">
                 <div className="text-lg font-bold text-[#f8f5f1] transition-colors duration-200 group-hover/stat:text-white">
                   Growing Daily
                 </div>
@@ -123,7 +123,7 @@ export function Footer() {
         </div>
 
         {/* Divider */}
-        <div className="mb-6 h-px bg-gradient-to-r from-transparent via-[#f8f5f1]/30 to-transparent" />
+        <div className="mb-6 h-px bg-linear-to-r from-transparent via-[#f8f5f1]/30 to-transparent" />
 
         {/* Bottom Section */}
         <div className="flex flex-col items-center justify-between gap-4 text-center md:flex-row md:text-left">
@@ -132,7 +132,7 @@ export function Footer() {
           </div>
 
           <div className="flex items-center gap-4">
-            <div className="inline-flex items-center rounded-full border border-[#f8f5f1]/20 bg-gradient-to-r from-[#6b4c35]/20 to-[#3b2a1a]/20 px-4 py-2 text-xs text-[#f8f5f1]/80 transition-all duration-300 hover:scale-105 hover:border-[#f8f5f1]/40 hover:text-[#f8f5f1]">
+            <div className="inline-flex items-center rounded-full border border-[#f8f5f1]/20 bg-linear-to-r from-[#6b4c35]/20 to-[#3b2a1a]/20 px-4 py-2 text-xs text-[#f8f5f1]/80 transition-all duration-300 hover:scale-105 hover:border-[#f8f5f1]/40 hover:text-[#f8f5f1]">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="mr-2 h-3 w-3"

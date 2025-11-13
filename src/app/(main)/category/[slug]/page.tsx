@@ -54,7 +54,7 @@ const ArticleCard = ({
     return (
       <div className="flex gap-4 border border-[#d0c0a0] bg-white p-4 transition-shadow hover:shadow-md">
         {article.imageUrl && (
-          <div className="flex-shrink-0">
+          <div className="shrink-0">
             <Image
               src={article.imageUrl}
               alt={article.title}
@@ -181,11 +181,10 @@ const Pagination = ({
         <button
           key={page}
           onClick={() => onPageChange(page)}
-          className={`border px-3 py-2 ${
-            page === currentPage
+          className={`border px-3 py-2 ${page === currentPage
               ? "border-[#6b4c35] bg-[#6b4c35] text-white"
               : "border-[#d0c0a0] bg-white hover:bg-gray-50"
-          }`}
+            }`}
         >
           {page}
         </button>
@@ -318,11 +317,10 @@ export default function CategoryPage({ params }: CategoryPageProps) {
               <button
                 onClick={() => setViewMode("grid")}
                 disabled={isLoading}
-                className={`p-2 transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
-                  viewMode === "grid"
+                className={`p-2 transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${viewMode === "grid"
                     ? "bg-[#6b4c35] text-white"
                     : "bg-white text-gray-600 hover:bg-gray-50"
-                }`}
+                  }`}
                 title="Grid view"
               >
                 <Grid className="h-4 w-4" />
@@ -330,11 +328,10 @@ export default function CategoryPage({ params }: CategoryPageProps) {
               <button
                 onClick={() => setViewMode("list")}
                 disabled={isLoading}
-                className={`p-2 transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
-                  viewMode === "list"
+                className={`p-2 transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${viewMode === "list"
                     ? "bg-[#6b4c35] text-white"
                     : "bg-white text-gray-600 hover:bg-gray-50"
-                }`}
+                  }`}
                 title="List view"
               >
                 <List className="h-4 w-4" />

@@ -106,7 +106,7 @@ export default function PlayHomePage() {
   return (
     <div className="flex min-h-screen flex-col">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950/50 dark:to-indigo-950/50">
+      <section className="relative overflow-hidden bg-linear-to-br from-blue-50 to-indigo-100 dark:from-blue-950/50 dark:to-indigo-950/50">
         <div className="container mx-auto px-4 py-16">
           <div className="flex flex-col items-center text-center">
             <div className="mb-6 flex items-center gap-2">

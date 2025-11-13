@@ -72,9 +72,9 @@ export default function GameResultsPage() {
   const totalDuration =
     gameResult.endTime && gameResult.startTime
       ? Math.round(
-          (gameResult.endTime.getTime() - gameResult.startTime.getTime()) /
-            1000,
-        )
+        (gameResult.endTime.getTime() - gameResult.startTime.getTime()) /
+        1000,
+      )
       : null;
 
   const formatDuration = (seconds: number) => {
@@ -187,13 +187,13 @@ export default function GameResultsPage() {
                   key={index}
                   className="bg-muted/30 flex items-center gap-4 rounded-lg p-3"
                 >
-                  <div className="flex-shrink-0">
+                  <div className="shrink-0">
                     <Badge
                       variant={
                         index === 0
                           ? "default"
                           : index === gameResult.detailedPath.length - 1 &&
-                              isCompleted
+                            isCompleted
                             ? "default"
                             : "secondary"
                       }

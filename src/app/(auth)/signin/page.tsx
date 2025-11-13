@@ -206,7 +206,7 @@ export default function AuthPage({
   };
 
   return (
-    <div className={`min-h-screen relative overflow-hidden ${!useImageBg ? 'bg-gradient-to-b from-primary via-input to-primary' : ''}`}>
+    <div className={`min-h-screen relative overflow-hidden ${!useImageBg ? 'bg-linear-to-b from-primary via-input to-primary' : ''}`}>
       {/* Background Image - Only show when toggle is on */}
       {useImageBg && (
         <>
@@ -259,9 +259,9 @@ export default function AuthPage({
 
             {/* Decorative Divider */}
             <div className="flex items-center justify-center my-8">
-              <div className="h-px bg-gradient-to-r from-transparent via-background/60 to-transparent w-32"></div>
+              <div className="h-px bg-linear-to-r from-transparent via-background/60 to-transparent w-32"></div>
               <div className="mx-4 text-background/80 text-2xl">✦</div>
-              <div className="h-px bg-gradient-to-r from-transparent via-background/60 to-transparent w-32"></div>
+              <div className="h-px bg-linear-to-r from-transparent via-background/60 to-transparent w-32"></div>
             </div>
           </div>
 

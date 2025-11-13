@@ -110,15 +110,15 @@ export default function LeaderboardPage() {
   const averageClicks =
     stats && stats.length > 0
       ? Math.round(
-          stats.reduce((sum, game) => sum + game.clicks, 0) / stats.length,
-        )
+        stats.reduce((sum, game) => sum + game.clicks, 0) / stats.length,
+      )
       : 0;
   const bestTime =
     stats && stats.length > 0
       ? stats
-          .map((game) => game.duration)
-          .filter((d): d is number => d !== null)
-          .reduce((min, curr) => (curr < min ? curr : min), Infinity)
+        .map((game) => game.duration)
+        .filter((d): d is number => d !== null)
+        .reduce((min, curr) => (curr < min ? curr : min), Infinity)
       : 0;
 
   if (error) {
@@ -144,7 +144,7 @@ export default function LeaderboardPage() {
     <div className="container mx-auto max-w-6xl space-y-8 px-4 py-8">
       {/* Header */}
       <div className="space-y-4 text-center">
-        <div className="inline-flex items-center gap-3 rounded-lg border border-yellow-200 bg-gradient-to-r from-yellow-50 to-amber-50 px-6 py-3">
+        <div className="inline-flex items-center gap-3 rounded-lg border border-yellow-200 bg-linear-to-r from-yellow-50 to-amber-50 px-6 py-3">
           <Trophy className="h-8 w-8 text-yellow-600" />
           <div>
             <h1 className="text-3xl font-bold text-gray-900">
@@ -292,7 +292,7 @@ export default function LeaderboardPage() {
                           >
                             {game.startArticle.title}
                           </Link>
-                          <ArrowRight className="text-muted-foreground h-3 w-3 flex-shrink-0" />
+                          <ArrowRight className="text-muted-foreground h-3 w-3 shrink-0" />
                           <Link
                             href={`/wiki/${game.endArticle.slug}`}
                             className="max-w-20 truncate text-blue-600 hover:underline"

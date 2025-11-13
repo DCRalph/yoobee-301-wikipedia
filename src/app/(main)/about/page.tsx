@@ -99,7 +99,7 @@ export default function AboutPage() {
           whileHover={{ scale: 1.02 }}
           transition={{ duration: 0.3 }}
         >
-          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[#3a2a14] to-[#5a4a34]">
+          <div className="absolute inset-0 flex items-center justify-center bg-linear-to-br from-[#3a2a14] to-[#5a4a34]">
             <motion.div
               className="text-center text-white"
               initial={{ opacity: 0, y: 20 }}
@@ -131,7 +131,7 @@ export default function AboutPage() {
 
       {/* Database Statistics Section */}
       <motion.div
-        className="mb-16 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-100 p-8 shadow-lg"
+        className="mb-16 rounded-xl bg-linear-to-br from-blue-50 to-indigo-100 p-8 shadow-lg"
         variants={itemVariants}
         whileInView={{ scale: [0.98, 1.01, 1] }}
         transition={{ duration: 0.6 }}
@@ -325,7 +325,7 @@ export default function AboutPage() {
       </motion.div>
 
       <motion.div
-        className="mb-16 rounded-lg bg-gradient-to-r from-[#3a2a14] to-[#5a4a34] p-8 text-white"
+        className="mb-16 rounded-lg bg-linear-to-r from-[#3a2a14] to-[#5a4a34] p-8 text-white"
         variants={itemVariants}
         whileInView={{ scale: [0.9, 1.05, 1] }}
         transition={{ duration: 0.6 }}

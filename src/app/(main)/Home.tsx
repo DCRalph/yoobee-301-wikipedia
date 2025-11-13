@@ -6,6 +6,7 @@ import { useEffect, useState, useRef } from "react";
 import CategorySelector from "../components/CategorySelector";
 import { api } from "~/trpc/react";
 import ReactMarkdown from "react-markdown";
+import { Loader2 } from "lucide-react";
 // CountUp animation component
 const CountUp = ({
   end,
@@ -70,8 +71,8 @@ const ArticleCard = ({
 }) => (
   <div
     className={`group rounded-xl border-2 p-4 transition-all duration-300 hover:scale-105 active:scale-95 ${darkMode
-      ? "border-[#8b6c55]/30 bg-gradient-to-br from-[#6b4c35] to-[#3b2a1a] text-white shadow-xl hover:shadow-2xl"
-      : "border-[#e8e0d6] bg-gradient-to-br from-white to-[#faf7f3] shadow-lg hover:border-[#d4c4b0] hover:shadow-xl"
+      ? "border-[#8b6c55]/30 bg-linear-to-br from-[#6b4c35] to-[#3b2a1a] text-white shadow-xl hover:shadow-2xl"
+      : "border-[#e8e0d6] bg-linear-to-br from-white to-[#faf7f3] shadow-lg hover:border-[#d4c4b0] hover:shadow-xl"
       }`}
   >
     <div className="space-y-3">
@@ -87,7 +88,7 @@ const ArticleCard = ({
         <ReactMarkdown>{excerpt}</ReactMarkdown>
       </div>
 
-      <div className={`mx-auto h-0.5 w-16 bg-gradient-to-r from-transparent to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100 ${darkMode
+      <div className={`mx-auto h-0.5 w-16 bg-linear-to-r from-transparent to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100 ${darkMode
         ? "via-[#f8f5f1]"
         : "via-[#d4c4b0]"
         }`} />
@@ -96,8 +97,8 @@ const ArticleCard = ({
         <Link
           href={readMoreUrl}
           className={`inline-flex items-center rounded-full px-4 py-2 text-xs font-medium transition-all duration-200 ${darkMode
-            ? "bg-gradient-to-r from-[#8b6c55] to-[#6b4c35] text-[#f8f5f1] hover:from-[#a67c5a] hover:to-[#8b6c55]"
-            : "bg-gradient-to-r from-[#e8e0d6] to-[#d4c4b0] text-[#6b4c35] hover:from-[#d4c4b0] hover:to-[#c4b4a0]"
+            ? "bg-linear-to-r from-[#8b6c55] to-[#6b4c35] text-[#f8f5f1] hover:from-[#a67c5a] hover:to-[#8b6c55]"
+            : "bg-linear-to-r from-[#e8e0d6] to-[#d4c4b0] text-[#6b4c35] hover:from-[#d4c4b0] hover:to-[#c4b4a0]"
             }`}
         >
           Read more →
@@ -124,21 +125,22 @@ export default function Home() {
   return (
     <div className="flex min-h-screen flex-col">
       {/* Hero Section */}
-      <section className="relative h-[300px] overflow-hidden">
+      <section className="relative h-[300px] overflow-hidden sm:h-[400px]">
         <div className="absolute inset-0">
           <Image
             src="/home/banner.png"
             alt="Library"
             width={1200}
-            height={300}
+            height={400}
             className="h-full w-full object-cover brightness-75"
+            priority
           />
         </div>
-        <div className="absolute inset-0 flex flex-col items-end justify-center px-12 text-white">
-          <h1 className="mb-2 font-serif text-4xl md:text-5xl">
+        <div className="absolute inset-0 flex flex-col items-end justify-center px-6 text-white sm:px-12">
+          <h1 className="mb-2 font-serif text-3xl sm:text-4xl md:text-5xl">
             Welcome to WikiClone
           </h1>
-          <p className="font-serif text-xl md:text-2xl">
+          <p className="font-serif text-lg sm:text-xl md:text-2xl">
             the free encyclopedia
           </p>
         </div>
@@ -155,18 +157,20 @@ export default function Home() {
         <SectionHeader title="Featured & Trending" />
 
         {isLoading ? (
-          <div className="flex justify-center py-20">
-            <div className="h-12 w-12 animate-spin rounded-full border-t-2 border-b-2 border-[#6b4c35]"></div>
+          <div className="flex items-center justify-center py-20">
+            <Loader2 className="h-8 w-8 animate-spin text-[#6b4c35]" />
           </div>
         ) : (
           <div className="mx-auto max-w-5xl">
             <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2">
-              <div >
-                <h3 className="mb-4 border-b border-[#c0a080] pb-2 font-serif text-xl flex justify-between">
-                  Featured Articles
-                  <span className="text-sm text- self-end">
-                    {homeContent?.featured?.length} articles in {homeContent?.timings?.featured.toFixed(0)} ms
-                  </span>
+              <div>
+                <h3 className="mb-4 flex items-end justify-between border-b border-[#c0a080] pb-2 font-serif text-xl">
+                  <span>Featured Articles</span>
+                  {homeContent?.featured && homeContent.timings?.featured !== undefined && (
+                    <span className="text-xs font-normal text-muted-foreground">
+                      {homeContent.featured.length} articles · {homeContent.timings.featured.toFixed(0)}ms
+                    </span>
+                  )}
                 </h3>
                 <div className="grid gap-4">
                   {homeContent?.featured && homeContent.featured.length > 0 ? (
@@ -199,19 +203,23 @@ export default function Home() {
                       </div>
                     ))
                   ) : (
-                    <p className="text-center text-gray-500">
-                      No featured articles available
-                    </p>
+                    <div className="rounded-lg border border-dashed border-muted-foreground/20 bg-muted/30 p-8 text-center">
+                      <p className="text-sm text-muted-foreground">
+                        No featured articles available
+                      </p>
+                    </div>
                   )}
                 </div>
               </div>
 
               <div>
-                <h3 className="mb-4 border-b border-[#c0a080] pb-2 font-serif text-xl flex justify-between">
-                  Trending Now
-                  <span className="text-sm text-gray-500 self-end">
-                    {homeContent?.trending?.length} articles in {homeContent?.timings?.trending.toFixed(0)} ms
-                  </span>
+                <h3 className="mb-4 flex items-end justify-between border-b border-[#c0a080] pb-2 font-serif text-xl">
+                  <span>Trending Now</span>
+                  {homeContent?.trending && homeContent.timings?.trending !== undefined && (
+                    <span className="text-xs font-normal text-muted-foreground">
+                      {homeContent.trending.length} articles · {homeContent.timings.trending.toFixed(0)}ms
+                    </span>
+                  )}
                 </h3>
                 <div className="grid gap-4">
                   {homeContent?.trending && homeContent.trending.length > 0 ? (
@@ -244,9 +252,11 @@ export default function Home() {
                       </div>
                     ))
                   ) : (
-                    <p className="text-center text-gray-500">
-                      No trending articles available
-                    </p>
+                    <div className="rounded-lg border border-dashed border-muted-foreground/20 bg-muted/30 p-8 text-center">
+                      <p className="text-sm text-muted-foreground">
+                        No trending articles available
+                      </p>
+                    </div>
                   )}
                 </div>
               </div>
@@ -260,19 +270,21 @@ export default function Home() {
         <SectionHeader title="Daily Content" />
 
         {isLoading ? (
-          <div className="flex justify-center py-20">
-            <div className="h-12 w-12 animate-spin rounded-full border-t-2 border-b-2 border-[#6b4c35]"></div>
+          <div className="flex items-center justify-center py-20">
+            <Loader2 className="h-8 w-8 animate-spin text-[#6b4c35]" />
           </div>
         ) : (
           <div className="mx-auto max-w-5xl">
             <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2">
               {/* Today's Article */}
               <div>
-                <h3 className="mb-4 border-b border-[#c0a080] pb-2 font-serif text-xl flex justify-between">
-                  {"Today's Article"}
-                  <span className="text-sm text-gray-500 self-end">
-                    {homeContent?.daily?.todaysArticle?.title} in {homeContent?.timings?.todaysArticle.toFixed(0)} ms
-                  </span>
+                <h3 className="mb-4 flex items-end justify-between border-b border-[#c0a080] pb-2 font-serif text-xl">
+                  <span>Today&apos;s Article</span>
+                  {homeContent?.daily?.todaysArticle && homeContent?.timings?.todaysArticle !== undefined && (
+                    <span className="text-xs font-normal text-muted-foreground">
+                      {homeContent.timings.todaysArticle.toFixed(0)}ms
+                    </span>
+                  )}
                 </h3>
                 {homeContent?.daily?.todaysArticle ? (
                   <div className="grid grid-cols-1 gap-4">
@@ -295,9 +307,11 @@ export default function Home() {
                     />
                   </div>
                 ) : (
-                  <p className="text-center text-gray-500">
-                    No article of the day available
-                  </p>
+                  <div className="rounded-lg border border-dashed border-muted-foreground/20 bg-muted/30 p-8 text-center">
+                    <p className="text-sm text-muted-foreground">
+                      No article of the day available
+                    </p>
+                  </div>
                 )}
               </div>
 
@@ -306,9 +320,11 @@ export default function Home() {
                 <h3 className="mb-4 border-b border-[#c0a080] pb-2 font-serif text-xl">
                   On This Day
                 </h3>
-                <p className="text-center text-gray-500">
-                  No historical events for today
-                </p>
+                <div className="rounded-lg border border-dashed border-muted-foreground/20 bg-muted/30 p-8 text-center">
+                  <p className="text-sm text-muted-foreground">
+                    No historical events for today
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -324,8 +340,8 @@ export default function Home() {
               WikiClone by the Numbers
             </h2>
             {homeContent?.timings?.stats !== undefined && (
-              <p className="mt-1 text-xs text-gray-500">
-                Stats loaded in {homeContent.timings.stats.toFixed(0)} ms
+              <p className="mt-1 text-xs text-muted-foreground">
+                Stats loaded in {homeContent.timings.stats.toFixed(0)}ms
               </p>
             )}
           </div>
@@ -333,13 +349,13 @@ export default function Home() {
         </div>
 
         {isLoading ? (
-          <div className="flex justify-center py-20">
-            <div className="h-12 w-12 animate-spin rounded-full border-t-2 border-b-2 border-[#6b4c35]"></div>
+          <div className="flex items-center justify-center py-20">
+            <Loader2 className="h-8 w-8 animate-spin text-[#6b4c35]" />
           </div>
         ) : (
           <div className="mx-auto max-w-5xl">
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              <div className="group flex flex-col items-center rounded-xl border-2 border-[#e8e0d6] bg-gradient-to-br from-white to-[#faf7f3] p-6 shadow-lg transition-all duration-300 hover:scale-105 hover:border-[#d4c4b0] hover:shadow-xl active:scale-95">
+              <div className="group flex flex-col items-center rounded-xl border-2 border-[#e8e0d6] bg-linear-to-br from-white to-[#faf7f3] p-6 shadow-lg transition-all duration-300 hover:scale-105 hover:border-[#d4c4b0] hover:shadow-xl active:scale-95">
                 <div className="mb-3 text-[#6b4c35] transition-colors duration-200 group-hover:text-[#3b2a1a]">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -359,18 +375,18 @@ export default function Home() {
                 <h3 className="mb-2 text-3xl font-bold text-[#3b2a1a] transition-colors duration-200 group-hover:text-[#6b4c35]">
                   <CountUp end={homeContent?.stats?.totalUsers ?? 0} />
                 </h3>
-                <div className="inline-flex items-center rounded-full bg-gradient-to-r from-[#e8e0d6] to-[#d4c4b0] px-3 py-1 text-xs font-medium text-[#6b4c35] transition-all duration-200 group-hover:from-[#d4c4b0] group-hover:to-[#c4b4a0]">
+                <div className="inline-flex items-center rounded-full bg-linear-to-r from-[#e8e0d6] to-[#d4c4b0] px-3 py-1 text-xs font-medium text-[#6b4c35] transition-all duration-200 group-hover:from-[#d4c4b0] group-hover:to-[#c4b4a0]">
                   Contributors
                 </div>
                 {homeContent?.timings?.statTimings?.totalUsers !== undefined && (
-                  <p className="mt-1 text-xs text-gray-400">
-                    {homeContent.timings.statTimings.totalUsers.toFixed(0)} ms
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {homeContent.timings.statTimings.totalUsers.toFixed(0)}ms
                   </p>
                 )}
-                <div className="mx-auto mt-2 h-0.5 w-12 bg-gradient-to-r from-transparent via-[#d4c4b0] to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
+                <div className="mx-auto mt-2 h-0.5 w-12 bg-linear-to-r from-transparent via-[#d4c4b0] to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
               </div>
 
-              <div className="group flex flex-col items-center rounded-xl border-2 border-[#e8e0d6] bg-gradient-to-br from-white to-[#faf7f3] p-6 shadow-lg transition-all duration-300 hover:scale-105 hover:border-[#d4c4b0] hover:shadow-xl active:scale-95">
+              <div className="group flex flex-col items-center rounded-xl border-2 border-[#e8e0d6] bg-linear-to-br from-white to-[#faf7f3] p-6 shadow-lg transition-all duration-300 hover:scale-105 hover:border-[#d4c4b0] hover:shadow-xl active:scale-95">
                 <div className="mb-3 text-[#6b4c35] transition-colors duration-200 group-hover:text-[#3b2a1a]">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -390,18 +406,18 @@ export default function Home() {
                 <h3 className="mb-2 text-3xl font-bold text-[#3b2a1a] transition-colors duration-200 group-hover:text-[#6b4c35]">
                   <CountUp end={homeContent?.stats?.totalCategories ?? 0} />
                 </h3>
-                <div className="inline-flex items-center rounded-full bg-gradient-to-r from-[#e8e0d6] to-[#d4c4b0] px-3 py-1 text-xs font-medium text-[#6b4c35] transition-all duration-200 group-hover:from-[#d4c4b0] group-hover:to-[#c4b4a0]">
+                <div className="inline-flex items-center rounded-full bg-linear-to-r from-[#e8e0d6] to-[#d4c4b0] px-3 py-1 text-xs font-medium text-[#6b4c35] transition-all duration-200 group-hover:from-[#d4c4b0] group-hover:to-[#c4b4a0]">
                   Categories
                 </div>
                 {homeContent?.timings?.statTimings?.totalCategories !== undefined && (
-                  <p className="mt-1 text-xs text-gray-400">
-                    {homeContent.timings.statTimings.totalCategories.toFixed(0)} ms
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {homeContent.timings.statTimings.totalCategories.toFixed(0)}ms
                   </p>
                 )}
-                <div className="mx-auto mt-2 h-0.5 w-12 bg-gradient-to-r from-transparent via-[#d4c4b0] to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
+                <div className="mx-auto mt-2 h-0.5 w-12 bg-linear-to-r from-transparent via-[#d4c4b0] to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
               </div>
 
-              <div className="group flex flex-col items-center rounded-xl border-2 border-[#e8e0d6] bg-gradient-to-br from-white to-[#faf7f3] p-6 shadow-lg transition-all duration-300 hover:scale-105 hover:border-[#d4c4b0] hover:shadow-xl active:scale-95">
+              <div className="group flex flex-col items-center rounded-xl border-2 border-[#e8e0d6] bg-linear-to-br from-white to-[#faf7f3] p-6 shadow-lg transition-all duration-300 hover:scale-105 hover:border-[#d4c4b0] hover:shadow-xl active:scale-95">
                 <div className="mb-3 text-[#6b4c35] transition-colors duration-200 group-hover:text-[#3b2a1a]">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -427,21 +443,21 @@ export default function Home() {
                 <h3 className="mb-2 text-3xl font-bold text-[#3b2a1a] transition-colors duration-200 group-hover:text-[#6b4c35]">
                   <CountUp end={homeContent?.stats?.dailyViews ?? 0} />
                 </h3>
-                <div className="inline-flex items-center rounded-full bg-gradient-to-r from-[#e8e0d6] to-[#d4c4b0] px-3 py-1 text-xs font-medium text-[#6b4c35] transition-all duration-200 group-hover:from-[#d4c4b0] group-hover:to-[#c4b4a0]">
+                <div className="inline-flex items-center rounded-full bg-linear-to-r from-[#e8e0d6] to-[#d4c4b0] px-3 py-1 text-xs font-medium text-[#6b4c35] transition-all duration-200 group-hover:from-[#d4c4b0] group-hover:to-[#c4b4a0]">
                   Daily Views
                 </div>
                 {homeContent?.timings?.statTimings?.dailyViews !== undefined && (
-                  <p className="mt-1 text-xs text-gray-400">
-                    {homeContent.timings.statTimings.dailyViews.toFixed(0)} ms
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {homeContent.timings.statTimings.dailyViews.toFixed(0)}ms
                   </p>
                 )}
-                <div className="mx-auto mt-2 h-0.5 w-12 bg-gradient-to-r from-transparent via-[#d4c4b0] to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
+                <div className="mx-auto mt-2 h-0.5 w-12 bg-linear-to-r from-transparent via-[#d4c4b0] to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
               </div>
             </div>
 
             <div className="mt-12 text-center">
-              <div className="inline-flex items-center rounded-full border-2 border-[#e8e0d6] bg-gradient-to-r from-white to-[#faf7f3] px-6 py-3 shadow-lg transition-all duration-300 ">
-                <p className="text-[#6b4c35] font-medium">
+              <div className="inline-flex items-center rounded-full border-2 border-[#e8e0d6] bg-linear-to-r from-white to-[#faf7f3] px-6 py-3 shadow-lg transition-all duration-300 hover:shadow-xl">
+                <p className="text-sm font-medium text-[#6b4c35]">
                   WikiClone is growing every day thanks to contributors like you!
                 </p>
               </div>

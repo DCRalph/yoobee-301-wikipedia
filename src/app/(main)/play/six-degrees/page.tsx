@@ -274,7 +274,7 @@ export default function SixDegreesChallengePage() {
           <CardContent>
             <div className="space-y-4">
               <div className="flex gap-3">
-                <div className="bg-primary/10 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full">
+                <div className="bg-primary/10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full">
                   <span className="text-primary text-sm font-bold">1</span>
                 </div>
                 <div>
@@ -286,7 +286,7 @@ export default function SixDegreesChallengePage() {
                 </div>
               </div>
               <div className="flex gap-3">
-                <div className="bg-primary/10 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full">
+                <div className="bg-primary/10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full">
                   <span className="text-primary text-sm font-bold">2</span>
                 </div>
                 <div>
@@ -297,7 +297,7 @@ export default function SixDegreesChallengePage() {
                 </div>
               </div>
               <div className="flex gap-3">
-                <div className="bg-primary/10 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full">
+                <div className="bg-primary/10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full">
                   <span className="text-primary text-sm font-bold">3</span>
                 </div>
                 <div>

@@ -174,7 +174,7 @@ export default function DonatePage() {
 
   return (
     <motion.div
-      className="flex min-h-screen flex-col bg-gradient-to-br from-blue-50 via-white to-blue-100"
+      className="flex min-h-screen flex-col bg-linear-to-br from-blue-50 via-white to-blue-100"
       initial="hidden"
       animate="visible"
       variants={containerVariants}
@@ -605,7 +605,7 @@ export default function DonatePage() {
                         disabled={
                           isLoading || createCheckout.isPending || amount <= 0
                         }
-                        className="from-primary to-primary/80 hover:text-primary-foreground w-full rounded-xl bg-gradient-to-r py-4 text-lg font-bold shadow-lg transition-all duration-300 hover:scale-[1.02]"
+                        className="from-primary to-primary/80 hover:text-primary-foreground w-full rounded-xl bg-linear-to-r py-4 text-lg font-bold shadow-lg transition-all duration-300 hover:scale-[1.02]"
                         size="lg"
                       >
                         <AnimatePresence mode="wait">

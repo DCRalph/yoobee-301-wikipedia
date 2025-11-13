@@ -330,7 +330,7 @@ export const PaginatedSearchList = forwardRef<
       <div className="flex flex-col gap-2 sm:flex-row">
         <div
           className={cn(
-            "relative flex flex-1 items-center rounded-lg border border-gray-300 bg-white px-3 focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500",
+            "relative flex flex-1 items-center rounded-lg border border-gray-300 bg-white px-3 focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 hover:bg-accent/30 transition-all",
           )}
         >
           <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">

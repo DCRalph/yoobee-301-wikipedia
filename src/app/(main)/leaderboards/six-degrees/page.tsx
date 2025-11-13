@@ -143,7 +143,7 @@ export default function SixDegreesLeaderboardPage() {
                     className="bg-muted/30 hover:bg-muted/50 flex items-center gap-4 rounded-lg p-4 transition-colors"
                   >
                     {/* Rank */}
-                    <div className="flex w-12 flex-shrink-0 justify-center">
+                    <div className="flex w-12 shrink-0 justify-center">
                       {getRankIcon(rank)}
                     </div>
 
@@ -167,7 +167,7 @@ export default function SixDegreesLeaderboardPage() {
                       <span className="max-w-24 truncate">
                         {game.startArticle.title}
                       </span>
-                      <ArrowRight className="h-3 w-3 flex-shrink-0" />
+                      <ArrowRight className="h-3 w-3 shrink-0" />
                       <span className="max-w-24 truncate">
                         {game.endArticle.title}
                       </span>

@@ -164,7 +164,7 @@ export default function DonationSuccessPage() {
 
   return (
     <motion.div
-      className="relative flex min-h-screen flex-col overflow-hidden bg-gradient-to-br from-blue-50 via-white to-blue-100"
+      className="relative flex min-h-screen flex-col overflow-hidden bg-linear-to-br from-blue-50 via-white to-blue-100"
       initial="hidden"
       animate="visible"
       variants={containerVariants}

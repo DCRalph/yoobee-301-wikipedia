@@ -35,11 +35,11 @@ const ArticleCardSkeleton = () => (
     </div>
     <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-4 sm:gap-y-2">
       <div className="flex items-center gap-1">
-        <Skeleton className="h-4 w-4 flex-shrink-0 rounded-full" />
+        <Skeleton className="h-4 w-4 shrink-0 rounded-full" />
         <Skeleton className="h-4 w-24" />
       </div>
       <div className="flex items-center gap-1">
-        <Skeleton className="h-4 w-4 flex-shrink-0 rounded-full" />
+        <Skeleton className="h-4 w-4 shrink-0 rounded-full" />
         <Skeleton className="h-4 w-28 sm:w-36" />
       </div>
     </div>
@@ -148,9 +148,10 @@ export function WikiArticleList() {
 
     if (!data?.articles || data.articles.length === 0) {
       return (
-        <div className="rounded-lg border p-4 text-center sm:p-8">
-          <h3 className="text-lg font-medium">No articles found</h3>
-          <p className="text-muted-foreground mt-2 text-sm sm:text-base">
+        <div className="rounded-lg border border-dashed border-muted-foreground/20 bg-muted/30 p-8 text-center">
+          <BookOpen className="mx-auto mb-3 h-12 w-12 text-muted-foreground/50" />
+          <h3 className="mb-2 text-lg font-medium">No articles found</h3>
+          <p className="text-sm text-muted-foreground">
             {searchTerm
               ? "Try a different search term."
               : "There are no published articles yet."}
@@ -164,44 +165,44 @@ export function WikiArticleList() {
         {data.articles.map((article) => (
           <div
             key={article.id}
-            className="hover:bg-muted/50 rounded-lg border p-3 transition-colors sm:p-4"
+            className="group rounded-lg border bg-card p-4 transition-all hover:bg-muted/50 hover:shadow-sm sm:p-5"
           >
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <Link
                 href={`/wiki/${article.slug}`}
-                className="block min-w-0 flex-1"
+                className="block min-w-0 flex-1 transition-colors hover:text-primary"
               >
-                <h2 className="text-lg font-semibold break-words hover:underline sm:text-xl">
+                <h2 className="text-lg font-semibold wrap-break-word sm:text-xl">
                   {article.title}
                 </h2>
               </Link>
-              <div className="flex flex-wrap gap-2 sm:flex-nowrap sm:space-y-0 sm:space-x-2">
+              <div className="flex flex-wrap gap-2 sm:flex-nowrap">
                 <Badge
                   variant="outline"
-                  className="flex items-center gap-1 text-xs"
+                  className="flex items-center gap-1.5 text-xs"
                 >
                   <Eye className="h-3 w-3" />
-                  <span className="sm:inline">{article.viewCount}</span>
+                  <span>{article.viewCount?.toLocaleString()}</span>
                 </Badge>
                 <Badge
                   variant="outline"
-                  className="flex items-center gap-1 text-xs"
+                  className="flex items-center gap-1.5 text-xs"
                 >
                   <BarChart className="h-3 w-3" />
-                  <span className="sm:inline">{article.dailyViews}</span>
+                  <span>{article.dailyViews?.toLocaleString()}</span>
                 </Badge>
               </div>
             </div>
-            <div className="text-muted-foreground mt-3 flex flex-col gap-2 text-sm sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-4 sm:gap-y-2">
-              <div className="flex items-center gap-1">
-                <User className="h-4 w-4 flex-shrink-0" />
+            <div className="mt-3 flex flex-col gap-2 text-sm text-muted-foreground sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-4">
+              <div className="flex items-center gap-1.5">
+                <User className="h-4 w-4 shrink-0" />
                 <span className="truncate">
                   {article.author.name ?? "Anonymous"}
                 </span>
               </div>
-              <div className="flex items-center gap-1">
-                <Clock className="h-4 w-4 flex-shrink-0" />
-                <span className="text-xs sm:text-sm">
+              <div className="flex items-center gap-1.5">
+                <Clock className="h-4 w-4 shrink-0" />
+                <span>
                   Updated {formatDistanceToNow(new Date(article.updatedAt))}
                 </span>
               </div>
