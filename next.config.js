@@ -47,6 +47,15 @@ const config = {
       },
     ];
   },
+  experimental: {
+    serverComponentsExternalPackages: ["sharp", "onnxruntime-node"],
+  },
+  turbopack: {
+    resolveAlias: {
+      sharp$: "sharp/lib/index.js",
+      "onnxruntime-node$": "onnxruntime-node/lib/index.js",
+    },
+  },
 };
 
 export default config;
